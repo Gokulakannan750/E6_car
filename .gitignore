@@ -1,0 +1,33 @@
+## .NET
+bin/
+obj/
+out/
+publish/
+dist/
+deploy/Output/
+deploy/backups/
+backups/
+backups_test/
+*.dump
+*.dump.enc
+*.user
+*.suo
+.vs/
+
+## Build / logs
+artifacts/
+*.log
+api_startup.log
+
+## Rider / VS Code
+.idea/
+.vscode/
+
+## Secrets — never commit real connection strings / tokens / keys
+# The live appsettings.json holds the DB password and JWT key.
+# Set these on the server via environment variables or a local copy of the file.
+# The deploy/appsettings.template.json (no real secrets) IS tracked.
+appsettings.json
+appsettings.Production.json
+appsettings.Local.json
+secrets.json

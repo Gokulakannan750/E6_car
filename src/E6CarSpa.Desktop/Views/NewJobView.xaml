@@ -1,0 +1,160 @@
+<UserControl x:Class="E6CarSpa.Desktop.Views.NewJobView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="28">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="New Job Card" Style="{StaticResource H1}" />
+
+        <!-- Step 1: intake -->
+        <Border Grid.Row="1" Style="{StaticResource Card}">
+            <StackPanel>
+                <TextBlock Text="1 · Customer &amp; Vehicle" Style="{StaticResource H2}" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                        <TextBlock Text="Customer Name" />
+                        <TextBox Text="{Binding CustomerName, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="1" Margin="0,0,10,0">
+                        <TextBlock Text="Phone" />
+                        <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="2" Margin="0,0,10,0">
+                        <TextBlock Text="Car Number" />
+                        <TextBox Text="{Binding CarNumber, UpdateSourceTrigger=PropertyChanged}"
+                                 CharacterCasing="Upper" />
+                    </StackPanel>
+                    <Button Grid.Column="3" Content="🔍 Look up" VerticalAlignment="Bottom" Margin="0,0,0,8"
+                            Style="{StaticResource SecondaryButton}" Command="{Binding LookupCommand}" />
+                </Grid>
+                <TextBlock Text="{Binding LookupInfo}" Style="{StaticResource Muted}"
+                           Visibility="{Binding LookupInfo, Converter={StaticResource StringToVis}}" />
+            </StackPanel>
+        </Border>
+
+        <!-- Step 2 + 3 -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="320" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Catalogue -->
+            <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,14,0">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="2 · Services" Style="{StaticResource H2}" />
+                    <TextBlock DockPanel.Dock="Top" Text="Double-click to add to the bill" Style="{StaticResource Muted}" Margin="0,0,0,8" />
+                    <ListBox x:Name="CatalogueList" ItemsSource="{Binding Catalogue}"
+                             SelectedItem="{Binding SelectedService}"
+                             MouseDoubleClick="Catalogue_DoubleClick"
+                             HorizontalContentAlignment="Stretch"
+                             BorderThickness="0" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Border Padding="6" Margin="0,2">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                            <TextBlock Text="{Binding Name}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                            <TextBlock Text="{Binding Category}" Style="{StaticResource Muted}" />
+                                        </StackPanel>
+                                        <TextBlock Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Right"
+                                                   Text="{Binding DefaultPrice, StringFormat='₹{0:N0}'}" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource PrimaryBrush}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+            <!-- Bill -->
+            <Border Grid.Column="1" Style="{StaticResource Card}">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="3 · Bill" Style="{StaticResource H2}" />
+
+                    <!-- Totals + actions -->
+                    <StackPanel DockPanel.Dock="Bottom">
+                        <Grid Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="240" />
+                            </Grid.ColumnDefinitions>
+                            <!-- Discount + Notes stacked, filling the left column -->
+                            <StackPanel Grid.Column="0" Margin="0,0,20,0">
+                                <TextBlock Text="Discount ₹" Style="{StaticResource Label}" />
+                                <TextBox Width="140" HorizontalAlignment="Left"
+                                         Text="{Binding DiscountAmount, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBlock Text="Notes" Style="{StaticResource Label}" Margin="0,4,0,0" />
+                                <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}"
+                                         TextWrapping="Wrap" AcceptsReturn="True" Height="56"
+                                         VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Top" />
+                            </StackPanel>
+                            <!-- Totals in a fixed-width right column -->
+                            <Grid Grid.Column="1" VerticalAlignment="Bottom">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition /><RowDefinition /><RowDefinition />
+                                </Grid.RowDefinitions>
+                                <TextBlock Grid.Row="0" Grid.Column="0" Text="Sub Total" Margin="0,2" />
+                                <TextBlock Grid.Row="0" Grid.Column="1" HorizontalAlignment="Right"
+                                           Text="{Binding SubTotal, StringFormat='₹{0:N2}'}" Margin="0,2" />
+                                <TextBlock Grid.Row="1" Grid.Column="0" Text="GST" Margin="0,2" />
+                                <TextBlock Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right"
+                                           Text="{Binding TotalTax, StringFormat='₹{0:N2}'}" Margin="0,2" />
+                                <TextBlock Grid.Row="2" Grid.Column="0" Text="Grand Total" FontWeight="Bold" FontSize="16" Margin="0,2" />
+                                <TextBlock Grid.Row="2" Grid.Column="1" HorizontalAlignment="Right" FontWeight="Bold" FontSize="16"
+                                           Foreground="{StaticResource PrimaryBrush}"
+                                           Text="{Binding GrandTotal, StringFormat='₹{0:N2}'}" Margin="0,2" />
+                            </Grid>
+                        </Grid>
+
+                        <TextBlock Text="{Binding Error}" Foreground="{StaticResource DangerBrush}" Margin="0,8,0,0"
+                                   TextWrapping="Wrap" Visibility="{Binding Error, Converter={StaticResource StringToVis}}" />
+                        <Button Content="💾 Save Quotation" HorizontalAlignment="Right" Width="200" Height="42" Margin="0,10,0,0"
+                                Command="{Binding SaveQuotationCommand}"
+                                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}" />
+                    </StackPanel>
+
+                    <!-- Line items -->
+                    <DataGrid ItemsSource="{Binding Lines}" IsReadOnly="False" CanUserAddRows="False" Margin="0,8,0,0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Service / Item" Binding="{Binding Description}" Width="*" IsReadOnly="True" />
+                            <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="60" />
+                            <DataGridTextColumn Header="Rate ₹" Binding="{Binding UnitPrice}" Width="90" />
+                            <DataGridTextColumn Header="Disc ₹" Binding="{Binding DiscountAmount}" Width="80" />
+                            <DataGridTextColumn Header="GST%" Binding="{Binding GstRate}" Width="60" />
+                            <DataGridTextColumn Header="Total ₹" Binding="{Binding LineTotal, StringFormat='{}{0:N2}'}" Width="100" IsReadOnly="True" />
+                            <DataGridTemplateColumn Width="40">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="✕" Background="Transparent" Foreground="{StaticResource DangerBrush}"
+                                                Command="{Binding DataContext.RemoveLineCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}" Padding="4" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

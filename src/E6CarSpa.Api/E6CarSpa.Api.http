@@ -1,0 +1,6 @@
+@E6CarSpa.Api_HostAddress = http://localhost:5298
+
+GET {{E6CarSpa.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

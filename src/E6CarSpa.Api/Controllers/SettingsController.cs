@@ -1,0 +1,96 @@
+using E6CarSpa.Contracts;
+using E6CarSpa.Domain.Enums;
+using E6CarSpa.Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+
+namespace E6CarSpa.Api.Controllers;
+
+[Authorize]
+public class SettingsController(AppDbContext db) : ApiControllerBase
+{
+    [HttpGet]
+    public async Task<ActionResult<CompanySettingsDto>> Get()
+    {
+        var s = await db.CompanySettings.FirstAsync();
+        return new CompanySettingsDto(s.Name, s.AddressLine1, s.AddressLine2, s.City, s.State,
+            s.StateCode, s.Pincode, s.Phone, s.Email, s.Gstin, s.InvoicePrefix,
+            s.LastInvoiceSequence, s.DefaultGstRate, s.LogoBytes is { Length: > 0 });
+    }
+
+    /// <summary>Returns the company logo image (or 404 if none set).</summary>
+    [HttpGet("logo")]
+    public async Task<IActionResult> GetLogo()
+    {
+        var s = await db.CompanySettings.FirstAsync();
+        return s.LogoBytes is { Length: > 0 } ? File(s.LogoBytes, "image/png") : NotFound();
+    }
+
+    /// <summary>Uploads/replaces the company logo (base64-encoded PNG or JPG).</summary>
+    [HttpPut("logo")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> SetLogo(UploadLogoRequest req)
+    {
+        byte[] bytes;
+        try { bytes = Convert.FromBase64String(req.Base64); }
+        catch { return BadRequest(new { message = "Invalid image data." }); }
+        if (bytes.Length == 0) return BadRequest(new { message = "Empty image." });
+        if (bytes.Length > 2 * 1024 * 1024) return BadRequest(new { message = "Logo must be under 2 MB." });
+
+        var s = await db.CompanySettings.FirstAsync();
+        s.LogoBytes = bytes;
+        s.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+        return Ok();
+    }
+
+    /// <summary>Removes the company logo.</summary>
+    [HttpDelete("logo")]
+    [Authorize(Roles = "Admin")]
+    public async Task<IActionResult> DeleteLogo()
+    {
+        var s = await db.CompanySettings.FirstAsync();
+        s.LogoBytes = null;
+        s.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+        return Ok();
+    }
+
+    [HttpPut]
+    [Authorize(Roles = "Admin")]
+    public async Task<ActionResult<CompanySettingsDto>> Update(SaveCompanySettingsRequest req)
+    {
+        var s = await db.CompanySettings.FirstAsync();
+        s.Name = req.Name; s.AddressLine1 = req.AddressLine1; s.AddressLine2 = req.AddressLine2;
+        s.City = req.City; s.State = req.State; s.StateCode = req.StateCode; s.Pincode = req.Pincode;
+        s.Phone = req.Phone; s.Email = req.Email; s.Gstin = req.Gstin;
+        s.InvoicePrefix = req.InvoicePrefix; s.DefaultGstRate = req.DefaultGstRate;
+        s.UpdatedAt = DateTime.UtcNow;
+        await db.SaveChangesAsync();
+        return await Get();
+    }
+
+    [HttpGet("/api/dashboard")]
+    public async Task<ActionResult<DashboardSummaryDto>> Dashboard()
+    {
+        var (start, end) = Services.IndianTime.TodayUtc();
+
+        var jobsToday = await db.Invoices.CountAsync(i => i.CreatedAt >= start && i.CreatedAt < end);
+        var quotationsPending = await db.Invoices.CountAsync(i => i.Status == InvoiceStatus.Quotation);
+        var invoicesUnpaid = await db.Invoices.CountAsync(i => i.Status == InvoiceStatus.Invoiced);
+
+        var paymentsToday = await db.Payments.AsNoTracking()
+            .Where(p => p.PaidAt >= start && p.PaidAt < end).ToListAsync();
+        var lowStock = await db.Products.CountAsync(p => p.IsActive && p.StockQuantity <= p.ReorderLevel);
+
+        return new DashboardSummaryDto(
+            TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, Services.IndianTime.Zone).Date,
+            jobsToday, quotationsPending, invoicesUnpaid,
+            paymentsToday.Sum(p => p.Amount),
+            paymentsToday.Where(p => p.Method == PaymentMethod.Cash).Sum(p => p.Amount),
+            paymentsToday.Where(p => p.Method == PaymentMethod.Card).Sum(p => p.Amount),
+            paymentsToday.Where(p => p.Method == PaymentMethod.Upi).Sum(p => p.Amount),
+            lowStock);
+    }
+}

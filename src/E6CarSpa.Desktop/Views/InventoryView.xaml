@@ -1,0 +1,88 @@
+<UserControl x:Class="E6CarSpa.Desktop.Views.InventoryView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="28">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0">
+            <TextBlock Text="Inventory" Style="{StaticResource H1}" />
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <CheckBox Content="Low stock only" VerticalAlignment="Center" Margin="0,0,14,0"
+                          IsChecked="{Binding LowStockOnly}" />
+                <Button Content="Refresh" Style="{StaticResource SecondaryButton}" Command="{Binding RefreshCommand}" />
+            </StackPanel>
+        </Grid>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="320" />
+            </Grid.ColumnDefinitions>
+
+            <!-- Products -->
+            <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,14,0">
+                <DataGrid ItemsSource="{Binding Products}" SelectedItem="{Binding SelectedProduct}" SelectionMode="Single">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Product" Binding="{Binding Name}" Width="*" />
+                        <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="110" />
+                        <DataGridTextColumn Header="In Stock" Binding="{Binding StockQuantity, StringFormat='{}{0:N0}'}" Width="90" />
+                        <DataGridTextColumn Header="Reorder" Binding="{Binding ReorderLevel, StringFormat='{}{0:N2}'}" Width="80" />
+                        <DataGridTextColumn Header="Cost ₹" Binding="{Binding UnitCost, StringFormat='{}{0:N2}'}" Width="80" />
+                        <DataGridTemplateColumn Header="" Width="60">
+                            <DataGridTemplateColumn.CellTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="LOW" Foreground="White" Background="#C62828" Padding="6,2"
+                                               HorizontalAlignment="Center" FontSize="10" FontWeight="Bold"
+                                               Visibility="{Binding IsLowStock, Converter={StaticResource BoolToVis}}" />
+                                </DataTemplate>
+                            </DataGridTemplateColumn.CellTemplate>
+                        </DataGridTemplateColumn>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+
+            <!-- Actions -->
+            <StackPanel Grid.Column="1">
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Selected Product" Style="{StaticResource H2}" />
+                        <TextBlock Text="{Binding SelectedProduct.Name, FallbackValue='— none —'}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Receive Stock (Purchase)" Style="{StaticResource H2}" />
+                        <TextBlock Text="Quantity" />
+                        <TextBox Text="{Binding PurchaseQuantity, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Text="Unit Cost ₹" />
+                        <TextBox Text="{Binding PurchaseCost, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Text="Reference (supplier bill)" />
+                        <TextBox Text="{Binding PurchaseReference, UpdateSourceTrigger=PropertyChanged}" />
+                        <Button Content="➕ Add to Stock" Command="{Binding ReceivePurchaseCommand}" Margin="0,6,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Adjust Stock (Stock-take)" Style="{StaticResource H2}" />
+                        <TextBlock Text="Delta (+ / −)" />
+                        <TextBox Text="{Binding AdjustDelta, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBlock Text="Note" />
+                        <TextBox Text="{Binding AdjustNote, UpdateSourceTrigger=PropertyChanged}" />
+                        <Button Content="Apply Adjustment" Style="{StaticResource SecondaryButton}"
+                                Command="{Binding AdjustCommand}" Margin="0,6,0,0" />
+                    </StackPanel>
+                </Border>
+
+                <TextBlock Text="{Binding Info}" Foreground="{StaticResource SuccessBrush}" TextWrapping="Wrap"
+                           Visibility="{Binding Info, Converter={StaticResource StringToVis}}" />
+                <TextBlock Text="{Binding Error}" Foreground="{StaticResource DangerBrush}" TextWrapping="Wrap"
+                           Visibility="{Binding Error, Converter={StaticResource StringToVis}}" />
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>
