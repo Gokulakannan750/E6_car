@@ -61,14 +61,11 @@ public static class DbInitializer
         if (!await db.Services.AnyAsync())
             db.Services.AddRange(SeedServices());
 
-        if (!await db.Products.AnyAsync())
-            db.Products.AddRange(SeedProducts());
+
 
         await db.SaveChangesAsync();
 
-        // Wire a basic bill-of-materials once both services and products exist.
-        if (!await db.ServiceProducts.AnyAsync())
-            await SeedBillOfMaterialsAsync(db);
+
     }
 
     private static List<Service> SeedServices() =>
