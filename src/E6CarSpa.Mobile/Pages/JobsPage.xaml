@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:c="clr-namespace:E6CarSpa.Contracts;assembly=E6CarSpa.Contracts"
+    x:Class="E6CarSpa.Mobile.Pages.JobsPage"
+    Title="Jobs"
+    BackgroundColor="#0F0F0F">
+
+    <Grid RowDefinitions="Auto,Auto,*" Padding="16" RowSpacing="10">
+
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <SearchBar x:Name="Search" Grid.Column="0" Placeholder="Search name / car / number"
+                       TextColor="White" PlaceholderColor="#888" BackgroundColor="#1E1E1E"
+                       SearchButtonPressed="OnReload" />
+            <Picker x:Name="StatusPicker" Grid.Column="1" WidthRequest="130" Title="Status"
+                    TextColor="White" TitleColor="#888" BackgroundColor="#1E1E1E"
+                    SelectedIndexChanged="OnReload" />
+        </Grid>
+
+        <Label Grid.Row="1" x:Name="EmptyLabel" Text="No jobs found." TextColor="#888"
+               FontSize="14" IsVisible="False" />
+
+        <RefreshView Grid.Row="2" x:Name="Refresh" Refreshing="OnRefreshing">
+            <CollectionView x:Name="List" SelectionMode="Single" SelectionChanged="OnSelected">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate x:DataType="c:InvoiceListItemDto">
+                        <Border BackgroundColor="#1E1E1E" StrokeThickness="0" Padding="14"
+                                Margin="0,0,0,8" StrokeShape="RoundRectangle 10">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                    <Label Text="{Binding CustomerName}" TextColor="White"
+                                           FontSize="16" FontAttributes="Bold" />
+                                    <Label Text="{Binding CarNumber}" TextColor="#888" FontSize="13" />
+                                    <Label Text="{Binding InvoiceNumber, StringFormat='No. {0}'}"
+                                           TextColor="#888" FontSize="12" />
+                                </VerticalStackLayout>
+                                <VerticalStackLayout Grid.Column="1" Spacing="2" HorizontalOptions="End">
+                                    <Label Text="{Binding GrandTotal, StringFormat='₹{0:N0}'}"
+                                           TextColor="White" FontSize="16" FontAttributes="Bold"
+                                           HorizontalOptions="End" />
+                                    <Label Text="{Binding Status}" TextColor="#B71C1C" FontSize="12"
+                                           HorizontalOptions="End" />
+                                    <Label Text="{Binding Balance, StringFormat='Due ₹{0:N0}'}"
+                                           TextColor="#FF8A65" FontSize="12" HorizontalOptions="End" />
+                                </VerticalStackLayout>
+                            </Grid>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+        <Label Grid.Row="2" x:Name="ErrorLabel" TextColor="#FF6B6B" FontSize="13"
+               IsVisible="False" VerticalOptions="Start" />
+    </Grid>
+</ContentPage>

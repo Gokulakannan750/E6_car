@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- E6 Car Spa brand: red accent, near-black status bar to match the dark UI. -->
+    <color name="colorPrimary">#B71C1C</color>
+    <color name="colorPrimaryDark">#0F0F0F</color>
+    <color name="colorAccent">#B71C1C</color>
+</resources>

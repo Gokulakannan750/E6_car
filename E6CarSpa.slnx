@@ -5,5 +5,6 @@
     <Project Path="src/E6CarSpa.Desktop/E6CarSpa.Desktop.csproj" />
     <Project Path="src/E6CarSpa.Domain/E6CarSpa.Domain.csproj" />
     <Project Path="src/E6CarSpa.Infrastructure/E6CarSpa.Infrastructure.csproj" />
+    <Project Path="src/E6CarSpa.Mobile/E6CarSpa.Mobile.csproj" />
   </Folder>
 </Solution>

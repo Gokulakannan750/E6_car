@@ -1,0 +1,185 @@
+using System.Collections.ObjectModel;
+using E6CarSpa.Contracts;
+using E6CarSpa.Mobile.Services;
+using E6CarSpa.Mobile.ViewModels;
+
+namespace E6CarSpa.Mobile.Pages;
+
+public partial class NewJobPage : ContentPage
+{
+    private readonly ObservableCollection<LineItemVm> _lines = new();
+    private List<ServiceDto> _catalogue = new();
+    private bool _loadedOnce;
+
+    public NewJobPage()
+    {
+        InitializeComponent();
+        BindableLayout.SetItemsSource(LinesHost, _lines);
+        _lines.CollectionChanged += (_, _) => { NoLinesLabel.IsVisible = _lines.Count == 0; Recalc(); };
+    }
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        if (_loadedOnce) return;
+        _loadedOnce = true;
+        try
+        {
+            _catalogue = await AppServices.Api.GetServicesAsync() ?? new();
+            ServicePicker.ItemsSource = _catalogue;
+        }
+        catch (Exception ex)
+        {
+            ShowError(ex is ApiException a ? a.Message : "Cannot load the service list.");
+        }
+    }
+
+    private async void OnLookupClicked(object? sender, EventArgs e)
+    {
+        ErrorLabel.IsVisible = false;
+        var phone = PhoneEntry.Text?.Trim() ?? "";
+        var car = CarNumberEntry.Text?.Trim() ?? "";
+        if (phone.Length == 0 && car.Length == 0)
+        {
+            ShowError("Enter a phone or car number to look up.");
+            return;
+        }
+        try
+        {
+            CustomerLookupResult? result = null;
+            if (phone.Length > 0) result = await AppServices.Api.LookupByPhoneAsync(phone);
+            if ((result is null || !result.Found) && car.Length > 0)
+                result = await AppServices.Api.LookupByCarAsync(car);
+
+            if (result is { Found: true, Customer: { } c })
+            {
+                NameEntry.Text = c.Name;
+                PhoneEntry.Text = c.Phone;
+                if (string.IsNullOrWhiteSpace(CarNumberEntry.Text) && c.Vehicles.Count == 1)
+                {
+                    CarNumberEntry.Text = c.Vehicles[0].CarNumber;
+                    CarModelEntry.Text = c.Vehicles[0].CarModel;
+                }
+                LookupInfo.Text = $"Existing customer — {c.Vehicles.Count} vehicle(s) on file.";
+            }
+            else
+            {
+                LookupInfo.Text = "New customer.";
+            }
+            LookupInfo.IsVisible = true;
+        }
+        catch (Exception ex)
+        {
+            ShowError(ex is ApiException a ? a.Message : "Lookup failed.");
+        }
+    }
+
+    private void OnAddServiceClicked(object? sender, EventArgs e)
+    {
+        if (ServicePicker.SelectedItem is not ServiceDto s) return;
+        var line = new LineItemVm
+        {
+            ServiceId = s.Id,
+            Description = s.Name,
+            Quantity = 1m,
+            UnitPrice = s.DefaultPrice,
+            GstRate = s.GstRate
+        };
+        line.Changed += Recalc;
+        _lines.Add(line);
+    }
+
+    private void OnRemoveLineClicked(object? sender, EventArgs e)
+    {
+        if (sender is Button { BindingContext: LineItemVm line })
+        {
+            line.Changed -= Recalc;
+            _lines.Remove(line);
+        }
+    }
+
+    private void OnTotalsInputChanged(object? sender, TextChangedEventArgs e) => Recalc();
+    private void OnGstToggled(object? sender, ToggledEventArgs e) => Recalc();
+
+    private void Recalc()
+    {
+        var subTotal = _lines.Sum(l => l.Quantity * l.UnitPrice);
+        var lineDiscounts = _lines.Sum(l => l.DiscountAmount);
+        var headerDiscount = ParseDecimal(DiscountEntry.Text);
+        var tax = GstSwitch.IsToggled ? _lines.Sum(l => l.TaxAmount) : 0m;
+        var grand = Math.Max(0, subTotal - lineDiscounts - headerDiscount + tax);
+
+        SubTotalLabel.Text = $"₹{subTotal:N0}";
+        TaxLabel.Text = $"₹{tax:N0}";
+        GrandLabel.Text = $"₹{grand:N0}";
+    }
+
+    private async void OnSaveClicked(object? sender, EventArgs e)
+    {
+        ErrorLabel.IsVisible = false;
+        var name = NameEntry.Text?.Trim() ?? "";
+        var phone = PhoneEntry.Text?.Trim() ?? "";
+        var car = CarNumberEntry.Text?.Trim() ?? "";
+
+        if (name.Length == 0 || phone.Length == 0 || car.Length == 0)
+        {
+            ShowError("Customer name, phone and car number are required.");
+            return;
+        }
+        if (_lines.Count == 0)
+        {
+            ShowError("Add at least one service.");
+            return;
+        }
+
+        SetBusy(true);
+        try
+        {
+            var req = new CreateQuotationRequest(
+                name, phone, car, CarModelEntry.Text?.Trim() ?? "",
+                ParseDecimal(DiscountEntry.Text),
+                string.IsNullOrWhiteSpace(NotesEditor.Text) ? null : NotesEditor.Text.Trim(),
+                _lines.Select(l => new InvoiceItemInput(
+                    l.ServiceId, l.ProductId, l.Description, l.Quantity, l.UnitPrice, l.DiscountAmount)).ToList(),
+                GstSwitch.IsToggled);
+
+            var invoice = await AppServices.Api.CreateQuotationAsync(req);
+            ResetForm();
+            await Shell.Current.GoToAsync($"invoice?id={invoice.Id}");
+        }
+        catch (Exception ex)
+        {
+            ShowError(ex is ApiException a ? a.Message : "Could not save the quotation.");
+        }
+        finally
+        {
+            SetBusy(false);
+        }
+    }
+
+    private void ResetForm()
+    {
+        NameEntry.Text = PhoneEntry.Text = CarNumberEntry.Text = CarModelEntry.Text = NotesEditor.Text = "";
+        DiscountEntry.Text = "0";
+        GstSwitch.IsToggled = true;
+        LookupInfo.IsVisible = false;
+        foreach (var l in _lines) l.Changed -= Recalc;
+        _lines.Clear();
+    }
+
+    private static decimal ParseDecimal(string? s) =>
+        decimal.TryParse(s, out var v) ? v : 0m;
+
+    private void ShowError(string message)
+    {
+        ErrorLabel.Text = message;
+        ErrorLabel.IsVisible = true;
+    }
+
+    private void SetBusy(bool busy)
+    {
+        Busy.IsRunning = busy;
+        Busy.IsVisible = busy;
+        SaveButton.IsEnabled = !busy;
+    }
+}

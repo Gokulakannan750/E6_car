@@ -10,6 +10,9 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <!-- Pin EF Core Relational to 10.0.9 so the whole solution unifies on one EF version.
+         (Npgsql 10.0.2 — the latest — only requires >= 10.0.4, so 10.0.9 satisfies it.) -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.9" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="10.0.2" />
   </ItemGroup>
 

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Shell
+    x:Class="E6CarSpa.Mobile.AppShell"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:pages="clr-namespace:E6CarSpa.Mobile.Pages"
+    Title="E6 Car Spa"
+    FlyoutBehavior="Disabled"
+    BackgroundColor="#1A1A1A"
+    Shell.BackgroundColor="#1A1A1A"
+    Shell.ForegroundColor="White"
+    Shell.TitleColor="White"
+    Shell.TabBarBackgroundColor="#1A1A1A"
+    Shell.TabBarForegroundColor="#B71C1C"
+    Shell.TabBarTitleColor="#B71C1C"
+    Shell.TabBarUnselectedColor="#888888">
+
+    <TabBar>
+        <ShellContent Title="Dashboard"
+                      ContentTemplate="{DataTemplate pages:DashboardPage}" Route="dashboard" />
+        <ShellContent Title="New Job"
+                      ContentTemplate="{DataTemplate pages:NewJobPage}" Route="newjob" />
+        <ShellContent Title="Jobs"
+                      ContentTemplate="{DataTemplate pages:JobsPage}" Route="jobs" />
+        <ShellContent Title="Reports"
+                      ContentTemplate="{DataTemplate pages:ReportsPage}" Route="reports" />
+        <ShellContent Title="Settings"
+                      ContentTemplate="{DataTemplate pages:SettingsPage}" Route="settings" />
+    </TabBar>
+
+</Shell>

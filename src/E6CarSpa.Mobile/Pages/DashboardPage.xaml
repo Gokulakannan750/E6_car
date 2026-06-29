@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="E6CarSpa.Mobile.Pages.DashboardPage"
+    Title="Dashboard"
+    BackgroundColor="#0F0F0F">
+
+    <RefreshView x:Name="Refresh" Refreshing="OnRefreshing">
+        <ScrollView>
+            <VerticalStackLayout Padding="16" Spacing="14">
+
+                <Label x:Name="DateLabel" TextColor="#888" FontSize="13" />
+
+                <!-- Collected today -->
+                <Border BackgroundColor="#B71C1C" StrokeThickness="0" Padding="18"
+                        StrokeShape="RoundRectangle 14">
+                    <VerticalStackLayout Spacing="2">
+                        <Label Text="Collected Today" TextColor="#FFD7D7" FontSize="14" />
+                        <Label x:Name="CollectedLabel" Text="₹0" TextColor="White"
+                               FontSize="34" FontAttributes="Bold" />
+                        <Label x:Name="SplitLabel" TextColor="#FFD7D7" FontSize="13" Margin="0,4,0,0" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Count tiles -->
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
+                    <Border Grid.Row="0" Grid.Column="0" BackgroundColor="#1E1E1E" StrokeThickness="0"
+                            Padding="16" StrokeShape="RoundRectangle 12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label x:Name="JobsLabel" Text="0" TextColor="White" FontSize="26" FontAttributes="Bold" />
+                            <Label Text="Jobs today" TextColor="#888" FontSize="13" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Row="0" Grid.Column="1" BackgroundColor="#1E1E1E" StrokeThickness="0"
+                            Padding="16" StrokeShape="RoundRectangle 12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label x:Name="QuotationsLabel" Text="0" TextColor="White" FontSize="26" FontAttributes="Bold" />
+                            <Label Text="Quotations pending" TextColor="#888" FontSize="13" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Row="1" Grid.Column="0" BackgroundColor="#1E1E1E" StrokeThickness="0"
+                            Padding="16" StrokeShape="RoundRectangle 12">
+                        <VerticalStackLayout Spacing="2">
+                            <Label x:Name="UnpaidLabel" Text="0" TextColor="White" FontSize="26" FontAttributes="Bold" />
+                            <Label Text="Invoices unpaid" TextColor="#888" FontSize="13" />
+                        </VerticalStackLayout>
+                    </Border>
+                    <Border Grid.Row="1" Grid.Column="1" BackgroundColor="#1E1E1E" StrokeThickness="0"
+                            Padding="16" StrokeShape="RoundRectangle 12">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnLowStockTapped" />
+                        </Border.GestureRecognizers>
+                        <VerticalStackLayout Spacing="2">
+                            <Label x:Name="LowStockLabel" Text="0" TextColor="#FF8A65" FontSize="26" FontAttributes="Bold" />
+                            <Label Text="Low-stock items  ›" TextColor="#888" FontSize="13" />
+                        </VerticalStackLayout>
+                    </Border>
+                </Grid>
+
+                <!-- Active jobs -->
+                <Label Text="Active jobs" TextColor="White" FontSize="18" FontAttributes="Bold" Margin="2,8,0,0" />
+                <Label x:Name="NoJobsLabel" Text="No active jobs right now."
+                       TextColor="#888" FontSize="14" IsVisible="False" />
+
+                <CollectionView x:Name="JobsList">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border BackgroundColor="#1E1E1E" StrokeThickness="0" Padding="14"
+                                    Margin="0,0,0,8" StrokeShape="RoundRectangle 10">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                        <Label Text="{Binding VehicleNumber}" TextColor="White"
+                                               FontSize="16" FontAttributes="Bold" />
+                                        <Label Text="{Binding VehicleModel}" TextColor="#888" FontSize="13" />
+                                        <Label Text="{Binding Status}" TextColor="#B71C1C" FontSize="12" />
+                                    </VerticalStackLayout>
+                                    <Label Grid.Column="1" Text="{Binding Total, StringFormat='₹{0:N0}'}"
+                                           TextColor="White" FontSize="16" FontAttributes="Bold"
+                                           VerticalOptions="Center" />
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+                <Label x:Name="ErrorLabel" TextColor="#FF6B6B" FontSize="13" IsVisible="False" />
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </RefreshView>
+</ContentPage>

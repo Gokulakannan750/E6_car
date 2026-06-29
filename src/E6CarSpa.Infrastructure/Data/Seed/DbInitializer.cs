@@ -14,7 +14,10 @@ public static class DbInitializer
 {
     public static async Task SeedAsync(AppDbContext db, ILogger? logger = null)
     {
-        await db.Database.MigrateAsync();
+        // Migrations only apply to a relational provider; the in-memory provider used by
+        // integration tests has no schema to migrate.
+        if (db.Database.IsRelational())
+            await db.Database.MigrateAsync();
 
         if (!await db.CompanySettings.AnyAsync())
         {
