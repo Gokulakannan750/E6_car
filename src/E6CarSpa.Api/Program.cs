@@ -18,6 +18,16 @@ var builder = WebApplication.CreateBuilder(args);
 // This also sets the content root to the exe's folder, so appsettings.json is always found.
 builder.Host.UseWindowsService(o => o.ServiceName = "E6 Car Spa API");
 
+// ----- Kestrel hardening -----
+builder.WebHost.ConfigureKestrel(options =>
+{
+    // Don't advertise the runtime/version in the Server response header.
+    options.AddServerHeader = false;
+    // Cap request bodies at 5 MB so a malformed/oversized upload can't exhaust memory.
+    // (Logo uploads are separately capped at 2 MB in app logic.)
+    options.Limits.MaxRequestBodySize = 5 * 1024 * 1024;
+});
+
 // ----- Configuration -----
 // Allow overriding secrets via environment variables without editing appsettings.json.
 // On the shop PC set:  E6_DB_PASSWORD = <real password>
@@ -152,8 +162,7 @@ app.Use(async (context, next) =>
     context.Response.Headers["X-Frame-Options"] = "DENY";
     context.Response.Headers["Referrer-Policy"] = "no-referrer";
     context.Response.Headers["X-Permitted-Cross-Domain-Policies"] = "none";
-    // Remove the Server header to avoid advertising the runtime version.
-    context.Response.Headers.Remove("Server");
+    // (Server header is suppressed at the Kestrel level via AddServerHeader = false.)
     await next();
 });
 
