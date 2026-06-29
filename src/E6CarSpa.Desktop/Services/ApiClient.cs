@@ -27,6 +27,12 @@ public class ApiClient(HttpClient http) : IApiClient
         return resp.User;
     }
 
+    public void Logout()
+    {
+        http.DefaultRequestHeaders.Authorization = null;
+        CurrentUser = null;
+    }
+
     // ---------- Intake / customers ----------
     public Task<CustomerLookupResult?> LookupByPhoneAsync(string phone) =>
         GetAsync<CustomerLookupResult>($"api/customers/by-phone/{Uri.EscapeDataString(phone)}");

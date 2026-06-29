@@ -13,6 +13,7 @@
 AppName={#MyAppName}
 AppVersion={#MyAppVersion}
 AppPublisher={#MyAppPublisher}
+LicenseFile=license.txt
 DefaultDirName={autopf}\E6 Car Spa
 DefaultGroupName=E6 Car Spa
 DisableProgramGroupPage=yes
@@ -69,8 +70,6 @@ Filename: "{sys}\sc.exe"; Parameters: "failure {#ApiServiceName} reset= 86400 ac
 ; Allow the API port through the firewall (needed only if other PCs connect over the LAN).
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""E6 Car Spa API"" dir=in action=allow protocol=TCP localport=5080"; Flags: runhidden
 Filename: "{sys}\sc.exe"; Parameters: "start {#ApiServiceName}"; Flags: runhidden
-; Offer to open the config so the installer can point it at the database.
-Filename: "notepad.exe"; Parameters: """{app}\Api\appsettings.json"""; Description: "Edit API configuration (database connection) now"; Flags: postinstall skipifsilent shellexec
 
 [UninstallRun]
 Filename: "{sys}\sc.exe"; Parameters: "stop {#ApiServiceName}"; Flags: runhidden; RunOnceId: "StopSvc"

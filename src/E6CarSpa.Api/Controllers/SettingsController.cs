@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace E6CarSpa.Api.Controllers;
 
-[Authorize]
+
 public class SettingsController(AppDbContext db) : ApiControllerBase
 {
     [HttpGet]
@@ -84,6 +84,12 @@ public class SettingsController(AppDbContext db) : ApiControllerBase
             .Where(p => p.PaidAt >= start && p.PaidAt < end).ToListAsync();
         var lowStock = await db.Products.CountAsync(p => p.IsActive && p.StockQuantity <= p.ReorderLevel);
 
+        var activeJobs = await db.Invoices.AsNoTracking()
+            .Where(i => i.CreatedAt >= start && i.CreatedAt < end && (i.Status == InvoiceStatus.Quotation || i.Status == InvoiceStatus.InProgress))
+            .OrderByDescending(i => i.CreatedAt)
+            .Select(i => new LiveJobDto(i.InvoiceNumber, i.Vehicle.CarNumber, i.Vehicle.CarModel, i.Status, i.GrandTotal))
+            .ToListAsync();
+
         return new DashboardSummaryDto(
             TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, Services.IndianTime.Zone).Date,
             jobsToday, quotationsPending, invoicesUnpaid,
@@ -91,6 +97,7 @@ public class SettingsController(AppDbContext db) : ApiControllerBase
             paymentsToday.Where(p => p.Method == PaymentMethod.Cash).Sum(p => p.Amount),
             paymentsToday.Where(p => p.Method == PaymentMethod.Card).Sum(p => p.Amount),
             paymentsToday.Where(p => p.Method == PaymentMethod.Upi).Sum(p => p.Amount),
-            lowStock);
+            lowStock,
+            activeJobs);
     }
 }

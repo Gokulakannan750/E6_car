@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace E6CarSpa.Api.Controllers;
 
-[Authorize]
+
 public class ServicesController(AppDbContext db) : ApiControllerBase
 {
     [HttpGet]

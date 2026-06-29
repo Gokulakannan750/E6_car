@@ -25,21 +25,7 @@ public partial class SettingsViewModel(IApiClient api) : ObservableObject, IAsyn
     [ObservableProperty] private decimal _defaultGstRate;
     [ObservableProperty] private long _lastInvoiceSequence;
 
-    // ----- Users -----
-    public ObservableCollection<UserDto> Users { get; } = new();
-    public List<UserRole> Roles { get; } = [UserRole.Admin, UserRole.Manager, UserRole.Worker];
 
-    [ObservableProperty] private UserDto? _selectedUser;
-    [ObservableProperty] private string _editFullName = "";
-    [ObservableProperty] private UserRole _editRole = UserRole.Worker;
-    [ObservableProperty] private bool _editActive = true;
-    [ObservableProperty] private string _editNewPassword = "";
-
-    // New user
-    [ObservableProperty] private string _newFullName = "";
-    [ObservableProperty] private string _newUsername = "";
-    [ObservableProperty] private string _newPassword = "";
-    [ObservableProperty] private UserRole _newRole = UserRole.Worker;
 
     // Change my password
     [ObservableProperty] private string _myNewPassword = "";
@@ -57,7 +43,6 @@ public partial class SettingsViewModel(IApiClient api) : ObservableObject, IAsyn
     public async Task InitializeAsync()
     {
         await LoadSettingsAsync();
-        await LoadUsersAsync();
     }
 
     private async Task LoadSettingsAsync()
@@ -101,25 +86,7 @@ public partial class SettingsViewModel(IApiClient api) : ObservableObject, IAsyn
         catch (Exception ex) { Error = ex.Message; }
     }
 
-    private async Task LoadUsersAsync()
-    {
-        try
-        {
-            var users = await api.GetUsersAsync() ?? new();
-            Users.Clear();
-            foreach (var u in users) Users.Add(u);
-        }
-        catch (Exception ex) { Error = ex.Message; }
-    }
 
-    partial void OnSelectedUserChanged(UserDto? value)
-    {
-        if (value is null) return;
-        EditFullName = value.FullName;
-        EditRole = value.Role;
-        EditActive = value.IsActive;
-        EditNewPassword = "";
-    }
 
     [RelayCommand]
     private async Task SaveSettingsAsync()
@@ -152,36 +119,5 @@ public partial class SettingsViewModel(IApiClient api) : ObservableObject, IAsyn
         catch (Exception ex) { Error = ex.Message; }
     }
 
-    [RelayCommand]
-    private async Task AddUserAsync()
-    {
-        if (string.IsNullOrWhiteSpace(NewFullName) || string.IsNullOrWhiteSpace(NewUsername) || string.IsNullOrWhiteSpace(NewPassword))
-        { Error = "Full name, username and password are required."; return; }
-        try
-        {
-            Info = ""; Error = "";
-            await api.CreateUserAsync(new CreateUserRequest(NewFullName.Trim(), NewUsername.Trim(), NewPassword, NewRole));
-            NewFullName = NewUsername = NewPassword = "";
-            NewRole = UserRole.Worker;
-            await LoadUsersAsync();
-            Info = "User created.";
-        }
-        catch (Exception ex) { Error = ex.Message; }
-    }
 
-    [RelayCommand]
-    private async Task SaveUserAsync()
-    {
-        if (SelectedUser is null) { Error = "Select a user to edit."; return; }
-        try
-        {
-            Info = ""; Error = "";
-            var pwd = string.IsNullOrWhiteSpace(EditNewPassword) ? null : EditNewPassword;
-            await api.UpdateUserAsync(SelectedUser.Id, new UpdateUserRequest(EditFullName.Trim(), EditRole, EditActive, pwd));
-            EditNewPassword = "";
-            await LoadUsersAsync();
-            Info = "User updated.";
-        }
-        catch (Exception ex) { Error = ex.Message; }
-    }
 }

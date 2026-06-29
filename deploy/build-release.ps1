@@ -52,6 +52,14 @@ try {
     if ($LASTEXITCODE) { throw 'Installer compilation failed.' }
 
     $out = Get-Item "deploy\Output\E6CarSpa-Setup.exe"
+    
+    Write-Host "== Signing Installer ==" -ForegroundColor Cyan
+    $cert = Get-ChildItem "Cert:\CurrentUser\My" | Where-Object Subject -match "CN=Trovotech Solutions" | Select-Object -First 1
+    if ($cert) {
+        Set-AuthenticodeSignature -FilePath $out.FullName -Certificate $cert -TimestampServer "http://timestamp.digicert.com" | Out-Null
+        Write-Host "Signed installer with self-signed certificate." -ForegroundColor Green
+    }
+
     Write-Host ("== DONE -> {0} ({1:N1} MB) ==" -f $out.FullName, ($out.Length / 1MB)) -ForegroundColor Green
     Write-Host "Reinstall this on the shop PC to apply the changes." -ForegroundColor Yellow
 }

@@ -134,65 +134,7 @@
                 </ScrollViewer>
             </TabItem>
 
-            <!-- Staff Management Tab -->
-            <TabItem Header="Staff Management">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,16,0,0">
-                    <StackPanel>
-                        <!-- Users -->
-                        <Border Style="{StaticResource Card}">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="300" />
-                                </Grid.ColumnDefinitions>
 
-                                <StackPanel Grid.Column="0" Margin="0,0,14,0">
-                                    <TextBlock Text="Staff Users" Style="{StaticResource H2}" />
-                                    <DataGrid ItemsSource="{Binding Users}" SelectedItem="{Binding SelectedUser}" SelectionMode="Single" Height="220">
-                                        <DataGrid.Columns>
-                                            <DataGridTextColumn Header="Name" Binding="{Binding FullName}" Width="*" />
-                                            <DataGridTextColumn Header="Username" Binding="{Binding Username}" Width="120" />
-                                            <DataGridTextColumn Header="Role" Binding="{Binding Role}" Width="90" />
-                                            <DataGridCheckBoxColumn Header="Active" Binding="{Binding IsActive}" Width="60" />
-                                        </DataGrid.Columns>
-                                    </DataGrid>
-                                </StackPanel>
-
-                                <StackPanel Grid.Column="1">
-                                    <Border Style="{StaticResource Card}" Margin="0,0,0,10">
-                                        <StackPanel>
-                                            <TextBlock Text="Edit Selected User" Style="{StaticResource H2}" />
-                                            <TextBlock Text="Full name" />
-                                            <TextBox Text="{Binding EditFullName, UpdateSourceTrigger=PropertyChanged}" />
-                                            <TextBlock Text="Role" />
-                                            <ComboBox ItemsSource="{Binding Roles}" SelectedItem="{Binding EditRole}" />
-                                            <CheckBox Content="Active" IsChecked="{Binding EditActive}" Margin="0,4" />
-                                            <TextBlock Text="Reset password (optional)" />
-                                            <PasswordBox x:Name="EditPasswordBox" PasswordChanged="EditPassword_Changed" />
-                                            <Button Content="Save User" Style="{StaticResource SecondaryButton}" Command="{Binding SaveUserCommand}" Margin="0,6,0,0" />
-                                        </StackPanel>
-                                    </Border>
-
-                                    <Border Style="{StaticResource Card}">
-                                        <StackPanel>
-                                            <TextBlock Text="Add New User" Style="{StaticResource H2}" />
-                                            <TextBlock Text="Full name" />
-                                            <TextBox Text="{Binding NewFullName, UpdateSourceTrigger=PropertyChanged}" />
-                                            <TextBlock Text="Username" />
-                                            <TextBox Text="{Binding NewUsername, UpdateSourceTrigger=PropertyChanged}" />
-                                            <TextBlock Text="Password" />
-                                            <PasswordBox x:Name="NewPasswordBox" PasswordChanged="NewPassword_Changed" />
-                                            <TextBlock Text="Role" />
-                                            <ComboBox ItemsSource="{Binding Roles}" SelectedItem="{Binding NewRole}" />
-                                            <Button Content="➕ Add User" Command="{Binding AddUserCommand}" Margin="0,6,0,0" />
-                                        </StackPanel>
-                                    </Border>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
-                    </StackPanel>
-                </ScrollViewer>
-            </TabItem>
         </TabControl>
 
         <StackPanel Grid.Row="2" Margin="0,16,0,0">

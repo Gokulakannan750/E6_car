@@ -20,4 +20,7 @@ public record DashboardSummaryDto(
     DateTime Date,
     int JobsToday, int QuotationsPending, int InvoicesUnpaid,
     decimal CollectedToday, decimal CashToday, decimal CardToday, decimal UpiToday,
-    int LowStockCount);
+    int LowStockCount,
+    List<LiveJobDto> ActiveJobs);
+
+public record LiveJobDto(string InvoiceNumber, string VehicleNumber, string VehicleModel, InvoiceStatus Status, decimal Total);

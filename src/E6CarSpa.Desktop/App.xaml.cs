@@ -51,17 +51,24 @@ public partial class App : Application
         {
             Dispatcher.Invoke(() =>
             {
-                var login = Services.GetRequiredService<LoginWindow>();
-                login.Show();
                 var shell = Services.GetService<ShellWindow>();
-                shell?.Hide();
+                var login = Services.GetRequiredService<LoginWindow>();
+                if (shell != null && shell.IsVisible)
+                {
+                    login.Owner = shell;
+                    login.ShowDialog();
+                }
+                else
+                {
+                    login.Show();
+                }
             });
         };
 
         CleanupOldPdfs();
 
-        var loginWindow = Services.GetRequiredService<LoginWindow>();
-        loginWindow.Show();
+        var shellWindow = Services.GetRequiredService<ShellWindow>();
+        shellWindow.Show();
     }
 
     private void CleanupOldPdfs()

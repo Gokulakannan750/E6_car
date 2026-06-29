@@ -28,11 +28,9 @@ public partial class LoginWindow : Window
     {
         if (await _vm.LoginAsync(PasswordBox.Password))
         {
-            var shell = App.Services.GetRequiredService<ShellWindow>();
-            shell.Show();
             Close();
         }
     }
 
-    private void Close_Click(object sender, RoutedEventArgs e) => Application.Current.Shutdown();
+    private void Close_Click(object sender, RoutedEventArgs e) => Close();
 }

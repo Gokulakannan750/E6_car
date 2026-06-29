@@ -84,7 +84,8 @@
                         </StackPanel>
                     </Border>
                     <Button Content="🚪  Log out" Click="Logout_Click" Style="{StaticResource NavButton}"
-                            Margin="0,6,0,0" Foreground="#E0E8F0" />
+                            Margin="0,6,0,0" Foreground="#E0E8F0"
+                            Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVis}}" />
                 </StackPanel>
 
                 <!-- Navigation links -->
@@ -94,12 +95,9 @@
                     <Button Content="➕  New Job" Style="{StaticResource NavButton}" Command="{Binding ShowNewJobCommand}" />
                     <Button Content="🧾  Jobs &amp; Invoices" Style="{StaticResource NavButton}" Command="{Binding ShowJobsCommand}" />
                     <Button Content="📦  Inventory" Style="{StaticResource NavButton}" Command="{Binding ShowInventoryCommand}" />
-                    <Button Content="🗂  Catalogue" Style="{StaticResource NavButton}" Command="{Binding ShowCatalogueCommand}"
-                            Visibility="{Binding IsManagerOrAdmin, Converter={StaticResource BoolToVis}}" />
-                    <Button Content="📈  Reports" Style="{StaticResource NavButton}" Command="{Binding ShowReportsCommand}"
-                            Visibility="{Binding IsManagerOrAdmin, Converter={StaticResource BoolToVis}}" />
-                    <Button Content="⚙  Settings" Style="{StaticResource NavButton}" Command="{Binding ShowSettingsCommand}"
-                            Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}" />
+                    <Button Content="🗂  Catalogue" Style="{StaticResource NavButton}" Command="{Binding ShowCatalogueCommand}" />
+                    <Button Content="📈  Reports" Style="{StaticResource NavButton}" Command="{Binding ShowReportsCommand}" />
+                    <Button Content="⚙  Settings" Style="{StaticResource NavButton}" Command="{Binding ShowSettingsCommand}" />
                 </StackPanel>
             </DockPanel>
             </Grid>

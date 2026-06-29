@@ -16,15 +16,7 @@ public partial class SettingsView : UserControl
         if (Vm is not null) Vm.MyNewPassword = MyNewPasswordBox.Password;
     }
 
-    private void NewPassword_Changed(object sender, RoutedEventArgs e)
-    {
-        if (Vm is not null) Vm.NewPassword = NewPasswordBox.Password;
-    }
 
-    private void EditPassword_Changed(object sender, RoutedEventArgs e)
-    {
-        if (Vm is not null) Vm.EditNewPassword = EditPasswordBox.Password;
-    }
 
     private async void UploadLogo_Click(object sender, RoutedEventArgs e)
     {

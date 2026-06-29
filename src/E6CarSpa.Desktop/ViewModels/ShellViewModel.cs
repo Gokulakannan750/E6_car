@@ -21,11 +21,21 @@ public partial class ShellViewModel(IApiClient api) : ObservableObject
         try { LogoBytes = await api.GetLogoAsync(); } catch { /* watermark is optional */ }
     }
 
-    public string UserName => api.CurrentUser?.FullName ?? "";
-    public string RoleName => api.CurrentUser?.Role.ToString() ?? "";
+    public string UserName => api.CurrentUser?.FullName ?? "Shop Floor";
+    public string RoleName => api.CurrentUser?.Role.ToString() ?? "Basic Access";
+    public bool IsLoggedIn => api.IsLoggedIn;
     public bool IsManagerOrAdmin =>
         api.CurrentUser?.Role is Domain.Enums.UserRole.Admin or Domain.Enums.UserRole.Manager;
     public bool IsAdmin => api.CurrentUser?.Role is Domain.Enums.UserRole.Admin;
+
+    public void RefreshAuthState()
+    {
+        OnPropertyChanged(nameof(UserName));
+        OnPropertyChanged(nameof(RoleName));
+        OnPropertyChanged(nameof(IsLoggedIn));
+        OnPropertyChanged(nameof(IsManagerOrAdmin));
+        OnPropertyChanged(nameof(IsAdmin));
+    }
 
     [RelayCommand] private Task ShowDashboard() => NavigateAsync<DashboardViewModel>("Dashboard");
     [RelayCommand] private Task ShowCustomers() => NavigateAsync<CustomersViewModel>("Customers");
@@ -38,6 +48,18 @@ public partial class ShellViewModel(IApiClient api) : ObservableObject
 
     public async Task NavigateAsync<TViewModel>(string navKey) where TViewModel : class
     {
+        if ((navKey == "Reports" || navKey == "Inventory" || navKey == "Catalogue" || navKey == "Settings") && !IsLoggedIn)
+        {
+            // Trigger the login popup
+            var shell = App.Services.GetService<Views.ShellWindow>();
+            var login = App.Services.GetRequiredService<Views.LoginWindow>();
+            if (shell != null && shell.IsVisible) login.Owner = shell;
+            login.ShowDialog();
+            
+            RefreshAuthState();
+            if (!IsLoggedIn) return; // Login was cancelled or failed
+        }
+
         ActiveNav = navKey;
         var vm = App.Services.GetRequiredService<TViewModel>();
         if (vm is IAsyncInitialize init) await init.InitializeAsync();

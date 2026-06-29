@@ -66,29 +66,30 @@
                 <Border Style="{StaticResource Card}" Background="#F8FAFC">
                     <StackPanel>
                         <TextBlock Text="{Binding ServiceFormTitle}" Style="{StaticResource H2}" />
-                        <UniformGrid Columns="2">
-                            <StackPanel Margin="0,0,16,8">
+                        <UniformGrid Columns="3">
+                            <StackPanel Margin="0,0,16,4">
                                 <TextBlock Text="Name" />
-                                <TextBox Text="{Binding SvcName, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBox Text="{Binding SvcName, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8" />
                             </StackPanel>
-                            <StackPanel Margin="0,0,16,8">
+                            <StackPanel Margin="0,0,16,4">
                                 <TextBlock Text="Category" />
-                                <TextBox Text="{Binding SvcCategory, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBox Text="{Binding SvcCategory, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8" />
                             </StackPanel>
-                            <StackPanel Margin="0,0,16,8">
+                            <StackPanel Margin="0,0,16,4">
                                 <TextBlock Text="Default Price ₹" />
-                                <TextBox Text="{Binding SvcPrice, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+                                <TextBox Text="{Binding SvcPrice, UpdateSourceTrigger=PropertyChanged, Delay=200}" Margin="0,4,0,8" />
                             </StackPanel>
-                            <StackPanel Margin="0,0,16,8">
+                            <StackPanel Margin="0,0,16,4">
                                 <TextBlock Text="HSN/SAC" />
-                                <TextBox Text="{Binding SvcHsn, UpdateSourceTrigger=PropertyChanged}" />
+                                <TextBox Text="{Binding SvcHsn, UpdateSourceTrigger=PropertyChanged}" Margin="0,4,0,8" />
                             </StackPanel>
-                            <StackPanel Margin="0,0,16,8">
+                            <StackPanel Margin="0,0,16,4">
                                 <TextBlock Text="GST %" />
-                                <TextBox Text="{Binding SvcGst, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+                                <TextBox Text="{Binding SvcGst, UpdateSourceTrigger=PropertyChanged, Delay=200}" Margin="0,4,0,8" />
                             </StackPanel>
-                            <StackPanel Margin="0,0,16,8" VerticalAlignment="Bottom">
-                                <CheckBox Content="Active" IsChecked="{Binding SvcActive}" Margin="0,0,0,10" />
+                            <StackPanel Margin="0,0,16,4">
+                                <TextBlock Text=" " />
+                                <CheckBox Content="Active" IsChecked="{Binding SvcActive}" Margin="0,10,0,8" VerticalAlignment="Center" />
                             </StackPanel>
                         </UniformGrid>
                         <Button Content="💾 Save Service" Width="160" HorizontalAlignment="Left" Margin="0,12,0,0"

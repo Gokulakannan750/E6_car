@@ -13,6 +13,7 @@ public interface IApiClient
     event Action? OnUnauthorized;
 
     Task<UserDto> LoginAsync(string username, string password);
+    void Logout();
     Task<CustomerLookupResult?> LookupByPhoneAsync(string phone);
     Task<CustomerLookupResult?> LookupByCarAsync(string car);
     Task<List<CustomerDto>?> GetCustomersAsync(string? search = null);

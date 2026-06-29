@@ -275,7 +275,7 @@
         </Setter>
         <Style.Triggers>
             <Trigger Property="IsSelected" Value="True">
-                <Setter Property="Background" Value="#F0F3FF" />
+                <Setter Property="Background" Value="#BACDFF" />
                 <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
             </Trigger>
         </Style.Triggers>
@@ -286,7 +286,7 @@
         <Setter Property="BorderThickness" Value="0"/>
         <Style.Triggers>
             <Trigger Property="IsSelected" Value="True">
-                <Setter Property="Background" Value="#F0F3FF" />
+                <Setter Property="Background" Value="#BACDFF" />
             </Trigger>
             <Trigger Property="IsMouseOver" Value="True">
                 <Setter Property="Background" Value="#DEE8FF" />

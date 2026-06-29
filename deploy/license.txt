@@ -1,0 +1,20 @@
+SOFTWARE LICENSE AGREEMENT
+
+IMPORTANT: PLEASE READ THIS LICENSE CAREFULLY BEFORE USING THIS SOFTWARE.
+
+1. LICENSE GRANT
+Trovotech Solutions grants you a personal, non-exclusive, non-transferable license to use the E6 Car Spa software.
+
+2. RESTRICTIONS
+You may not:
+(a) modify, translate, reverse engineer, decompile, or disassemble the Software;
+(b) rent, lease, or transfer your rights to the Software;
+(c) remove any proprietary notices or labels on the Software.
+
+3. DISCLAIMER OF WARRANTY
+The Software is provided "AS IS", without warranty of any kind. Trovotech Solutions disclaims all warranties, either express or implied, including the warranties of merchantability and fitness for a particular purpose.
+
+4. LIMITATION OF LIABILITY
+In no event shall Trovotech Solutions be liable for any damages whatsoever arising out of the use of or inability to use the software.
+
+By installing this software, you agree to these terms.

@@ -62,6 +62,35 @@
                 </Border>
             </UniformGrid>
 
+            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                <StackPanel>
+                    <TextBlock Text="🔴 Live Shop Floor (Today's Active Jobs)" Style="{StaticResource H2}" Margin="0,0,0,12" />
+                    <DataGrid ItemsSource="{Binding Summary.ActiveJobs}" MaxHeight="250" VerticalScrollBarVisibility="Auto">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Invoice #" Binding="{Binding InvoiceNumber}" Width="100" />
+                            <DataGridTextColumn Header="Vehicle No." Binding="{Binding VehicleNumber}" Width="120" />
+                            <DataGridTextColumn Header="Model" Binding="{Binding VehicleModel}" Width="*" />
+                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="FontWeight" Value="SemiBold" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding Status}" Value="InProgress">
+                                                <Setter Property="Foreground" Value="#0284C7" />
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding Status}" Value="Quotation">
+                                                <Setter Property="Foreground" Value="#D97706" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Total ₹" Binding="{Binding Total, StringFormat='{}{0:N2}'}" Width="100" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </Border>
+
             <Border Style="{StaticResource Card}" Background="#FFEBEE"
                     Visibility="{Binding Summary.LowStockCount, Converter={StaticResource CountToVis}}">
                 <TextBlock FontSize="15">

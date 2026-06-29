@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace E6CarSpa.Api.Controllers;
 
-[Authorize]
+
 public class CustomersController(AppDbContext db) : ApiControllerBase
 {
     /// <summary>Intake lookup: find an existing customer by phone so details auto-fill.</summary>

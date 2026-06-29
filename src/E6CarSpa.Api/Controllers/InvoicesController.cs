@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace E6CarSpa.Api.Controllers;
 
-[Authorize]
+
 public class InvoicesController(InvoiceService invoices, PdfInvoiceService pdf) : ApiControllerBase
 {
     /// <summary>Steps 1-3: create a quotation from customer + car + chosen services.</summary>
