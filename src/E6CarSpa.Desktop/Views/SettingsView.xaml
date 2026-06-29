@@ -119,13 +119,18 @@
                                 <Grid Margin="0,6,0,0">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="280" />
+                                        <ColumnDefinition Width="280" />
                                         <ColumnDefinition Width="Auto" />
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                        <TextBlock Text="Old password" />
+                                        <PasswordBox x:Name="MyOldPasswordBox" PasswordChanged="MyOldPassword_Changed" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="0,0,12,0">
                                         <TextBlock Text="New password" />
                                         <PasswordBox x:Name="MyNewPasswordBox" PasswordChanged="MyNewPassword_Changed" />
                                     </StackPanel>
-                                    <Button Grid.Column="1" Content="Change Password" VerticalAlignment="Bottom" Margin="0,0,0,8"
+                                    <Button Grid.Column="2" Content="Change Password" VerticalAlignment="Bottom" Margin="0,0,0,16"
                                             Command="{Binding ChangeMyPasswordCommand}" />
                                 </Grid>
                             </StackPanel>

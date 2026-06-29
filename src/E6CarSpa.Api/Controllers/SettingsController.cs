@@ -10,6 +10,8 @@ namespace E6CarSpa.Api.Controllers;
 
 public class SettingsController(AppDbContext db) : ApiControllerBase
 {
+
+
     [HttpGet]
     public async Task<ActionResult<CompanySettingsDto>> Get()
     {

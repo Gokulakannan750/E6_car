@@ -84,4 +84,29 @@ public class AuthController(AppDbContext db, JwtTokenService jwt) : ApiControlle
         await db.SaveChangesAsync();
         return user.ToDto();
     }
+
+    [HttpPut("users/me/password")]
+    [Authorize]
+    public async Task<ActionResult> ChangeMyPassword(ChangeMyPasswordRequest req)
+    {
+        var userIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        if (!Guid.TryParse(userIdStr, out var userId)) return Unauthorized();
+
+        var user = await db.Users.FindAsync(userId);
+        if (user is null) return NotFound();
+
+        if (!BCrypt.Net.BCrypt.Verify(req.OldPassword, user.PasswordHash))
+            return BadRequest(new { message = "Incorrect old password." });
+
+        if (string.IsNullOrWhiteSpace(req.NewPassword) || req.NewPassword.Length < 8)
+            return BadRequest(new { message = "New password must be at least 8 characters." });
+        
+        if (req.NewPassword.Length > 200)
+            return BadRequest(new { message = "New password must not exceed 200 characters." });
+
+        user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.NewPassword);
+        await db.SaveChangesAsync();
+
+        return Ok(new { message = "Password updated successfully." });
+    }
 }

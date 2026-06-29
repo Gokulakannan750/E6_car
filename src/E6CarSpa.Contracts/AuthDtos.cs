@@ -11,3 +11,5 @@ public record UserDto(Guid Id, string FullName, string Username, UserRole Role, 
 public record CreateUserRequest(string FullName, string Username, string Password, UserRole Role);
 
 public record UpdateUserRequest(string FullName, UserRole Role, bool IsActive, string? NewPassword);
+
+public record ChangeMyPasswordRequest(string OldPassword, string NewPassword);

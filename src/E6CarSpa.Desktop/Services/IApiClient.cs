@@ -38,6 +38,7 @@ public interface IApiClient
     Task<List<UserDto>?> GetUsersAsync();
     Task<UserDto> CreateUserAsync(CreateUserRequest req);
     Task<UserDto> UpdateUserAsync(Guid id, UpdateUserRequest req);
+    Task ChangeMyPasswordAsync(ChangeMyPasswordRequest req);
     Task<CompanySettingsDto?> GetSettingsAsync();
     Task<CompanySettingsDto> UpdateSettingsAsync(SaveCompanySettingsRequest req);
     Task UploadLogoAsync(byte[] imageBytes);

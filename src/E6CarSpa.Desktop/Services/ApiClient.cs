@@ -121,6 +121,9 @@ public class ApiClient(HttpClient http) : IApiClient
     public Task<UserDto> UpdateUserAsync(Guid id, UpdateUserRequest req) =>
         PutAsync<UserDto>($"api/auth/users/{id}", req);
 
+    public Task ChangeMyPasswordAsync(ChangeMyPasswordRequest req) =>
+        PutAsync<object>("api/auth/users/me/password", req);
+
     // ---------- Company settings ----------
     public Task<CompanySettingsDto?> GetSettingsAsync() => GetAsync<CompanySettingsDto>("api/settings");
 

@@ -10,7 +10,11 @@ public partial class SettingsView : UserControl
 
     private SettingsViewModel? Vm => DataContext as SettingsViewModel;
 
-    // PasswordBox.Password is not bindable, so push values into the VM here.
+    private void MyOldPassword_Changed(object sender, RoutedEventArgs e)
+    {
+        if (Vm is not null) Vm.MyOldPassword = MyOldPasswordBox.Password;
+    }
+
     private void MyNewPassword_Changed(object sender, RoutedEventArgs e)
     {
         if (Vm is not null) Vm.MyNewPassword = MyNewPasswordBox.Password;

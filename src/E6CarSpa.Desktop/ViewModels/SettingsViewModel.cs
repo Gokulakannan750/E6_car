@@ -102,17 +102,21 @@ public partial class SettingsViewModel(IApiClient api) : ObservableObject, IAsyn
         catch (Exception ex) { Error = ex.Message; }
     }
 
+    [ObservableProperty] private string myOldPassword = "";
+
     [RelayCommand]
     private async Task ChangeMyPasswordAsync()
     {
-        if (api.CurrentUser is null) return;
-        if (string.IsNullOrWhiteSpace(MyNewPassword) || MyNewPassword.Length < 5)
-        { Error = "New password must be at least 5 characters."; return; }
+        if (string.IsNullOrWhiteSpace(MyOldPassword))
+        { Error = "Please enter your old password."; return; }
+        if (string.IsNullOrWhiteSpace(MyNewPassword) || MyNewPassword.Length < 8)
+        { Error = "New password must be at least 8 characters."; return; }
+        
         try
         {
             Info = ""; Error = "";
-            var u = api.CurrentUser;
-            await api.UpdateUserAsync(u.Id, new UpdateUserRequest(u.FullName, u.Role, true, MyNewPassword));
+            await api.ChangeMyPasswordAsync(new ChangeMyPasswordRequest(MyOldPassword, MyNewPassword));
+            MyOldPassword = "";
             MyNewPassword = "";
             Info = "Your password has been changed.";
         }
