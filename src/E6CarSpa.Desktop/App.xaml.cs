@@ -21,7 +21,7 @@ public partial class App : Application
 
         var services = new ServiceCollection();
 
-        services.AddSingleton(sp => new ApiClient(new HttpClient
+        services.AddSingleton<IApiClient>(sp => new ApiClient(new HttpClient
         {
             BaseAddress = new Uri(ApiBaseUrl),
             Timeout = TimeSpan.FromSeconds(30)
@@ -38,6 +38,7 @@ public partial class App : Application
         services.AddTransient<ReportsViewModel>();
         services.AddTransient<SettingsViewModel>();
         services.AddTransient<CatalogueViewModel>();
+        services.AddTransient<CustomersViewModel>();
 
         // Windows
         services.AddTransient<LoginWindow>();
@@ -45,7 +46,37 @@ public partial class App : Application
 
         Services = services.BuildServiceProvider();
 
-        var login = Services.GetRequiredService<LoginWindow>();
-        login.Show();
+        var api = Services.GetRequiredService<IApiClient>();
+        api.OnUnauthorized += () =>
+        {
+            Dispatcher.Invoke(() =>
+            {
+                var login = Services.GetRequiredService<LoginWindow>();
+                login.Show();
+                var shell = Services.GetService<ShellWindow>();
+                shell?.Hide();
+            });
+        };
+
+        CleanupOldPdfs();
+
+        var loginWindow = Services.GetRequiredService<LoginWindow>();
+        loginWindow.Show();
+    }
+
+    private void CleanupOldPdfs()
+    {
+        try
+        {
+            var temp = System.IO.Path.GetTempPath();
+            var files = System.IO.Directory.GetFiles(temp, "E6_*.pdf");
+            foreach (var f in files)
+            {
+                var fi = new System.IO.FileInfo(f);
+                if (fi.CreationTime < DateTime.Now.AddDays(-1))
+                    fi.Delete();
+            }
+        }
+        catch { /* ignore cleanup errors */ }
     }
 }

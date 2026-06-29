@@ -23,6 +23,11 @@ api_startup.log
 .idea/
 .vscode/
 
+## Scratch / throwaway test files
+check_api.cs
+test.ps1
+sample_invoice.pdf
+
 ## Secrets — never commit real connection strings / tokens / keys
 # The live appsettings.json holds the DB password and JWT key.
 # Set these on the server via environment variables or a local copy of the file.

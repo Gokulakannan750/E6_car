@@ -17,6 +17,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
+    <Company>trovotechsolutions</Company>
   </PropertyGroup>
 
   <ItemGroup>

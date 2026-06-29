@@ -3,7 +3,7 @@ using E6CarSpa.Desktop.Services;
 
 namespace E6CarSpa.Desktop.ViewModels;
 
-public partial class LoginViewModel(ApiClient api) : ObservableObject
+public partial class LoginViewModel(IApiClient api) : ObservableObject
 {
     [ObservableProperty] private string _username = "admin";
     [ObservableProperty] private string _errorMessage = "";

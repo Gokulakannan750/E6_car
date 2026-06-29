@@ -69,3 +69,11 @@ public class BoolToVisibilityConverter : IValueConverter
     }
     public object ConvertBack(object value, Type t, object p, CultureInfo c) => throw new NotSupportedException();
 }
+
+/// <summary>Returns true when both bound values are equal (reference equality). Used with MultiBinding.</summary>
+public class EqualityMultiConverter : IMultiValueConverter
+{
+    public object Convert(object[] values, Type t, object p, CultureInfo c) =>
+        values.Length == 2 && Equals(values[0], values[1]);
+    public object[] ConvertBack(object value, Type[] t, object p, CultureInfo c) => throw new NotSupportedException();
+}

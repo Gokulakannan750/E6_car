@@ -13,7 +13,7 @@ namespace E6CarSpa.Desktop.ViewModels;
 /// Workflow steps 4-5: open a saved quotation, add jobs done, finalise to an invoice,
 /// print it, and take payment (which triggers the WhatsApp thank-you).
 /// </summary>
-public partial class InvoiceDetailViewModel(ApiClient api) : ObservableObject
+public partial class InvoiceDetailViewModel(IApiClient api) : ObservableObject
 {
     [ObservableProperty] private InvoiceDto? _invoice;
     public ObservableCollection<LineItemVm> Lines { get; } = new();
@@ -22,6 +22,9 @@ public partial class InvoiceDetailViewModel(ApiClient api) : ObservableObject
 
     [ObservableProperty] private decimal _discountAmount;
     [ObservableProperty] private string _notes = "";
+
+    /// <summary>When off, this is a non-GST bill (no tax charged).</summary>
+    [ObservableProperty] private bool _applyGst = true;
 
     public List<PaymentMethod> PaymentMethods { get; } = [PaymentMethod.Cash, PaymentMethod.Card, PaymentMethod.Upi];
     [ObservableProperty] private PaymentMethod _selectedPaymentMethod = PaymentMethod.Cash;
@@ -33,15 +36,15 @@ public partial class InvoiceDetailViewModel(ApiClient api) : ObservableObject
     [ObservableProperty] private string _info = "";
 
     // Derived UI state
-    public bool CanEdit => Invoice is { Status: InvoiceStatus.Quotation or InvoiceStatus.Invoiced };
-    public bool IsQuotation => Invoice?.Status == InvoiceStatus.Quotation;
+    public bool CanEdit => Invoice is { Status: InvoiceStatus.Quotation or InvoiceStatus.InProgress or InvoiceStatus.Invoiced };
+    public bool IsQuotation => Invoice is { Status: InvoiceStatus.Quotation or InvoiceStatus.InProgress };
     public bool CanPay => Invoice is not null && Invoice.Status != InvoiceStatus.Paid
                           && Invoice.Status != InvoiceStatus.Cancelled && Invoice.Balance > 0;
     public string Title => Invoice is null ? "" :
         $"{(Invoice.Status == InvoiceStatus.Quotation ? "Quotation" : "Invoice")} {Invoice.InvoiceNumber ?? "(draft)"}";
 
     public decimal SubTotal => Lines.Sum(l => l.Quantity * l.UnitPrice);
-    public decimal TotalTax => Lines.Sum(l => l.TaxAmount);
+    public decimal TotalTax => ApplyGst ? Lines.Sum(l => l.TaxAmount) : 0m;
     public decimal GrandTotal => Math.Max(0, SubTotal - Lines.Sum(l => l.DiscountAmount) - DiscountAmount + TotalTax);
 
     public async Task LoadAsync(Guid id)
@@ -65,6 +68,7 @@ public partial class InvoiceDetailViewModel(ApiClient api) : ObservableObject
         Invoice = inv;
         DiscountAmount = inv.DiscountAmount;
         Notes = inv.Notes ?? "";
+        ApplyGst = inv.IsGstApplicable;
         PaymentAmount = inv.Balance;
 
         foreach (var l in Lines) l.Changed -= RecalcTotals;
@@ -112,6 +116,7 @@ public partial class InvoiceDetailViewModel(ApiClient api) : ObservableObject
     }
 
     partial void OnDiscountAmountChanged(decimal value) => RecalcTotals();
+    partial void OnApplyGstChanged(bool value) => RecalcTotals();
 
     [RelayCommand]
     private async Task SaveChangesAsync()
@@ -123,7 +128,8 @@ public partial class InvoiceDetailViewModel(ApiClient api) : ObservableObject
             var req = new UpdateInvoiceRequest(
                 DiscountAmount, string.IsNullOrWhiteSpace(Notes) ? null : Notes.Trim(),
                 Lines.Select(l => new InvoiceItemInput(
-                    l.ServiceId, l.ProductId, l.Description, l.Quantity, l.UnitPrice, l.DiscountAmount)).ToList());
+                    l.ServiceId, l.ProductId, l.Description, l.Quantity, l.UnitPrice, l.DiscountAmount)).ToList(),
+                ApplyGst);
             var updated = await api.UpdateInvoiceAsync(Invoice.Id, req);
             BindInvoice(updated);
             Info = "Changes saved.";

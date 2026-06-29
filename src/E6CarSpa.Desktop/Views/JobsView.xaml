@@ -36,9 +36,63 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Date" Binding="{Binding CreatedAt, StringFormat='dd-MM-yyyy HH:mm'}" Width="140" />
                     <DataGridTextColumn Header="Invoice No." Binding="{Binding InvoiceNumber}" Width="120" />
-                    <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100" />
+                    <DataGridTemplateColumn Header="Status" Width="110">
+                        <DataGridTemplateColumn.CellTemplate>
+                            <DataTemplate>
+                                <Border CornerRadius="4" Padding="8,4" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                    <Border.Style>
+                                        <Style TargetType="Border">
+                                            <Setter Property="Background" Value="#F5F5F5" />
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding Status}" Value="Quotation">
+                                                    <Setter Property="Background" Value="#FFF3E0" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Status}" Value="InProgress">
+                                                    <Setter Property="Background" Value="#E3F2FD" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Status}" Value="Invoiced">
+                                                    <Setter Property="Background" Value="#E8EAF6" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Status}" Value="Paid">
+                                                    <Setter Property="Background" Value="#E8F5E9" />
+                                                </DataTrigger>
+                                                <DataTrigger Binding="{Binding Status}" Value="Cancelled">
+                                                    <Setter Property="Background" Value="#FFEBEE" />
+                                                </DataTrigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </Border.Style>
+                                    <TextBlock Text="{Binding Status}" FontSize="12" FontWeight="SemiBold">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="#616161" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Quotation">
+                                                        <Setter Property="Foreground" Value="#E65100" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="InProgress">
+                                                        <Setter Property="Foreground" Value="#1565C0" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Invoiced">
+                                                        <Setter Property="Foreground" Value="#283593" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Paid">
+                                                        <Setter Property="Foreground" Value="#2E7D32" />
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Status}" Value="Cancelled">
+                                                        <Setter Property="Foreground" Value="#C62828" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
+                                </Border>
+                            </DataTemplate>
+                        </DataGridTemplateColumn.CellTemplate>
+                    </DataGridTemplateColumn>
                     <DataGridTextColumn Header="Customer" Binding="{Binding CustomerName}" Width="*" />
-                    <DataGridTextColumn Header="Car" Binding="{Binding CarNumber}" Width="120" />
+                    <DataGridTextColumn Header="Car No." Binding="{Binding CarNumber}" Width="100" />
+                    <DataGridTextColumn Header="Car Model" Binding="{Binding CarModel}" Width="120" />
                     <DataGridTextColumn Header="Total ₹" Binding="{Binding GrandTotal, StringFormat='{}{0:N2}'}" Width="110" />
                     <DataGridTextColumn Header="Balance ₹" Binding="{Binding Balance, StringFormat='{}{0:N2}'}" Width="110" />
                     <DataGridTemplateColumn Width="80">

@@ -1,0 +1,183 @@
+<UserControl x:Class="E6CarSpa.Desktop.Views.CustomersView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="32">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <Grid Grid.Row="0" Margin="0,0,0,24">
+            <TextBlock Text="Customers Directory" Style="{StaticResource H1}" Margin="0" VerticalAlignment="Center" />
+            
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                <Grid Width="280" Margin="0,0,12,0">
+                    <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged, Delay=300}" 
+                              Margin="0" Height="40" Padding="12,0" VerticalContentAlignment="Center" />
+                    <TextBlock Text="Search customers..." IsHitTestVisible="False" 
+                               Foreground="{StaticResource MutedBrush}" 
+                               VerticalAlignment="Center" Margin="14,0,0,0" FontSize="14">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SearchText}" Value="">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </Grid>
+
+                <Button Content="Search" Command="{Binding LoadCustomersCommand}" Height="40" Width="100" Margin="0" />
+            </StackPanel>
+        </Grid>
+
+        <Border Grid.Row="1" Style="{StaticResource Card}" Padding="0" CornerRadius="8" ClipToBounds="True">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <DataGrid Grid.Row="0" ItemsSource="{Binding Customers}" SelectionMode="Single"
+                          SelectedItem="{Binding SelectedCustomer, Mode=TwoWay}"
+                          IsReadOnly="True" BorderThickness="0" Margin="0" RowHeight="48"
+                          HorizontalScrollBarVisibility="Hidden">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Customer Name" Binding="{Binding Name}" Width="2*" />
+                        <DataGridTextColumn Header="Phone Number" Binding="{Binding Phone}" Width="*" />
+                        <DataGridTextColumn Header="Registered Date" Binding="{Binding CreatedAt, StringFormat='{}{0:d MMM yyyy}'}" Width="*" />
+                    </DataGrid.Columns>
+                </DataGrid>
+                
+                <TextBlock Grid.Row="1" Text="{Binding Error}" Foreground="{StaticResource DangerBrush}" Margin="24,16,24,16"
+                           Visibility="{Binding Error, Converter={StaticResource StringToVis}}" />
+            </Grid>
+        </Border>
+
+        <!-- Customer Detail Panel -->
+        <Border Grid.Row="2" Style="{StaticResource Card}" Margin="0,16,0,0"
+                Visibility="{Binding CustomerHistory, Converter={StaticResource NullToVis}}">
+            <StackPanel>
+                <!-- Header -->
+                <Grid Margin="0,0,0,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock FontSize="20" FontWeight="Bold" Foreground="{StaticResource TextBrush}">
+                            <Run Text="{Binding CustomerHistory.Name, Mode=OneWay}" />
+                            <Run Text="  ·  " Foreground="{StaticResource MutedBrush}" />
+                            <Run Text="{Binding CustomerHistory.Phone, Mode=OneWay}" Foreground="{StaticResource MutedBrush}" />
+                        </TextBlock>
+                    </StackPanel>
+                    <Border Grid.Column="1" Background="#E8F5E9" CornerRadius="6" Padding="12,6" Margin="8,0">
+                        <TextBlock FontWeight="SemiBold" FontSize="13" Foreground="#2E7D32">
+                            <Run Text="Visits: " />
+                            <Run Text="{Binding CustomerHistory.VisitCount, Mode=OneWay}" />
+                        </TextBlock>
+                    </Border>
+                    <Border Grid.Column="2" Background="#E3F2FD" CornerRadius="6" Padding="12,6" Margin="8,0">
+                        <TextBlock FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource PrimaryBrush}">
+                            <Run Text="Lifetime: ₹" />
+                            <Run Text="{Binding CustomerHistory.LifetimeValue, StringFormat='{}{0:N0}', Mode=OneWay}" />
+                        </TextBlock>
+                    </Border>
+                    <Border Grid.Column="3" Background="#FFF3E0" CornerRadius="6" Padding="12,6" Margin="8,0,0,0">
+                        <TextBlock FontWeight="SemiBold" FontSize="13" Foreground="#E65100">
+                            <Run Text="Balance: ₹" />
+                            <Run Text="{Binding CustomerHistory.Outstanding, StringFormat='{}{0:N0}', Mode=OneWay}" />
+                        </TextBlock>
+                    </Border>
+                </Grid>
+
+                <!-- Vehicles -->
+                <TextBlock Text="Vehicles" FontWeight="SemiBold" FontSize="15" Margin="0,0,0,8" />
+                <ItemsControl ItemsSource="{Binding SelectedCustomer.Vehicles}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Cursor="Hand" Margin="0,0,8,8" Padding="12,6"
+                                    Command="{Binding DataContext.SelectVehicleCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}">
+                                <Button.Style>
+                                    <Style TargetType="Button">
+                                        <Setter Property="Background" Value="#F0F3FF" />
+                                        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+                                        <Setter Property="BorderThickness" Value="2" />
+                                        <Setter Property="BorderBrush" Value="Transparent" />
+                                        <Setter Property="Template">
+                                            <Setter.Value>
+                                                <ControlTemplate TargetType="Button">
+                                                    <Border x:Name="vb" Background="{TemplateBinding Background}"
+                                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                                            CornerRadius="6" Padding="{TemplateBinding Padding}">
+                                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                                    </Border>
+                                                    <ControlTemplate.Triggers>
+                                                        <Trigger Property="IsMouseOver" Value="True">
+                                                            <Setter TargetName="vb" Property="Background" Value="#DEE8FF" />
+                                                        </Trigger>
+                                                    </ControlTemplate.Triggers>
+                                                </ControlTemplate>
+                                            </Setter.Value>
+                                        </Setter>
+                                        <Style.Triggers>
+                                            <DataTrigger Value="True">
+                                                <DataTrigger.Binding>
+                                                    <MultiBinding Converter="{StaticResource EqualityConverter}">
+                                                        <Binding />
+                                                        <Binding Path="DataContext.SelectedVehicle" RelativeSource="{RelativeSource AncestorType=UserControl}" />
+                                                    </MultiBinding>
+                                                </DataTrigger.Binding>
+                                                <Setter Property="Background" Value="{StaticResource PrimaryBrush}" />
+                                                <Setter Property="Foreground" Value="White" />
+                                                <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Button.Style>
+                                <TextBlock FontSize="13">
+                                    <Run Text="🚗 " />
+                                    <Run Text="{Binding CarNumber}" FontWeight="SemiBold" />
+                                    <Run Text=" — " />
+                                    <Run Text="{Binding CarModel}" />
+                                </TextBlock>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+
+                <!-- Service History (Invoices) -->
+                <TextBlock Text="Service History" FontWeight="SemiBold" FontSize="15" Margin="0,12,0,8" />
+                <DataGrid ItemsSource="{Binding FilteredInvoices}" IsReadOnly="True"
+                          AutoGenerateColumns="False" HeadersVisibility="Column" CanUserAddRows="False"
+                          MaxHeight="250" BorderThickness="1" BorderBrush="{StaticResource OutlineBrush}">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Date" Binding="{Binding CreatedAt, StringFormat='{}{0:dd MMM yyyy}'}" Width="120" />
+                        <DataGridTextColumn Header="Invoice #" Binding="{Binding InvoiceNumber}" Width="110" />
+                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100" />
+                        <DataGridTextColumn Header="Car" Binding="{Binding CarNumber}" Width="120" />
+                        <DataGridTextColumn Header="Car Model" Binding="{Binding CarModel}" Width="120" />
+                        <DataGridTextColumn Header="Total ₹" Binding="{Binding GrandTotal, StringFormat='{}{0:N2}'}" Width="*" />
+                    </DataGrid.Columns>
+                </DataGrid>
+            </StackPanel>
+        </Border>
+
+        <!-- Loading indicator -->
+        <TextBlock Grid.Row="2" Text="Loading customer details..." Style="{StaticResource Muted}" Margin="0,24,0,0"
+                   HorizontalAlignment="Center"
+                   Visibility="{Binding IsLoadingDetails, Converter={StaticResource BoolToVis}}" />
+    </Grid>
+</UserControl>

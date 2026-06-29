@@ -11,7 +11,7 @@ namespace E6CarSpa.Desktop.Services;
 /// Thin typed wrapper over the E6 Car Spa Web API. Holds the JWT after login and attaches
 /// it to every request. All calls throw <see cref="ApiException"/> on non-success responses.
 /// </summary>
-public class ApiClient(HttpClient http)
+public class ApiClient(HttpClient http) : IApiClient
 {
     private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
 
@@ -33,6 +33,12 @@ public class ApiClient(HttpClient http)
 
     public Task<CustomerLookupResult?> LookupByCarAsync(string car) =>
         GetAsync<CustomerLookupResult>($"api/customers/by-car/{Uri.EscapeDataString(car)}");
+
+    public Task<List<CustomerDto>?> GetCustomersAsync(string? search = null)
+    {
+        var qs = string.IsNullOrWhiteSpace(search) ? "" : $"?q={Uri.EscapeDataString(search)}";
+        return GetAsync<List<CustomerDto>>($"api/customers{qs}");
+    }
 
     // ---------- Catalog ----------
     public Task<List<ServiceDto>?> GetServicesAsync(bool includeInactive = false) =>
@@ -168,9 +174,15 @@ public class ApiClient(HttpClient http)
         return (await resp.Content.ReadFromJsonAsync<T>(JsonOpts))!;
     }
 
-    private static async Task EnsureSuccess(HttpResponseMessage resp)
+    public event Action? OnUnauthorized;
+
+    private async Task EnsureSuccess(HttpResponseMessage resp)
     {
         if (resp.IsSuccessStatusCode) return;
+        
+        if (resp.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            OnUnauthorized?.Invoke();
+
         var body = await resp.Content.ReadAsStringAsync();
         string message = $"Request failed ({(int)resp.StatusCode}).";
         try

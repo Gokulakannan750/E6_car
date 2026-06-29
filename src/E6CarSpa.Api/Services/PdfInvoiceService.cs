@@ -53,7 +53,9 @@ public class PdfInvoiceService(AppDbContext db)
                 });
                 row.ConstantItem(190).Column(c =>
                 {
-                    var title = inv.Status == Domain.Enums.InvoiceStatus.Quotation ? "QUOTATION" : "TAX INVOICE";
+                    var title = inv.Status == Domain.Enums.InvoiceStatus.Quotation
+                        ? "QUOTATION"
+                        : (inv.IsGstApplicable ? "TAX INVOICE" : "INVOICE");
                     c.Item().AlignRight().Text(title).FontSize(16).Bold();
                     c.Item().AlignRight().Text($"No: {inv.InvoiceNumber ?? "(draft)"}");
                     c.Item().AlignRight().Text($"Date: {inv.CreatedAt.ToLocalTime():dd-MM-yyyy}");
@@ -137,9 +139,12 @@ public class PdfInvoiceService(AppDbContext db)
                     }
                     Line("Sub Total", inv.SubTotal);
                     if (inv.DiscountAmount > 0) Line("Discount", inv.DiscountAmount);
-                    Line("Taxable Value", inv.TaxableValue);
-                    if (inv.IgstAmount > 0) Line("IGST", inv.IgstAmount);
-                    else { Line("CGST", inv.CgstAmount); Line("SGST", inv.SgstAmount); }
+                    if (inv.IsGstApplicable)   // GST lines only on a GST bill
+                    {
+                        Line("Taxable Value", inv.TaxableValue);
+                        if (inv.IgstAmount > 0) Line("IGST", inv.IgstAmount);
+                        else { Line("CGST", inv.CgstAmount); Line("SGST", inv.SgstAmount); }
+                    }
                     totals.Item().PaddingVertical(2).LineHorizontal(0.5f);
                     Line("Grand Total", inv.GrandTotal, bold: true);
                     Line("Paid", inv.AmountPaid);

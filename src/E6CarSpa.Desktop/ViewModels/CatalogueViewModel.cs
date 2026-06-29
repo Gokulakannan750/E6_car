@@ -10,7 +10,7 @@ namespace E6CarSpa.Desktop.ViewModels;
 /// Admin/Manager screen to maintain the catalogue without code: add/edit services and products,
 /// and set each service's bill-of-materials (the products it consumes).
 /// </summary>
-public partial class CatalogueViewModel(ApiClient api) : ObservableObject, IAsyncInitialize
+public partial class CatalogueViewModel(IApiClient api) : ObservableObject, IAsyncInitialize
 {
     // ----- Services -----
     public ObservableCollection<ServiceDto> Services { get; } = new();

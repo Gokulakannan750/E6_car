@@ -6,7 +6,7 @@
 
 #define MyAppName "E6 Car Spa"
 #define MyAppVersion "1.0.0"
-#define MyAppPublisher "E6 Car Spa"
+#define MyAppPublisher "trovotechsolutions"
 #define ApiServiceName "E6CarSpaApi"
 
 [Setup]

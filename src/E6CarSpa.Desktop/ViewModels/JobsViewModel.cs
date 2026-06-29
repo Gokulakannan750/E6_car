@@ -8,7 +8,7 @@ using E6CarSpa.Domain.Enums;
 namespace E6CarSpa.Desktop.ViewModels;
 
 /// <summary>Step 4 entry point: find a saved job/quotation and open it.</summary>
-public partial class JobsViewModel(ApiClient api, ShellViewModel shell) : ObservableObject, IAsyncInitialize
+public partial class JobsViewModel(IApiClient api, ShellViewModel shell) : ObservableObject, IAsyncInitialize
 {
     public ObservableCollection<InvoiceListItemDto> Jobs { get; } = new();
 

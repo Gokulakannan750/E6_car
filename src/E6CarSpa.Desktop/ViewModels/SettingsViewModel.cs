@@ -8,7 +8,7 @@ using E6CarSpa.Domain.Enums;
 namespace E6CarSpa.Desktop.ViewModels;
 
 /// <summary>Admin screen: change own password, manage staff users, edit company / GST details.</summary>
-public partial class SettingsViewModel(ApiClient api) : ObservableObject, IAsyncInitialize
+public partial class SettingsViewModel(IApiClient api) : ObservableObject, IAsyncInitialize
 {
     // ----- Company settings -----
     [ObservableProperty] private string _name = "";

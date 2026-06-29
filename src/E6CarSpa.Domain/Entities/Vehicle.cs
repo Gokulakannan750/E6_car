@@ -9,5 +9,8 @@ public class Vehicle : BaseEntity
     /// <summary>Registration / number plate, e.g. "TN33 AB 1234". Stored normalised (upper-case, no spaces) for lookup.</summary>
     public string CarNumber { get; set; } = string.Empty;
 
+    /// <summary>The make and model of the car, e.g. "Honda City".</summary>
+    public string CarModel { get; set; } = string.Empty;
+
     public ICollection<Invoice> Invoices { get; set; } = new List<Invoice>();
 }

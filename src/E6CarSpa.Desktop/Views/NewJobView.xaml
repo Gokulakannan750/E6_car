@@ -19,6 +19,7 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0" Margin="0,0,10,0">
@@ -31,14 +32,45 @@
                     </StackPanel>
                     <StackPanel Grid.Column="2" Margin="0,0,10,0">
                         <TextBlock Text="Car Number" />
-                        <TextBox Text="{Binding CarNumber, UpdateSourceTrigger=PropertyChanged}"
-                                 CharacterCasing="Upper" />
+                        <TextBox Text="{Binding CarNumber, UpdateSourceTrigger=PropertyChanged}" MaxLength="100" CharacterCasing="Upper" />
                     </StackPanel>
-                    <Button Grid.Column="3" Content="🔍 Look up" VerticalAlignment="Bottom" Margin="0,0,0,8"
-                            Style="{StaticResource SecondaryButton}" Command="{Binding LookupCommand}" />
+                    <StackPanel Grid.Column="3" Margin="0,0,10,0">
+                        <TextBlock Text="Car Model" />
+                        <TextBox Text="{Binding CarModel, UpdateSourceTrigger=PropertyChanged}" MaxLength="120" />
+                    </StackPanel>
+                    <Button Grid.Column="4" Content="🔍 Look up" VerticalAlignment="Bottom" Margin="0,0,0,8"
+                            Style="{StaticResource SecondaryButton}" Command="{Binding LookupCommand}"
+                            ToolTip="Search by Phone or Car Number" />
                 </Grid>
-                <TextBlock Text="{Binding LookupInfo}" Style="{StaticResource Muted}"
-                           Visibility="{Binding LookupInfo, Converter={StaticResource StringToVis}}" />
+                <TextBlock Text="Tip: Enter a phone number or car number and click Look up to find an existing customer."
+                           Style="{StaticResource Muted}" Margin="0,0,0,4" />
+                <TextBlock Text="{Binding LookupInfo}" Style="{StaticResource Muted}" FontWeight="SemiBold"
+                           Foreground="{StaticResource SuccessBrush}"
+                           Visibility="{Binding LookupInfo, Converter={StaticResource StringToVis}}" Margin="0,0,0,4" />
+                <ItemsControl ItemsSource="{Binding KnownVehicles}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Background="Transparent" Foreground="{StaticResource PrimaryBrush}" 
+                                    BorderThickness="1" BorderBrush="{StaticResource PrimaryBrush}"
+                                    Padding="10,4" Margin="0,0,8,0" Cursor="Hand"
+                                    Command="{Binding DataContext.SelectVehicleCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                    CommandParameter="{Binding}">
+                                <Button.Content>
+                                    <TextBlock>
+                                        <Run Text="{Binding CarNumber}" />
+                                        <Run Text=" - " />
+                                        <Run Text="{Binding CarModel}" />
+                                    </TextBlock>
+                                </Button.Content>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
             </StackPanel>
         </Border>
 
@@ -98,8 +130,10 @@
                             <StackPanel Grid.Column="0" Margin="0,0,20,0">
                                 <TextBlock Text="Discount ₹" Style="{StaticResource Label}" />
                                 <TextBox Width="140" HorizontalAlignment="Left"
-                                         Text="{Binding DiscountAmount, UpdateSourceTrigger=PropertyChanged}" />
-                                <TextBlock Text="Notes" Style="{StaticResource Label}" Margin="0,4,0,0" />
+                                         Text="{Binding DiscountAmount, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+                                <CheckBox Content="Apply GST (tax)" IsChecked="{Binding ApplyGst}" Margin="0,8,0,0"
+                                          ToolTip="Uncheck for a non-GST bill (no tax charged)" />
+                                <TextBlock Text="Notes" Style="{StaticResource Label}" Margin="0,8,0,0" />
                                 <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}"
                                          TextWrapping="Wrap" AcceptsReturn="True" Height="56"
                                          VerticalScrollBarVisibility="Auto" VerticalContentAlignment="Top" />

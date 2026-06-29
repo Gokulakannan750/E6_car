@@ -24,7 +24,7 @@ public class InvoiceService(AppDbContext db, WhatsAppService whatsApp)
 
     public async Task<Invoice> CreateQuotationAsync(CreateQuotationRequest req, Guid? userId)
     {
-        var (customer, vehicle) = await ResolveCustomerVehicleAsync(req.CustomerName, req.CustomerPhone, req.CarNumber);
+        var (customer, vehicle) = await ResolveCustomerVehicleAsync(req.CustomerName, req.CustomerPhone, req.CarNumber, req.CarModel);
 
         var invoice = new Invoice
         {
@@ -33,6 +33,7 @@ public class InvoiceService(AppDbContext db, WhatsAppService whatsApp)
             Status = InvoiceStatus.Quotation,
             DiscountAmount = req.DiscountAmount,
             Notes = req.Notes,
+            IsGstApplicable = req.ApplyGst,
             CreatedByUserId = userId
         };
 
@@ -57,6 +58,7 @@ public class InvoiceService(AppDbContext db, WhatsAppService whatsApp)
         invoice.Items.Clear();
         invoice.DiscountAmount = req.DiscountAmount;
         invoice.Notes = req.Notes;
+        invoice.IsGstApplicable = req.ApplyGst;
         await AddItemsAsync(invoice, req.Items);
         GstCalculator.Recalculate(invoice, interState: false);
         invoice.UpdatedAt = DateTime.UtcNow;
@@ -87,7 +89,7 @@ public class InvoiceService(AppDbContext db, WhatsAppService whatsApp)
         invoice.InvoiceNumber = $"{settings.InvoicePrefix}{next}";
         invoice.Status = InvoiceStatus.Invoiced;
 
-        await ConsumeInventoryAsync(invoice, userId);
+        // await ConsumeInventoryAsync(invoice, userId); // Disabled per user request
 
         await db.SaveChangesAsync();
         await tx.CommitAsync();
@@ -175,7 +177,7 @@ public class InvoiceService(AppDbContext db, WhatsAppService whatsApp)
     // ---------- Helpers ----------
 
     private async Task<(Customer customer, Vehicle vehicle)> ResolveCustomerVehicleAsync(
-        string name, string phone, string carNumber)
+        string name, string phone, string carNumber, string carModel)
     {
         phone = phone.Trim();
         var car = carNumber.Trim().ToUpperInvariant().Replace(" ", "");
@@ -196,10 +198,14 @@ public class InvoiceService(AppDbContext db, WhatsAppService whatsApp)
         var vehicle = customer.Vehicles.FirstOrDefault(v => v.CarNumber == car);
         if (vehicle is null)
         {
-            vehicle = new Vehicle { CarNumber = car, CustomerId = customer.Id, Customer = customer };
+            vehicle = new Vehicle { CarNumber = car, CarModel = carModel.Trim(), CustomerId = customer.Id, Customer = customer };
             customer.Vehicles.Add(vehicle);
             // Explicit Add so EF inserts (not updates) when the customer is already tracked.
             db.Vehicles.Add(vehicle);
+        }
+        else if (!string.IsNullOrWhiteSpace(carModel) && vehicle.CarModel != carModel.Trim())
+        {
+            vehicle.CarModel = carModel.Trim();
         }
 
         return (customer, vehicle);

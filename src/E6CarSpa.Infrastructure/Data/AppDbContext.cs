@@ -49,7 +49,8 @@ public class AppDbContext : DbContext
         b.Entity<Vehicle>(e =>
         {
             e.HasIndex(x => x.CarNumber);
-            e.Property(x => x.CarNumber).HasMaxLength(20).IsRequired();
+            e.Property(x => x.CarNumber).HasMaxLength(100).IsRequired();
+            e.Property(x => x.CarModel).HasMaxLength(120);
             e.HasOne(x => x.Customer).WithMany(c => c.Vehicles)
                 .HasForeignKey(x => x.CustomerId).OnDelete(DeleteBehavior.Cascade);
         });

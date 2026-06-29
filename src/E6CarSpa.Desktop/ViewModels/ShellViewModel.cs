@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace E6CarSpa.Desktop.ViewModels;
 
 /// <summary>Hosts the navigation rail and the current page. Acts as the in-app navigation service.</summary>
-public partial class ShellViewModel(ApiClient api) : ObservableObject
+public partial class ShellViewModel(IApiClient api) : ObservableObject
 {
     [ObservableProperty] private object? _currentView;
     [ObservableProperty] private string _activeNav = "Dashboard";
@@ -28,6 +28,7 @@ public partial class ShellViewModel(ApiClient api) : ObservableObject
     public bool IsAdmin => api.CurrentUser?.Role is Domain.Enums.UserRole.Admin;
 
     [RelayCommand] private Task ShowDashboard() => NavigateAsync<DashboardViewModel>("Dashboard");
+    [RelayCommand] private Task ShowCustomers() => NavigateAsync<CustomersViewModel>("Customers");
     [RelayCommand] private Task ShowNewJob() => NavigateAsync<NewJobViewModel>("NewJob");
     [RelayCommand] private Task ShowJobs() => NavigateAsync<JobsViewModel>("Jobs");
     [RelayCommand] private Task ShowInventory() => NavigateAsync<InventoryViewModel>("Inventory");

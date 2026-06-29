@@ -8,10 +8,10 @@ public static class Mappers
 {
     public static UserDto ToDto(this User u) => new(u.Id, u.FullName, u.Username, u.Role, u.IsActive);
 
-    public static VehicleDto ToDto(this Vehicle v) => new(v.Id, v.CarNumber);
+    public static VehicleDto ToDto(this Vehicle v) => new(v.Id, v.CarNumber, v.CarModel);
 
     public static CustomerDto ToDto(this Customer c) =>
-        new(c.Id, c.Name, c.Phone, c.Vehicles.Select(v => v.ToDto()).ToList());
+        new(c.Id, c.Name, c.Phone, c.Vehicles.Select(v => v.ToDto()).ToList(), c.CreatedAt);
 
     public static ServiceDto ToDto(this Service s) =>
         new(s.Id, s.Name, s.Category, s.DefaultPrice, s.HsnSac, s.GstRate, s.IsActive);
@@ -33,16 +33,17 @@ public static class Mappers
     public static InvoiceDto ToDto(this Invoice inv) =>
         new(inv.Id, inv.InvoiceNumber, inv.Status,
             inv.CustomerId, inv.Customer?.Name ?? "", inv.Customer?.Phone ?? "",
-            inv.VehicleId, inv.Vehicle?.CarNumber ?? "",
+            inv.VehicleId, inv.Vehicle?.CarNumber ?? "", inv.Vehicle?.CarModel ?? "",
             inv.SubTotal, inv.DiscountAmount, inv.TaxableValue,
             inv.CgstAmount, inv.SgstAmount, inv.IgstAmount, inv.TotalTax,
             inv.GrandTotal, inv.AmountPaid, inv.Balance,
             inv.Notes, inv.CreatedAt, inv.CompletedAt,
             inv.Items.Select(x => x.ToDto()).ToList(),
-            inv.Payments.Select(x => x.ToDto()).ToList());
+            inv.Payments.Select(x => x.ToDto()).ToList(),
+            inv.IsGstApplicable);
 
     public static InvoiceListItemDto ToListItem(this Invoice inv) =>
         new(inv.Id, inv.InvoiceNumber, inv.Status,
-            inv.Customer?.Name ?? "", inv.Vehicle?.CarNumber ?? "",
+            inv.Customer?.Name ?? "", inv.Vehicle?.CarNumber ?? "", inv.Vehicle?.CarModel ?? "",
             inv.GrandTotal, inv.Balance, inv.CreatedAt);
 }

@@ -49,7 +49,8 @@ public static class GstCalculator
             var lineTaxable = Math.Max(0m, Round(bases[i] - share));
             item.TaxableValue = lineTaxable;
 
-            var lineTax = Round(lineTaxable * item.GstRate / 100m);
+            // Non-GST bill: no tax is charged.
+            var lineTax = invoice.IsGstApplicable ? Round(lineTaxable * item.GstRate / 100m) : 0m;
             if (interState)
             {
                 item.IgstAmount = lineTax;

@@ -24,9 +24,14 @@ public class CustomersController(AppDbContext db) : ApiControllerBase
     public async Task<ActionResult<CustomerLookupResult>> ByCar(string carNumber)
     {
         var car = carNumber.Trim().ToUpperInvariant().Replace(" ", "");
-        var vehicle = await db.Vehicles.AsNoTracking().Include(v => v.Customer!).ThenInclude(c => c.Vehicles)
+        var vehicle = await db.Vehicles.AsNoTracking()
             .FirstOrDefaultAsync(v => v.CarNumber == car);
-        return new CustomerLookupResult(vehicle?.Customer is not null, vehicle?.Customer?.ToDto());
+        if (vehicle is null)
+            return new CustomerLookupResult(false, null);
+
+        var customer = await db.Customers.AsNoTracking().Include(c => c.Vehicles)
+            .FirstOrDefaultAsync(c => c.Id == vehicle.CustomerId);
+        return new CustomerLookupResult(customer is not null, customer?.ToDto());
     }
 
     [HttpGet]

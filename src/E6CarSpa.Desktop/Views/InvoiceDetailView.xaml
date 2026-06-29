@@ -17,6 +17,8 @@
                         <Run Text="{Binding Invoice.CustomerPhone, Mode=OneWay}" />
                         <Run Text="  ·  Car: " />
                         <Run Text="{Binding Invoice.CarNumber, Mode=OneWay}" FontWeight="SemiBold" />
+                        <Run Text=" - " />
+                        <Run Text="{Binding Invoice.CarModel, Mode=OneWay}" FontWeight="SemiBold" />
                     </TextBlock>
                 </StackPanel>
                 <Border Grid.Column="1" Background="#FFEBEE" CornerRadius="8" Padding="14,8" VerticalAlignment="Top">
@@ -76,9 +78,11 @@
                     <StackPanel Grid.Column="0" Margin="0,0,24,0">
                         <TextBlock Text="Discount ₹" FontWeight="SemiBold" />
                         <TextBox Width="160" HorizontalAlignment="Left"
-                                 Text="{Binding DiscountAmount, UpdateSourceTrigger=PropertyChanged}"
+                                 Text="{Binding DiscountAmount, UpdateSourceTrigger=PropertyChanged, Delay=200}"
                                  IsEnabled="{Binding CanEdit}" />
-                        <TextBlock Text="Notes" FontWeight="SemiBold" Margin="0,6,0,0" />
+                        <CheckBox Content="Apply GST (tax)" IsChecked="{Binding ApplyGst}" IsEnabled="{Binding CanEdit}"
+                                  Margin="0,8,0,0" ToolTip="Uncheck for a non-GST bill (no tax charged)" />
+                        <TextBlock Text="Notes" FontWeight="SemiBold" Margin="0,8,0,0" />
                         <TextBox Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}" IsEnabled="{Binding CanEdit}" />
                     </StackPanel>
                     <StackPanel Grid.Column="1">
@@ -139,7 +143,7 @@
                         </StackPanel>
                         <StackPanel Grid.Column="1" Margin="0,0,12,0">
                             <TextBlock Text="Amount ₹" FontWeight="SemiBold" />
-                            <TextBox Text="{Binding PaymentAmount, UpdateSourceTrigger=PropertyChanged}" />
+                            <TextBox Text="{Binding PaymentAmount, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
                         </StackPanel>
                         <StackPanel Grid.Column="2" Margin="0,0,12,0">
                             <TextBlock Text="Reference (UPI/Card txn)" FontWeight="SemiBold" />
@@ -148,8 +152,33 @@
                         <Button Grid.Column="3" Content="💰 Record Payment" VerticalAlignment="Bottom" Margin="0,0,0,10"
                                 Command="{Binding RecordPaymentCommand}" />
                     </Grid>
-                    <TextBlock Text="On full payment, an automatic WhatsApp thank-you is sent to the customer."
-                               Style="{StaticResource Muted}" Margin="0,4,0,0" />
+                    <TextBlock Text="Tip: enter an amount less than the balance to record a part-payment — the bill stays open with the remaining balance. On full payment, an automatic WhatsApp thank-you is sent."
+                               Style="{StaticResource Muted}" TextWrapping="Wrap" Margin="0,4,0,0" />
+                </StackPanel>
+            </Border>
+
+            <!-- Payments received (history of all part / full payments) -->
+            <Border Style="{StaticResource Card}"
+                    Visibility="{Binding Invoice.Payments.Count, Converter={StaticResource CountToVis}}">
+                <StackPanel>
+                    <TextBlock Text="Payments received" Style="{StaticResource H2}" />
+                    <DataGrid ItemsSource="{Binding Invoice.Payments}" AutoGenerateColumns="False"
+                              IsReadOnly="True" HeadersVisibility="Column" CanUserAddRows="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Date" Binding="{Binding PaidAt, StringFormat='dd-MM-yyyy HH:mm'}" Width="160" />
+                            <DataGridTextColumn Header="Method" Binding="{Binding Method}" Width="100" />
+                            <DataGridTextColumn Header="Amount ₹" Binding="{Binding Amount, StringFormat='{}{0:N2}'}" Width="120" />
+                            <DataGridTextColumn Header="Reference" Binding="{Binding Reference}" Width="*" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TextBlock Margin="0,6,0,0">
+                        <Run Text="Total paid: " FontWeight="SemiBold" />
+                        <Run Text="{Binding Invoice.AmountPaid, StringFormat='₹{0:N2}', Mode=OneWay}"
+                             FontWeight="Bold" Foreground="{StaticResource SuccessBrush}" />
+                        <Run Text="   Balance: " FontWeight="SemiBold" />
+                        <Run Text="{Binding Invoice.Balance, StringFormat='₹{0:N2}', Mode=OneWay}"
+                             FontWeight="Bold" Foreground="{StaticResource DangerBrush}" />
+                    </TextBlock>
                 </StackPanel>
             </Border>
 

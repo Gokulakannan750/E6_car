@@ -42,6 +42,9 @@ public class Invoice : BaseEntity
     /// <summary>Used instead of CGST+SGST for inter-state supply.</summary>
     public decimal IgstAmount { get; set; }
 
+    /// <summary>When false, this is a non-GST bill: no tax is charged and the PDF omits GST lines.</summary>
+    public bool IsGstApplicable { get; set; } = true;
+
     public decimal TotalTax { get; set; }
 
     /// <summary>Final payable amount (TaxableValue + TotalTax, rounded).</summary>

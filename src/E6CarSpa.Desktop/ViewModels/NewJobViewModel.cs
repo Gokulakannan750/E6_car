@@ -10,13 +10,16 @@ namespace E6CarSpa.Desktop.ViewModels;
 /// Workflow steps 1-3: capture the customer + car (with auto-lookup), pick services
 /// from the catalogue, then save as a quotation.
 /// </summary>
-public partial class NewJobViewModel(ApiClient api, ShellViewModel shell) : ObservableObject, IAsyncInitialize
+public partial class NewJobViewModel(IApiClient api, ShellViewModel shell) : ObservableObject, IAsyncInitialize
 {
     // Step 1 — intake
     [ObservableProperty] private string _customerName = "";
     [ObservableProperty] private string _phone = "";
     [ObservableProperty] private string _carNumber = "";
+    [ObservableProperty] private string _carModel = "";
     [ObservableProperty] private string _lookupInfo = "";
+
+    public ObservableCollection<VehicleDto> KnownVehicles { get; } = new();
 
     // Step 2 — catalogue + chosen lines
     public ObservableCollection<ServiceDto> Catalogue { get; } = new();
@@ -26,12 +29,15 @@ public partial class NewJobViewModel(ApiClient api, ShellViewModel shell) : Obse
     [ObservableProperty] private decimal _discountAmount;
     [ObservableProperty] private string _notes = "";
 
+    /// <summary>When off, this quotation is a non-GST bill (no tax charged).</summary>
+    [ObservableProperty] private bool _applyGst = true;
+
     [ObservableProperty] private bool _isBusy;
     [ObservableProperty] private string _error = "";
 
     // Totals (client-side preview; the server is authoritative)
     public decimal SubTotal => Lines.Sum(l => l.Quantity * l.UnitPrice);
-    public decimal TotalTax => Lines.Sum(l => l.TaxAmount);
+    public decimal TotalTax => ApplyGst ? Lines.Sum(l => l.TaxAmount) : 0m;
     public decimal GrandTotal => Math.Max(0, SubTotal - Lines.Sum(l => l.DiscountAmount) - DiscountAmount + TotalTax);
 
     public async Task InitializeAsync()
@@ -49,6 +55,7 @@ public partial class NewJobViewModel(ApiClient api, ShellViewModel shell) : Obse
     private async Task LookupAsync()
     {
         LookupInfo = "";
+        KnownVehicles.Clear();
         try
         {
             CustomerLookupResult? result = null;
@@ -61,8 +68,15 @@ public partial class NewJobViewModel(ApiClient api, ShellViewModel shell) : Obse
             {
                 CustomerName = c.Name;
                 Phone = c.Phone;
-                if (string.IsNullOrWhiteSpace(CarNumber) && c.Vehicles.Count > 0)
+                
+                foreach (var v in c.Vehicles)
+                    KnownVehicles.Add(v);
+
+                if (string.IsNullOrWhiteSpace(CarNumber) && c.Vehicles.Count == 1)
+                {
                     CarNumber = c.Vehicles[0].CarNumber;
+                    CarModel = c.Vehicles[0].CarModel;
+                }
                 LookupInfo = $"Existing customer — {c.Vehicles.Count} vehicle(s) on file.";
             }
             else
@@ -71,6 +85,16 @@ public partial class NewJobViewModel(ApiClient api, ShellViewModel shell) : Obse
             }
         }
         catch (Exception ex) { Error = ex.Message; }
+    }
+
+    [RelayCommand]
+    private void SelectVehicle(VehicleDto v)
+    {
+        if (v is not null)
+        {
+            CarNumber = v.CarNumber;
+            CarModel = v.CarModel;
+        }
     }
 
     [RelayCommand]
@@ -105,6 +129,7 @@ public partial class NewJobViewModel(ApiClient api, ShellViewModel shell) : Obse
     }
 
     partial void OnDiscountAmountChanged(decimal value) => RecalcTotals();
+    partial void OnApplyGstChanged(bool value) => RecalcTotals();
 
     private void RecalcTotals()
     {
@@ -132,10 +157,11 @@ public partial class NewJobViewModel(ApiClient api, ShellViewModel shell) : Obse
         {
             IsBusy = true;
             var req = new CreateQuotationRequest(
-                CustomerName.Trim(), Phone.Trim(), CarNumber.Trim(),
+                CustomerName.Trim(), Phone.Trim(), CarNumber.Trim(), CarModel?.Trim() ?? "",
                 DiscountAmount, string.IsNullOrWhiteSpace(Notes) ? null : Notes.Trim(),
                 Lines.Select(l => new InvoiceItemInput(
-                    l.ServiceId, l.ProductId, l.Description, l.Quantity, l.UnitPrice, l.DiscountAmount)).ToList());
+                    l.ServiceId, l.ProductId, l.Description, l.Quantity, l.UnitPrice, l.DiscountAmount)).ToList(),
+                ApplyGst);
 
             var invoice = await api.CreateQuotationAsync(req);
             Reset();
@@ -147,8 +173,10 @@ public partial class NewJobViewModel(ApiClient api, ShellViewModel shell) : Obse
 
     private void Reset()
     {
-        CustomerName = Phone = CarNumber = Notes = LookupInfo = "";
+        CustomerName = Phone = CarNumber = CarModel = Notes = LookupInfo = "";
         DiscountAmount = 0;
+        ApplyGst = true;
+        KnownVehicles.Clear();
         foreach (var l in Lines) l.Changed -= RecalcTotals;
         Lines.Clear();
         RecalcTotals();

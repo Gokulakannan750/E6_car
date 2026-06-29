@@ -7,7 +7,7 @@ using E6CarSpa.Desktop.Services;
 namespace E6CarSpa.Desktop.ViewModels;
 
 /// <summary>Inventory: view stock, receive purchases, and make manual adjustments.</summary>
-public partial class InventoryViewModel(ApiClient api) : ObservableObject, IAsyncInitialize
+public partial class InventoryViewModel(IApiClient api) : ObservableObject, IAsyncInitialize
 {
     public ObservableCollection<ProductDto> Products { get; } = new();
     [ObservableProperty] private ProductDto? _selectedProduct;

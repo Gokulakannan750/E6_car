@@ -4,7 +4,7 @@ using E6CarSpa.Desktop.Services;
 
 namespace E6CarSpa.Desktop.ViewModels;
 
-public partial class DashboardViewModel(ApiClient api) : ObservableObject, IAsyncInitialize
+public partial class DashboardViewModel(IApiClient api) : ObservableObject, IAsyncInitialize
 {
     [ObservableProperty] private DashboardSummaryDto? _summary;
     [ObservableProperty] private bool _isBusy;

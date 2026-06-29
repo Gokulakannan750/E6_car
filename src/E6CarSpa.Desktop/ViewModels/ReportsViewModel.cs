@@ -7,7 +7,7 @@ using E6CarSpa.Desktop.Services;
 namespace E6CarSpa.Desktop.ViewModels;
 
 /// <summary>Owner reports: sales for a date range, GST summary for filing, and customer history.</summary>
-public partial class ReportsViewModel(ApiClient api) : ObservableObject, IAsyncInitialize
+public partial class ReportsViewModel(IApiClient api) : ObservableObject, IAsyncInitialize
 {
     [ObservableProperty] private DateTime _fromDate = new(DateTime.Today.Year, DateTime.Today.Month, 1);
     [ObservableProperty] private DateTime _toDate = DateTime.Today;
