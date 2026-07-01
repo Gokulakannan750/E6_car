@@ -6,6 +6,7 @@ using E6CarSpa.Api.Services;
 using E6CarSpa.Infrastructure.Data;
 using E6CarSpa.Infrastructure.Data.Seed;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -78,7 +79,15 @@ builder.Services
             ClockSkew = TimeSpan.FromMinutes(5)
         };
     });
-builder.Services.AddAuthorization();
+// Secure-by-default: every endpoint requires an authenticated user UNLESS it opts out with
+// [AllowAnonymous] (only the login endpoint does). This closes endpoints that lack an explicit
+// [Authorize] — important now that the API is reachable over the internet.
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
 
 // ----- Rate limiting -----
 // Protects the login endpoint from brute-force attacks.

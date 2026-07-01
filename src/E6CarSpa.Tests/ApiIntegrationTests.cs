@@ -136,6 +136,45 @@ public class ApiIntegrationTests
         Assert.Equal(HttpStatusCode.Unauthorized, resp.StatusCode);
     }
 
+    [Fact]
+    public async Task Invoices_WithoutToken_ReturnsUnauthorized()
+    {
+        using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+
+        // Previously anonymous — now covered by the global fallback auth policy.
+        var list = await client.GetAsync("/api/invoices");
+        var create = await client.PostAsJsonAsync("/api/invoices/quotation",
+            new CreateQuotationRequest("Cust", "9000000000", "TN01 AA 1", "Model",
+                0m, null, new List<InvoiceItemInput> { new(null, null, "Wash", 1, 500m, 0m) }, true));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, list.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, create.StatusCode);
+    }
+
+    [Fact]
+    public async Task Dashboard_WithoutToken_ReturnsUnauthorized()
+    {
+        using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+
+        var resp = await client.GetAsync("/api/dashboard");
+
+        Assert.Equal(HttpStatusCode.Unauthorized, resp.StatusCode);
+    }
+
+    [Fact]
+    public async Task Invoices_WithToken_IsAllowed()
+    {
+        using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+        Authorize(client, await LoginAsync(client, "admin", "admin@123"));
+
+        var resp = await client.GetAsync("/api/invoices");
+
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+    }
+
     // ---------- hardening ----------
 
     [Fact]
