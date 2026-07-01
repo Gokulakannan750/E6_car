@@ -4,33 +4,33 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="E6CarSpa.Mobile.Pages.LowStockPage"
     Title="Low Stock"
-    BackgroundColor="#0F0F0F">
+   >
 
     <RefreshView x:Name="Refresh" Refreshing="OnRefreshing">
         <ScrollView>
             <VerticalStackLayout Padding="16" Spacing="12">
 
-                <Label Text="Items at or below reorder level" TextColor="#888" FontSize="13" />
+                <Label Text="Items at or below reorder level" FontSize="13" />
 
                 <Label x:Name="EmptyLabel" Text="All stock levels are healthy. 👍"
-                       TextColor="#888" FontSize="15" IsVisible="False" Margin="0,12,0,0" />
+                       FontSize="15" IsVisible="False" Margin="0,12,0,0" />
 
                 <CollectionView x:Name="List">
                     <CollectionView.ItemTemplate>
                         <DataTemplate>
-                            <Border BackgroundColor="#1E1E1E" StrokeThickness="0" Padding="14"
+                            <Border Style="{StaticResource CardBorder}" StrokeThickness="0" Padding="14"
                                     Margin="0,0,0,8" StrokeShape="RoundRectangle 10">
                                 <Grid ColumnDefinitions="*,Auto">
                                     <VerticalStackLayout Grid.Column="0" Spacing="2">
-                                        <Label Text="{Binding Name}" TextColor="White" FontSize="16" FontAttributes="Bold" />
-                                        <Label Text="{Binding Category}" TextColor="#888" FontSize="13" />
+                                        <Label Text="{Binding Name}" FontSize="16" FontAttributes="Bold" />
+                                        <Label Text="{Binding Category}" FontSize="13" />
                                     </VerticalStackLayout>
                                     <VerticalStackLayout Grid.Column="1" Spacing="2" HorizontalOptions="End">
                                         <Label Text="{Binding StockQuantity, StringFormat='{0:N0} left'}"
-                                               TextColor="#FF8A65" FontSize="16" FontAttributes="Bold"
+                                               TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource Warning}}" FontSize="16" FontAttributes="Bold"
                                                HorizontalOptions="End" />
                                         <Label Text="{Binding ReorderLevel, StringFormat='reorder at {0:N0}'}"
-                                               TextColor="#888" FontSize="12" HorizontalOptions="End" />
+                                               FontSize="12" HorizontalOptions="End" />
                                     </VerticalStackLayout>
                                 </Grid>
                             </Border>
@@ -38,7 +38,7 @@
                     </CollectionView.ItemTemplate>
                 </CollectionView>
 
-                <Label x:Name="ErrorLabel" TextColor="#FF6B6B" FontSize="13" IsVisible="False" />
+                <Label x:Name="ErrorLabel" TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource Error}}" FontSize="13" IsVisible="False" />
 
             </VerticalStackLayout>
         </ScrollView>

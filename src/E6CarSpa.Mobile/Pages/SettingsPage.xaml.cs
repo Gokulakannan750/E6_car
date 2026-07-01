@@ -11,6 +11,19 @@ public partial class SettingsPage : ContentPage
         UserLabel.Text = user?.FullName ?? "—";
         RoleLabel.Text = user?.Role.ToString() ?? "";
         ServerEntry.Text = Settings.ApiUrl;
+
+        // Initialise the toggle to match the current theme
+        ThemeSwitch.IsToggled = Application.Current?.UserAppTheme == AppTheme.Dark;
+    }
+
+    private void OnThemeToggled(object? sender, ToggledEventArgs e)
+    {
+        if (Application.Current is null) return;
+
+        Application.Current.UserAppTheme = e.Value ? AppTheme.Dark : AppTheme.Light;
+
+        // Persist so it survives app restarts
+        Preferences.Set("AppTheme", e.Value ? "Dark" : "Light");
     }
 
     private void OnSaveClicked(object? sender, EventArgs e)

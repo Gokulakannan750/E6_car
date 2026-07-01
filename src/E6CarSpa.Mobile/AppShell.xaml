@@ -5,26 +5,18 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:E6CarSpa.Mobile.Pages"
     Title="E6 Car Spa"
-    FlyoutBehavior="Disabled"
-    BackgroundColor="#1A1A1A"
-    Shell.BackgroundColor="#1A1A1A"
-    Shell.ForegroundColor="White"
-    Shell.TitleColor="White"
-    Shell.TabBarBackgroundColor="#1A1A1A"
-    Shell.TabBarForegroundColor="#B71C1C"
-    Shell.TabBarTitleColor="#B71C1C"
-    Shell.TabBarUnselectedColor="#888888">
+    FlyoutBehavior="Disabled">
 
     <TabBar>
-        <ShellContent Title="Dashboard"
+        <ShellContent Title="Dashboard" Icon="icon_dashboard.png"
                       ContentTemplate="{DataTemplate pages:DashboardPage}" Route="dashboard" />
-        <ShellContent Title="New Job"
+        <ShellContent Title="New Job" Icon="icon_newjob.png"
                       ContentTemplate="{DataTemplate pages:NewJobPage}" Route="newjob" />
-        <ShellContent Title="Jobs"
+        <ShellContent Title="Jobs" Icon="icon_jobs.png"
                       ContentTemplate="{DataTemplate pages:JobsPage}" Route="jobs" />
-        <ShellContent Title="Reports"
+        <ShellContent Title="Reports" Icon="icon_reports.png"
                       ContentTemplate="{DataTemplate pages:ReportsPage}" Route="reports" />
-        <ShellContent Title="Settings"
+        <ShellContent Title="Settings" Icon="icon_settings.png"
                       ContentTemplate="{DataTemplate pages:SettingsPage}" Route="settings" />
     </TabBar>
 

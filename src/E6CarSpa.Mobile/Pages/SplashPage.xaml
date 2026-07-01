@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="E6CarSpa.Mobile.Pages.SplashPage"
+             BackgroundColor="#0F0F0F">
+
+    <Grid>
+        <!-- Subtle brand-red glow behind the logo for a punchier, on-brand feel -->
+        <Ellipse WidthRequest="420" HeightRequest="420" Opacity="0.18"
+                 HorizontalOptions="Center" VerticalOptions="Center">
+            <Ellipse.Fill>
+                <RadialGradientBrush>
+                    <GradientStop Offset="0.0" Color="#B71C1C" />
+                    <GradientStop Offset="1.0" Color="#0F0F0F" />
+                </RadialGradientBrush>
+            </Ellipse.Fill>
+        </Ellipse>
+
+        <!-- The logo (522x214 banner) is split down the middle and the two halves slide
+             together; the box matches the real aspect ratio so it isn't squished. -->
+        <Image x:Name="LeftLogo"
+               Source="logo.png"
+               WidthRequest="320"
+               HeightRequest="131"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"
+               Aspect="AspectFit">
+            <Image.Clip>
+                <RectangleGeometry Rect="0,0,160,131" />
+            </Image.Clip>
+        </Image>
+
+        <Image x:Name="RightLogo"
+               Source="logo.png"
+               WidthRequest="320"
+               HeightRequest="131"
+               HorizontalOptions="Center"
+               VerticalOptions="Center"
+               Aspect="AspectFit">
+            <Image.Clip>
+                <RectangleGeometry Rect="160,0,160,131" />
+            </Image.Clip>
+        </Image>
+
+        <ActivityIndicator IsRunning="True" Color="#B71C1C"
+                            HorizontalOptions="Center" VerticalOptions="End" Margin="0,0,0,60" />
+    </Grid>
+</ContentPage>

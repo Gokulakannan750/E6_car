@@ -3,7 +3,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="E6CarSpa.Mobile.Pages.LoginPage"
-    BackgroundColor="#1A1A1A"
+   
     Shell.NavBarIsVisible="False">
 
     <ScrollView>
@@ -11,42 +11,42 @@
 
             <Label Text="E6 CAR SPA"
                    FontSize="34" FontAttributes="Bold"
-                   TextColor="White" HorizontalOptions="Center" />
+                   HorizontalOptions="Center" />
             <Label Text="Billing Terminal"
-                   FontSize="16" TextColor="#B71C1C"
+                   FontSize="16"
                    HorizontalOptions="Center" Margin="0,0,0,12" />
 
             <Entry x:Name="UsernameEntry"
-                   Placeholder="Username" PlaceholderColor="#888"
-                   TextColor="White" BackgroundColor="#262626"
+                   Placeholder="Username"
+                  
                    ReturnType="Next" />
 
             <Entry x:Name="PasswordEntry"
-                   Placeholder="Password" PlaceholderColor="#888"
-                   TextColor="White" BackgroundColor="#262626"
+                   Placeholder="Password"
+                  
                    IsPassword="True" ReturnType="Go"
                    Completed="OnLoginClicked" />
 
-            <Label Text="Server address" TextColor="#888" FontSize="12" Margin="2,8,0,0" />
+            <Label Text="Server address" FontSize="12" Margin="2,8,0,0" />
             <Entry x:Name="ServerEntry"
-                   Placeholder="https://api.yourshop.com" PlaceholderColor="#888"
-                   TextColor="White" BackgroundColor="#262626"
+                   Placeholder="https://api.yourshop.com"
+                  
                    Keyboard="Url" />
 
             <Label x:Name="ErrorLabel"
-                   TextColor="#FF6B6B" IsVisible="False"
+                   TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource Error}}" IsVisible="False"
                    FontSize="13" Margin="2,4,0,0" />
 
             <Button x:Name="LoginButton"
                     Text="Sign In"
-                    BackgroundColor="#B71C1C" TextColor="White"
+                   
                     FontAttributes="Bold" HeightRequest="50"
                     Margin="0,12,0,0"
                     Clicked="OnLoginClicked" />
 
             <ActivityIndicator x:Name="Busy"
                                IsRunning="False" IsVisible="False"
-                               Color="#B71C1C" />
+                               />
 
         </VerticalStackLayout>
     </ScrollView>

@@ -47,15 +47,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<!-- App Icon -->
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+		<!-- App Icon (E6 Car Spa emblem — square, already has its own black background) -->
+		<MauiIcon Include="Resources\AppIcon\appicon.png" Color="#0F0F0F" />
 
-		<!-- Splash Screen -->
-		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+		<!-- Splash Screen (wide banner logo, 522x214 — BaseSize matches its real aspect ratio) -->
+		<MauiSplashScreen Include="Resources\Images\logo.png" Color="#0F0F0F" BaseSize="300,124" />
 
 		<!-- Images -->
 		<MauiImage Include="Resources\Images\*" />
-		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
 		
 		<!-- Custom Fonts -->
 		<MauiFont Include="Resources\Fonts\*" />

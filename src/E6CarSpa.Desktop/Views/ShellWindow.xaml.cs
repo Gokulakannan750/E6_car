@@ -15,7 +15,16 @@ public partial class ShellWindow : Window
         InitializeComponent();
         _vm = vm;
         DataContext = vm;
-        
+
+        // Size to the screen's work area minus a visible margin on all four sides, then
+        // center — rather than letting the window touch the screen edges.
+        const double margin = 40;
+        var work = SystemParameters.WorkArea;
+        Width = Math.Max(MinWidth, Math.Min(Width, work.Width - margin * 2));
+        Height = Math.Max(MinHeight, Math.Min(Height, work.Height - margin * 2));
+        Left = work.Left + (work.Width - Width) / 2;
+        Top = work.Top + (work.Height - Height) / 2;
+
         _inactivityTimer = new System.Windows.Threading.DispatcherTimer
         {
             Interval = TimeSpan.FromMinutes(5)

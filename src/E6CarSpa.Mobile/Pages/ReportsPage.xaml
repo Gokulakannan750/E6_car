@@ -4,54 +4,54 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="E6CarSpa.Mobile.Pages.ReportsPage"
     Title="Reports"
-    BackgroundColor="#0F0F0F">
+   >
 
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="14">
 
             <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
                 <VerticalStackLayout Grid.Column="0" Spacing="2">
-                    <Label Text="From" TextColor="#888" FontSize="12" />
-                    <DatePicker x:Name="FromPicker" TextColor="White" Format="dd MMM yyyy" />
+                    <Label Text="From" FontSize="12" />
+                    <DatePicker x:Name="FromPicker" Format="dd MMM yyyy" />
                 </VerticalStackLayout>
                 <VerticalStackLayout Grid.Column="1" Spacing="2">
-                    <Label Text="To" TextColor="#888" FontSize="12" />
-                    <DatePicker x:Name="ToPicker" TextColor="White" Format="dd MMM yyyy" />
+                    <Label Text="To" FontSize="12" />
+                    <DatePicker x:Name="ToPicker" Format="dd MMM yyyy" />
                 </VerticalStackLayout>
             </Grid>
 
             <Button x:Name="LoadButton" Text="Load report"
-                    BackgroundColor="#B71C1C" TextColor="White" FontAttributes="Bold"
+                    FontAttributes="Bold"
                     Clicked="OnLoadClicked" />
 
-            <ActivityIndicator x:Name="Busy" IsRunning="False" IsVisible="False" Color="#B71C1C" />
-            <Label x:Name="ErrorLabel" TextColor="#FF6B6B" FontSize="13" IsVisible="False" />
+            <ActivityIndicator x:Name="Busy" IsRunning="False" IsVisible="False" />
+            <Label x:Name="ErrorLabel" TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource Error}}" FontSize="13" IsVisible="False" />
 
             <VerticalStackLayout x:Name="ResultPanel" Spacing="12" IsVisible="False">
 
-                <Border BackgroundColor="#1E1E1E" StrokeThickness="0" Padding="18" StrokeShape="RoundRectangle 12">
+                <Border Style="{StaticResource CardBorder}" StrokeThickness="0" Padding="18" StrokeShape="RoundRectangle 12">
                     <VerticalStackLayout Spacing="2">
-                        <Label Text="Sales (grand total)" TextColor="#888" FontSize="13" />
-                        <Label x:Name="GrandLabel" Text="₹0" TextColor="White" FontSize="30" FontAttributes="Bold" />
-                        <Label x:Name="InvoiceCountLabel" TextColor="#888" FontSize="13" />
+                        <Label Text="Sales (grand total)" FontSize="13" />
+                        <Label x:Name="GrandLabel" Text="₹0" FontSize="30" FontAttributes="Bold" />
+                        <Label x:Name="InvoiceCountLabel" FontSize="13" />
                     </VerticalStackLayout>
                 </Border>
 
                 <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="8">
-                    <Label Grid.Row="0" Grid.Column="0" Text="Collected" TextColor="#888" />
-                    <Label Grid.Row="0" Grid.Column="1" x:Name="CollectedLabel" HorizontalOptions="End" TextColor="White" />
-                    <Label Grid.Row="1" Grid.Column="0" Text="Outstanding" TextColor="#888" />
-                    <Label Grid.Row="1" Grid.Column="1" x:Name="OutstandingLabel" HorizontalOptions="End" TextColor="#FF8A65" />
-                    <Label Grid.Row="2" Grid.Column="0" Text="Total GST" TextColor="#888" />
-                    <Label Grid.Row="2" Grid.Column="1" x:Name="TaxLabel" HorizontalOptions="End" TextColor="White" />
+                    <Label Grid.Row="0" Grid.Column="0" Text="Collected" />
+                    <Label Grid.Row="0" Grid.Column="1" x:Name="CollectedLabel" HorizontalOptions="End" />
+                    <Label Grid.Row="1" Grid.Column="0" Text="Outstanding" />
+                    <Label Grid.Row="1" Grid.Column="1" x:Name="OutstandingLabel" HorizontalOptions="End" TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource Warning}}" />
+                    <Label Grid.Row="2" Grid.Column="0" Text="Total GST" />
+                    <Label Grid.Row="2" Grid.Column="1" x:Name="TaxLabel" HorizontalOptions="End" />
                 </Grid>
 
-                <BoxView HeightRequest="1" Color="#2A2A2A" />
+                <BoxView HeightRequest="1" />
 
-                <Label Text="Payment split" TextColor="White" FontSize="15" FontAttributes="Bold" />
-                <Label x:Name="SplitLabel" TextColor="#CCC" FontSize="14" />
+                <Label Text="Payment split" FontSize="15" FontAttributes="Bold" />
+                <Label x:Name="SplitLabel" FontSize="14" />
 
-                <Label Text="Top services" TextColor="White" FontSize="15" FontAttributes="Bold" Margin="0,6,0,0" />
+                <Label Text="Top services" FontSize="15" FontAttributes="Bold" Margin="0,6,0,0" />
                 <VerticalStackLayout x:Name="TopServicesPanel" Spacing="6" />
 
             </VerticalStackLayout>

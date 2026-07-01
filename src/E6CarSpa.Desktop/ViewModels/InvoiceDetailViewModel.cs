@@ -43,9 +43,16 @@ public partial class InvoiceDetailViewModel(IApiClient api) : ObservableObject
     public string Title => Invoice is null ? "" :
         $"{(Invoice.Status == InvoiceStatus.Quotation ? "Quotation" : "Invoice")} {Invoice.InvoiceNumber ?? "(draft)"}";
 
+    // Mirrors GstCalculator.Recalculate: discount (line + header) comes off the subtotal
+    // first, then GST is charged ONCE on that final taxable amount — not summed per line —
+    // since the shop uses a single GST rate for every service.
     public decimal SubTotal => Lines.Sum(l => l.Quantity * l.UnitPrice);
-    public decimal TotalTax => ApplyGst ? Lines.Sum(l => l.TaxAmount) : 0m;
-    public decimal GrandTotal => Math.Max(0, SubTotal - Lines.Sum(l => l.DiscountAmount) - DiscountAmount + TotalTax);
+    public decimal DiscountTotal => Lines.Sum(l => l.DiscountAmount) + DiscountAmount;
+    public decimal TaxableTotal => Math.Max(0m, Math.Round(SubTotal - DiscountTotal, 2, MidpointRounding.AwayFromZero));
+    public decimal TotalTax => ApplyGst
+        ? Math.Round(TaxableTotal * (Lines.Count > 0 ? Lines[0].GstRate : 0m) / 100m, 2, MidpointRounding.AwayFromZero)
+        : 0m;
+    public decimal GrandTotal => Math.Round(TaxableTotal + TotalTax, 2, MidpointRounding.AwayFromZero);
 
     public async Task LoadAsync(Guid id)
     {
@@ -198,6 +205,8 @@ public partial class InvoiceDetailViewModel(IApiClient api) : ObservableObject
     private void RaiseAll()
     {
         OnPropertyChanged(nameof(SubTotal));
+        OnPropertyChanged(nameof(DiscountTotal));
+        OnPropertyChanged(nameof(TaxableTotal));
         OnPropertyChanged(nameof(TotalTax));
         OnPropertyChanged(nameof(GrandTotal));
         OnPropertyChanged(nameof(CanEdit));

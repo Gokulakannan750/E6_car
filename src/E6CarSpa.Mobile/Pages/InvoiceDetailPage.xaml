@@ -5,48 +5,48 @@
     xmlns:vm="clr-namespace:E6CarSpa.Mobile.ViewModels"
     x:Class="E6CarSpa.Mobile.Pages.InvoiceDetailPage"
     Title="Invoice"
-    BackgroundColor="#0F0F0F">
+   >
 
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="12">
 
-            <Label x:Name="TitleLabel" TextColor="White" FontSize="20" FontAttributes="Bold" />
-            <Label x:Name="CustomerLabel" TextColor="#CCC" FontSize="14" />
-            <Label x:Name="CarLabel" TextColor="#888" FontSize="13" />
-            <Label x:Name="StatusLabel" TextColor="#B71C1C" FontSize="13" />
+            <Label x:Name="TitleLabel" FontSize="20" FontAttributes="Bold" />
+            <Label x:Name="CustomerLabel" FontSize="14" />
+            <Label x:Name="CarLabel" FontSize="13" />
+            <Label x:Name="StatusLabel" FontSize="13" />
 
-            <BoxView HeightRequest="1" Color="#2A2A2A" Margin="0,4" />
+            <BoxView HeightRequest="1" Margin="0,4" />
 
             <!-- Add a service (edit mode only) -->
             <Grid x:Name="AddRow" ColumnDefinitions="*,Auto" ColumnSpacing="8">
                 <Picker x:Name="ServicePicker" Grid.Column="0" Title="Add a service"
-                        TextColor="White" TitleColor="#888" BackgroundColor="#262626"
+                        TitleColor="#888"
                         ItemDisplayBinding="{Binding Name}" />
                 <Button x:Name="AddButton" Grid.Column="1" Text="Add"
-                        BackgroundColor="#333" TextColor="White" Clicked="OnAddServiceClicked" />
+                        Clicked="OnAddServiceClicked" />
             </Grid>
 
             <!-- Lines -->
             <VerticalStackLayout x:Name="LinesHost" Spacing="8">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="vm:LineItemVm">
-                        <Border BackgroundColor="#1E1E1E" StrokeThickness="0" Padding="12" StrokeShape="RoundRectangle 10">
+                        <Border Style="{StaticResource CardBorder}" StrokeThickness="0" Padding="12" StrokeShape="RoundRectangle 10">
                             <Grid ColumnDefinitions="*,Auto,Auto,Auto" RowDefinitions="Auto,Auto" ColumnSpacing="8">
                                 <Label Grid.Row="0" Grid.Column="0" Text="{Binding Description}"
-                                       TextColor="White" FontSize="15" FontAttributes="Bold" />
+                                       FontSize="15" FontAttributes="Bold" />
                                 <Label Grid.Row="1" Grid.Column="0"
                                        Text="{Binding UnitPrice, StringFormat='₹{0:N0} each'}"
-                                       TextColor="#888" FontSize="12" />
+                                       FontSize="12" />
                                 <Entry Grid.Row="0" Grid.RowSpan="2" Grid.Column="1"
                                        Text="{Binding Quantity, Mode=TwoWay}" Keyboard="Numeric"
-                                       WidthRequest="58" TextColor="White" BackgroundColor="#262626"
+                                       WidthRequest="58"
                                        HorizontalTextAlignment="Center" VerticalOptions="Center" />
                                 <Label Grid.Row="0" Grid.RowSpan="2" Grid.Column="2"
                                        Text="{Binding LineTotal, StringFormat='₹{0:N0}'}"
-                                       TextColor="White" FontSize="15" VerticalOptions="Center"
+                                       FontSize="15" VerticalOptions="Center"
                                        WidthRequest="74" HorizontalTextAlignment="End" />
                                 <Button Grid.Row="0" Grid.RowSpan="2" Grid.Column="3" Text="✕"
-                                        BackgroundColor="Transparent" TextColor="#FF6B6B"
+                                        BackgroundColor="Transparent" TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource Error}}"
                                         Padding="0" WidthRequest="32" VerticalOptions="Center"
                                         Clicked="OnRemoveLineClicked" />
                             </Grid>
@@ -55,72 +55,72 @@
                 </BindableLayout.ItemTemplate>
             </VerticalStackLayout>
 
-            <BoxView HeightRequest="1" Color="#2A2A2A" Margin="0,4" />
+            <BoxView HeightRequest="1" Margin="0,4" />
 
             <Grid x:Name="DiscountRow" ColumnDefinitions="Auto,*" ColumnSpacing="8" VerticalOptions="Center">
-                <Label Grid.Column="0" Text="Discount ₹" TextColor="#888" VerticalOptions="Center" />
+                <Label Grid.Column="0" Text="Discount ₹" VerticalOptions="Center" />
                 <Entry x:Name="DiscountEntry" Grid.Column="1" Text="0" Keyboard="Numeric"
-                       TextColor="White" BackgroundColor="#262626" TextChanged="OnTotalsInputChanged" />
+                       TextChanged="OnTotalsInputChanged" />
             </Grid>
-            <Editor x:Name="NotesEditor" Placeholder="Notes (optional)" PlaceholderColor="#888"
-                    TextColor="White" BackgroundColor="#262626" HeightRequest="60" />
+            <Editor x:Name="NotesEditor" Placeholder="Notes (optional)"
+                    HeightRequest="60" />
             <Grid x:Name="GstRow" ColumnDefinitions="*,Auto" VerticalOptions="Center">
-                <Label Grid.Column="0" Text="Apply GST (tax)" TextColor="White" VerticalOptions="Center" />
+                <Label Grid.Column="0" Text="Apply GST (tax)" VerticalOptions="Center" />
                 <Switch x:Name="GstSwitch" Grid.Column="1" IsToggled="True" OnColor="#B71C1C" Toggled="OnGstToggled" />
             </Grid>
 
             <!-- Totals -->
-            <Border BackgroundColor="#1E1E1E" StrokeThickness="0" Padding="14" StrokeShape="RoundRectangle 10">
+            <Border Style="{StaticResource CardBorder}" StrokeThickness="0" Padding="14" StrokeShape="RoundRectangle 10">
                 <VerticalStackLayout Spacing="4">
                     <Grid ColumnDefinitions="*,Auto">
-                        <Label Grid.Column="0" Text="Subtotal" TextColor="#888" />
-                        <Label Grid.Column="1" x:Name="SubTotalLabel" Text="₹0" TextColor="#CCC" />
+                        <Label Grid.Column="0" Text="Subtotal" />
+                        <Label Grid.Column="1" x:Name="SubTotalLabel" Text="₹0" />
                     </Grid>
                     <Grid ColumnDefinitions="*,Auto">
-                        <Label Grid.Column="0" Text="GST" TextColor="#888" />
-                        <Label Grid.Column="1" x:Name="TaxLabel" Text="₹0" TextColor="#CCC" />
+                        <Label Grid.Column="0" Text="GST" />
+                        <Label Grid.Column="1" x:Name="TaxLabel" Text="₹0" />
                     </Grid>
                     <Grid ColumnDefinitions="*,Auto">
-                        <Label Grid.Column="0" Text="Grand total" TextColor="White" FontAttributes="Bold" />
-                        <Label Grid.Column="1" x:Name="GrandLabel" Text="₹0" TextColor="White" FontSize="18" FontAttributes="Bold" />
+                        <Label Grid.Column="0" Text="Grand total" FontAttributes="Bold" />
+                        <Label Grid.Column="1" x:Name="GrandLabel" Text="₹0" FontSize="18" FontAttributes="Bold" />
                     </Grid>
                     <Grid ColumnDefinitions="*,Auto">
-                        <Label Grid.Column="0" Text="Balance due" TextColor="#888" />
-                        <Label Grid.Column="1" x:Name="BalanceLabel" Text="₹0" TextColor="#FF8A65" />
+                        <Label Grid.Column="0" Text="Balance due" />
+                        <Label Grid.Column="1" x:Name="BalanceLabel" Text="₹0" TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource Warning}}" />
                     </Grid>
                 </VerticalStackLayout>
             </Border>
 
-            <Label x:Name="InfoLabel" TextColor="#7CC47C" FontSize="13" IsVisible="False" />
-            <Label x:Name="ErrorLabel" TextColor="#FF6B6B" FontSize="13" IsVisible="False" />
+            <Label x:Name="InfoLabel" TextColor="{AppThemeBinding Light={StaticResource Success}, Dark={StaticResource Success}}" FontSize="13" IsVisible="False" />
+            <Label x:Name="ErrorLabel" TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource Error}}" FontSize="13" IsVisible="False" />
 
             <!-- Actions -->
             <Button x:Name="SaveButton" Text="Save changes"
-                    BackgroundColor="#333" TextColor="White" Clicked="OnSaveClicked" />
+                    Clicked="OnSaveClicked" />
             <Button x:Name="FinaliseButton" Text="Generate invoice (finalise)"
-                    BackgroundColor="#B71C1C" TextColor="White" FontAttributes="Bold"
+                    FontAttributes="Bold"
                     Clicked="OnFinaliseClicked" />
             <Button x:Name="PdfButton" Text="View PDF"
-                    BackgroundColor="#333" TextColor="White" Clicked="OnPdfClicked" />
+                    Clicked="OnPdfClicked" />
 
             <!-- Payment -->
-            <Border x:Name="PaymentPanel" BackgroundColor="#161616" StrokeThickness="0" Padding="14"
+            <Border Style="{StaticResource CardBorder}" x:Name="PaymentPanel" StrokeThickness="0" Padding="14"
                     StrokeShape="RoundRectangle 12" Margin="0,6,0,0">
                 <VerticalStackLayout Spacing="10">
-                    <Label Text="Record payment" TextColor="White" FontSize="16" FontAttributes="Bold" />
-                    <Picker x:Name="MethodPicker" Title="Method" TextColor="White" TitleColor="#888"
-                            BackgroundColor="#262626" />
-                    <Entry x:Name="AmountEntry" Placeholder="Amount" PlaceholderColor="#888"
-                           Keyboard="Numeric" TextColor="White" BackgroundColor="#262626" />
-                    <Entry x:Name="ReferenceEntry" Placeholder="Reference (optional)" PlaceholderColor="#888"
-                           TextColor="White" BackgroundColor="#262626" />
+                    <Label Text="Record payment" FontSize="16" FontAttributes="Bold" />
+                    <Picker x:Name="MethodPicker" Title="Method" TitleColor="#888"
+                            />
+                    <Entry x:Name="AmountEntry" Placeholder="Amount"
+                           Keyboard="Numeric" />
+                    <Entry x:Name="ReferenceEntry" Placeholder="Reference (optional)"
+                           />
                     <Button x:Name="PayButton" Text="Take payment"
-                            BackgroundColor="#B71C1C" TextColor="White" FontAttributes="Bold"
+                            FontAttributes="Bold"
                             Clicked="OnPayClicked" />
                 </VerticalStackLayout>
             </Border>
 
-            <ActivityIndicator x:Name="Busy" IsRunning="False" IsVisible="False" Color="#B71C1C" />
+            <ActivityIndicator x:Name="Busy" IsRunning="False" IsVisible="False" />
 
         </VerticalStackLayout>
     </ScrollView>

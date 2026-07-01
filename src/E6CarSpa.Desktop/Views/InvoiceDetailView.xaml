@@ -27,9 +27,10 @@
                 </Border>
             </Grid>
 
-            <!-- Add service (only when editable) -->
+            <!-- Add service — only before the invoice is generated; the service lines are
+                 locked once it becomes an Invoice (only the discount stays editable after that). -->
             <Border Style="{StaticResource Card}" Margin="0,16,0,0"
-                    Visibility="{Binding CanEdit, Converter={StaticResource BoolToVis}}">
+                    Visibility="{Binding IsQuotation, Converter={StaticResource BoolToVis}}">
                 <StackPanel>
                     <TextBlock Text="4 · Add jobs done" Style="{StaticResource H2}" />
                     <Grid>
@@ -45,22 +46,27 @@
                 </StackPanel>
             </Border>
 
-            <!-- Line items -->
+            <!-- Line items — editable only before generation (IsQuotation); read-only for both
+                 an Invoiced (unpaid) bill and a Paid one, matching the discount/services split below. -->
             <Border Style="{StaticResource Card}">
-                <DataGrid ItemsSource="{Binding Lines}" IsReadOnly="False" CanUserAddRows="False">
+                <DataGrid ItemsSource="{Binding Lines}" CanUserAddRows="False"
+                          IsReadOnly="{Binding IsQuotation, Converter={StaticResource InverseBool}}">
                     <DataGrid.Columns>
                         <DataGridTextColumn Header="Service / Item" Binding="{Binding Description}" Width="*" IsReadOnly="True" />
                         <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="70" />
                         <DataGridTextColumn Header="Rate ₹" Binding="{Binding UnitPrice}" Width="100" />
                         <DataGridTextColumn Header="Disc ₹" Binding="{Binding DiscountAmount}" Width="90" />
-                        <DataGridTextColumn Header="GST%" Binding="{Binding GstRate}" Width="70" />
                         <DataGridTextColumn Header="Total ₹" Binding="{Binding LineTotal, StringFormat='{}{0:N2}'}" Width="110" IsReadOnly="True" />
-                        <DataGridTemplateColumn Width="44">
+                        <!-- Extra-wide, left-aligned so the button itself never sits under the
+                             vertical scrollbar that appears once the lines overflow. -->
+                        <DataGridTemplateColumn Width="60">
                             <DataGridTemplateColumn.CellTemplate>
                                 <DataTemplate>
                                     <Button Content="✕" Background="Transparent" Foreground="{StaticResource DangerBrush}"
                                             Command="{Binding DataContext.RemoveLineCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                            CommandParameter="{Binding}" Padding="6" FontSize="15" />
+                                            CommandParameter="{Binding}" Padding="6" FontSize="15"
+                                            HorizontalAlignment="Left" Margin="4,0,0,0"
+                                            Visibility="{Binding DataContext.IsQuotation, RelativeSource={RelativeSource AncestorType=UserControl}, Converter={StaticResource BoolToVis}}" />
                                 </DataTemplate>
                             </DataGridTemplateColumn.CellTemplate>
                         </DataGridTemplateColumn>

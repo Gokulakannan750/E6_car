@@ -35,10 +35,19 @@ public partial class NewJobViewModel(IApiClient api, ShellViewModel shell) : Obs
     [ObservableProperty] private bool _isBusy;
     [ObservableProperty] private string _error = "";
 
-    // Totals (client-side preview; the server is authoritative)
+    // Totals (client-side preview; the server is authoritative).
+    // Mirrors GstCalculator.Recalculate: discount (line + header) is deducted from the
+    // subtotal first, then GST is charged ONCE on that final taxable amount — not summed
+    // per line — since the shop uses a single GST rate for every service.
     public decimal SubTotal => Lines.Sum(l => l.Quantity * l.UnitPrice);
-    public decimal TotalTax => ApplyGst ? Lines.Sum(l => l.TaxAmount) : 0m;
-    public decimal GrandTotal => Math.Max(0, SubTotal - Lines.Sum(l => l.DiscountAmount) - DiscountAmount + TotalTax);
+    public decimal DiscountTotal => Lines.Sum(l => l.DiscountAmount) + DiscountAmount;
+    public decimal TaxableTotal => Math.Max(0m, Math.Round(SubTotal - DiscountTotal, 2, MidpointRounding.AwayFromZero));
+    public decimal TotalTax => ApplyGst
+        ? Math.Round(TaxableTotal * (Lines.Count > 0 ? Lines[0].GstRate : 0m) / 100m, 2, MidpointRounding.AwayFromZero)
+        : 0m;
+    public decimal GrandTotal => Math.Round(TaxableTotal + TotalTax, 2, MidpointRounding.AwayFromZero);
+    /// <summary>Amount still owed. Always equals GrandTotal here — a new quotation has no payments yet.</summary>
+    public decimal Balance => GrandTotal;
 
     public async Task InitializeAsync()
     {
@@ -134,8 +143,11 @@ public partial class NewJobViewModel(IApiClient api, ShellViewModel shell) : Obs
     private void RecalcTotals()
     {
         OnPropertyChanged(nameof(SubTotal));
+        OnPropertyChanged(nameof(DiscountTotal));
+        OnPropertyChanged(nameof(TaxableTotal));
         OnPropertyChanged(nameof(TotalTax));
         OnPropertyChanged(nameof(GrandTotal));
+        OnPropertyChanged(nameof(Balance));
     }
 
     [RelayCommand]

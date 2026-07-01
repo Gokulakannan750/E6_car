@@ -44,20 +44,20 @@
     <!-- headline-lg -->
     <Style x:Key="H1" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="Inter, Segoe UI, sans-serif" />
-        <Setter Property="FontSize" Value="30" />
+        <Setter Property="FontSize" Value="22" />
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
-        <Setter Property="Margin" Value="0,0,0,16" />
+        <Setter Property="Margin" Value="0,0,0,10" />
         <!-- LineHeight roughly handled by WPF default or explicitly omitted for auto -->
     </Style>
 
     <!-- headline-md -->
     <Style x:Key="H2" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="Inter, Segoe UI, sans-serif" />
-        <Setter Property="FontSize" Value="24" />
+        <Setter Property="FontSize" Value="18" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
-        <Setter Property="Margin" Value="0,0,0,12" />
+        <Setter Property="Margin" Value="0,0,0,8" />
     </Style>
 
     <Style x:Key="Muted" TargetType="TextBlock">

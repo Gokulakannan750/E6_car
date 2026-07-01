@@ -96,16 +96,20 @@ public class GstCalculatorTests
     }
 
     [Fact]
-    public void MixedGstRates_AreSummedPerLine()
+    public void Gst_IsChargedOnceOnTheWholeInvoice_UsingTheFirstLinesRate()
     {
+        // The shop uses one GST rate for every service, so tax is computed once on the
+        // invoice's total taxable value (not summed per line) — avoids per-line rounding
+        // drift and matches how the bill is now shown (no per-line GST% column).
+        // If a line's own rate ever differs, the first line's rate wins for the whole invoice.
         var inv = Invoice(gst: true, headerDiscount: 0m,
             Item(1, 1000m, 18m), Item(1, 500m, 5m));
 
         GstCalculator.Recalculate(inv, interState: false);
 
         Assert.Equal(1500m, inv.TaxableValue);
-        Assert.Equal(205m, inv.TotalTax);          // 180 + 25
-        Assert.Equal(1705m, inv.GrandTotal);
+        Assert.Equal(270m, inv.TotalTax);           // 18% of 1500, not 180 + 25
+        Assert.Equal(1770m, inv.GrandTotal);
     }
 
     [Fact]

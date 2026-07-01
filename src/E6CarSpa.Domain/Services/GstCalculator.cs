@@ -30,27 +30,49 @@ public static class GstCalculator
         }
         var totalBase = bases.Sum();
 
-        // The invoice-level discount is spread proportionally across the lines BEFORE tax,
-        // so GST is charged on the actual (discounted) consideration — GST-compliant.
+        // The invoice-level discount is spread proportionally across the lines
+        // (still needed so each line shows its own taxable/total for the bill),
+        // but GST itself is charged ONCE on the invoice's total taxable value —
+        // the shop uses a single GST rate for every service, so this avoids
+        // per-line rounding drift and a confusing per-line GST% column in the UI.
         var headerDiscount = Math.Clamp(invoice.DiscountAmount, 0m, totalBase);
+        var rate = items.Count > 0 ? items[0].GstRate : 0m;
 
-        decimal taxable = 0m, cgst = 0m, sgst = 0m, igst = 0m, allocated = 0m;
+        decimal taxable = 0m, allocatedDiscount = 0m;
+        var lineTaxables = new decimal[items.Count];
         for (var i = 0; i < items.Count; i++)
         {
-            var item = items[i];
-
             decimal share = 0m;
             if (totalBase > 0m && headerDiscount > 0m)
                 share = (i == items.Count - 1)
-                    ? headerDiscount - allocated            // last line absorbs the rounding remainder
+                    ? headerDiscount - allocatedDiscount
                     : Round(headerDiscount * bases[i] / totalBase);
-            allocated += share;
+            allocatedDiscount += share;
 
             var lineTaxable = Math.Max(0m, Round(bases[i] - share));
-            item.TaxableValue = lineTaxable;
+            lineTaxables[i] = lineTaxable;
+            taxable += lineTaxable;
+        }
+        taxable = Round(taxable);
 
-            // Non-GST bill: no tax is charged.
-            var lineTax = invoice.IsGstApplicable ? Round(lineTaxable * item.GstRate / 100m) : 0m;
+        // Single tax figure for the whole invoice, then spread across lines
+        // (proportional to each line's taxable share, last line absorbs the remainder)
+        // purely so each row can still show its own line total.
+        var totalTax = invoice.IsGstApplicable ? Round(taxable * rate / 100m) : 0m;
+
+        decimal cgst = 0m, sgst = 0m, igst = 0m, allocatedTax = 0m;
+        for (var i = 0; i < items.Count; i++)
+        {
+            var item = items[i];
+            item.TaxableValue = lineTaxables[i];
+
+            decimal lineTax = 0m;
+            if (totalTax > 0m && taxable > 0m)
+                lineTax = (i == items.Count - 1)
+                    ? totalTax - allocatedTax
+                    : Round(totalTax * lineTaxables[i] / taxable);
+            allocatedTax += lineTax;
+
             if (interState)
             {
                 item.IgstAmount = lineTax;
@@ -65,20 +87,19 @@ public static class GstCalculator
                 item.IgstAmount = 0m;
             }
 
-            item.LineTotal = Round(lineTaxable + lineTax);
+            item.LineTotal = Round(lineTaxables[i] + lineTax);
 
-            taxable += lineTaxable;
             cgst += item.CgstAmount;
             sgst += item.SgstAmount;
             igst += item.IgstAmount;
         }
 
         invoice.SubTotal = Round(subTotal);
-        invoice.TaxableValue = Round(taxable);
+        invoice.TaxableValue = taxable;
         invoice.CgstAmount = Round(cgst);
         invoice.SgstAmount = Round(sgst);
         invoice.IgstAmount = Round(igst);
-        invoice.TotalTax = Round(cgst + sgst + igst);
+        invoice.TotalTax = totalTax;
         // Totals are derived from the per-line figures, so they always reconcile.
         invoice.GrandTotal = Round(invoice.TaxableValue + invoice.TotalTax);
     }

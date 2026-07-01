@@ -8,6 +8,7 @@ using E6CarSpa.Infrastructure.Data.Seed;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.EntityFrameworkCore;
@@ -79,32 +80,43 @@ builder.Services
             ClockSkew = TimeSpan.FromMinutes(5)
         };
     });
-// Secure-by-default: every endpoint requires an authenticated user UNLESS it opts out with
-// [AllowAnonymous] (only the login endpoint does). This closes endpoints that lack an explicit
-// [Authorize] — important now that the API is reachable over the internet.
-builder.Services.AddAuthorization(options =>
+builder.Services.AddAuthorization();
+
+// ----- Reverse-proxy awareness -----
+// In production the API sits behind a TLS-terminating reverse proxy (Caddy) on the same host.
+// Honour X-Forwarded-For / X-Forwarded-Proto so the app sees the REAL client IP (not the
+// proxy's loopback address) — otherwise every client would share one rate-limit bucket — and
+// knows the original request was HTTPS. Only loopback proxies are trusted by default.
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
 {
-    options.FallbackPolicy = new AuthorizationPolicyBuilder()
-        .RequireAuthenticatedUser()
-        .Build();
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
 });
 
 // ----- Rate limiting -----
-// Protects the login endpoint from brute-force attacks.
-// Policy "login": max 5 requests per IP per 60 seconds → HTTP 429 on violation.
+// Two layers, both partitioned by the real client IP:
+//   • GlobalLimiter — every endpoint, generous cap, stops scraping / crude DoS / brute-force.
+//   • "login" policy — much stricter, stacked on top for the auth endpoint specifically.
+static string ClientIp(HttpContext ctx) => ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
 builder.Services.AddRateLimiter(options =>
 {
+    // Applies to ALL requests. Login is additionally constrained by the "login" policy below.
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(context =>
+        RateLimitPartition.GetFixedWindowLimiter(ClientIp(context), _ => new FixedWindowRateLimiterOptions
+        {
+            PermitLimit = 300,
+            Window = TimeSpan.FromSeconds(60),
+            QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+            QueueLimit = 0
+        }));
+
     options.AddPolicy("login", context =>
-    {
-        var ip = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
-        return RateLimitPartition.GetFixedWindowLimiter(ip, _ => new FixedWindowRateLimiterOptions
+        RateLimitPartition.GetFixedWindowLimiter(ClientIp(context), _ => new FixedWindowRateLimiterOptions
         {
             PermitLimit = 5,
             Window = TimeSpan.FromSeconds(60),
             QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
             QueueLimit = 0
-        });
-    });
+        }));
 
     // Return 429 with a Retry-After header instead of the default empty response.
     options.OnRejected = async (context, token) =>
@@ -115,7 +127,7 @@ builder.Services.AddRateLimiter(options =>
         {
             Status = 429,
             Title = "Too many requests",
-            Detail = "Too many login attempts. Please wait 60 seconds and try again."
+            Detail = "Too many requests. Please wait a moment and try again."
         }, token);
     };
 });
@@ -129,7 +141,6 @@ builder.Services.AddScoped<WhatsAppService>();
 builder.Services.AddScoped<PdfInvoiceService>();
 
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
 
 var app = builder.Build();
 
@@ -143,6 +154,9 @@ using (var scope = app.Services.CreateScope())
 }
 
 // ----- Pipeline -----
+// Must run first so the real client IP / scheme is resolved before rate limiting, logging, etc.
+app.UseForwardedHeaders();
+
 app.UseExceptionHandler(handler => handler.Run(async context =>
 {
     var ex = context.Features.Get<IExceptionHandlerFeature>()?.Error;
@@ -165,18 +179,21 @@ app.UseExceptionHandler(handler => handler.Run(async context =>
 
 // ----- Security headers -----
 // Prevent MIME sniffing, clickjacking, and information leakage.
+var isProduction = !app.Environment.IsDevelopment();
 app.Use(async (context, next) =>
 {
     context.Response.Headers["X-Content-Type-Options"] = "nosniff";
     context.Response.Headers["X-Frame-Options"] = "DENY";
     context.Response.Headers["Referrer-Policy"] = "no-referrer";
     context.Response.Headers["X-Permitted-Cross-Domain-Policies"] = "none";
+    // HSTS: once the API is served over HTTPS (behind Caddy), tell browsers to only ever use
+    // TLS for a year. Emitted in Production only; HTTP clients/browsers ignore it over plain
+    // HTTP and native app clients don't act on it, so it's safe to always send in Production.
+    if (isProduction)
+        context.Response.Headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains";
     // (Server header is suppressed at the Kestrel level via AddServerHeader = false.)
     await next();
 });
-
-if (app.Environment.IsDevelopment())
-    app.MapOpenApi();
 
 app.UseRateLimiter();
 app.UseAuthentication();
