@@ -1,0 +1,31 @@
+# E6 Car Spa — Caddy reverse proxy.
+# Caddy obtains and renews the HTTPS certificate automatically (Let's Encrypt) as long as
+# the domain's DNS A record points at this VPS and ports 80/443 are open.
+#
+# setup-vps.sh replaces YOUR_DOMAIN below and installs this to /etc/caddy/Caddyfile.
+
+YOUR_DOMAIN {
+	# The API listens on localhost only; Caddy is the sole public entry point.
+	reverse_proxy localhost:5080
+
+	# ------------------------------------------------------------------
+	# OPTIONAL LOCKDOWN (recommended once the shop's public IP is known):
+	# the desktop app uses anonymous billing endpoints BY DESIGN, so anyone
+	# who can reach this domain can read customers and create invoices.
+	# This rule 403s the anonymous surface unless the request comes from the
+	# shop's IP or carries an Authorization header (the logged-in phone).
+	#
+	# HONEST LIMITATION: the header check only verifies presence, so a
+	# targeted attacker can bypass it by sending a junk header — this stops
+	# broad scanners and casual abuse, not a determined attacker. The real
+	# fix (a shared shop-key checked by the API) needs an app change; see
+	# "Security options" in VPS-SETUP.md.
+	#
+	# @anonSurface {
+	# 	path /api/invoices* /api/customers* /api/dashboard /api/services /api/settings/logo /api/reports/customer
+	# 	not remote_ip 1.2.3.4          # <- shop's public IP (check https://ifconfig.me from the shop PC)
+	# 	not header Authorization *     # requests carrying a JWT (the phone) pass through
+	# }
+	# respond @anonSurface "Forbidden" 403
+	# ------------------------------------------------------------------
+}

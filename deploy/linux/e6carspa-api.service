@@ -1,0 +1,29 @@
+[Unit]
+Description=E6 Car Spa API
+# Postgres runs on the same box; start after it so the startup migration can connect.
+After=network.target postgresql.service
+Wants=postgresql.service
+
+[Service]
+Type=simple
+User=e6api
+Group=e6api
+WorkingDirectory=/opt/e6carspa/api
+ExecStart=/opt/e6carspa/api/E6CarSpa.Api
+Restart=always
+RestartSec=5
+# Secrets (E6_DB_PASSWORD, E6_JWT_KEY) live here, root-readable only — never in appsettings.json.
+EnvironmentFile=/etc/e6carspa/api.env
+Environment=ASPNETCORE_ENVIRONMENT=Production
+# Single-file .NET apps extract native libs here on first run.
+Environment=DOTNET_BUNDLE_EXTRACT_BASE_DIR=/opt/e6carspa/extract
+
+# Hardening: the API only needs its own folder and a TCP socket to Postgres/Kestrel.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/e6carspa/extract
+
+[Install]
+WantedBy=multi-user.target
