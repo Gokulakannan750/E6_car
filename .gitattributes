@@ -1,0 +1,5 @@
+# Files that run on Linux must keep LF even when checked out on Windows —
+# a CRLF shebang breaks bash ("/bin/bash^M: bad interpreter").
+*.sh            text eol=lf
+*.service       text eol=lf
+Caddyfile       text eol=lf
