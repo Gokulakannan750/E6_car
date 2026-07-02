@@ -13,6 +13,7 @@ public class LineItemVm : INotifyPropertyChanged
     public Guid? ProductId { get; init; }
     public string Description { get; set; } = "";
     public decimal GstRate { get; set; } = 18m;
+    public bool IsEditable { get; set; } = true;
 
     private decimal _quantity = 1m;
     public decimal Quantity { get => _quantity; set { if (Set(ref _quantity, value)) Recalc(); } }

@@ -160,4 +160,44 @@ public class GstCalculatorTests
         Assert.Equal(270m, inv.TotalTax);
         Assert.Equal(1770m, inv.GrandTotal);
     }
+
+    [Fact]
+    public void GstComputedAfterHeaderDiscount_MatchesMobileRecalc()
+    {
+        // Mirrors the fix applied to the mobile Recalc():
+        //   subTotal=6000, headerDiscount=1000 → taxable=5000, GST 18%=900, grand=5900
+        var inv = Invoice(gst: true, headerDiscount: 1000m, Item(1, 6000m, 18m));
+
+        GstCalculator.Recalculate(inv, interState: false);
+
+        Assert.Equal(5000m, inv.TaxableValue);
+        Assert.Equal(900m, inv.TotalTax);
+        Assert.Equal(5900m, inv.GrandTotal);
+    }
+
+    [Fact]
+    public void LineItemDiscountAndHeaderDiscount_BothDeductedBeforeGst()
+    {
+        // Service = 10000, line discount = 1000 → line base 9000
+        // Header discount 500 → taxable 8500, GST 18% = 1530, grand = 10030
+        var inv = Invoice(gst: true, headerDiscount: 500m, Item(1, 10000m, 18m, lineDiscount: 1000m));
+
+        GstCalculator.Recalculate(inv, interState: false);
+
+        Assert.Equal(8500m, inv.TaxableValue);
+        Assert.Equal(1530m, inv.TotalTax);
+        Assert.Equal(10030m, inv.GrandTotal);
+    }
+
+    [Fact]
+    public void ItemsWithZeroGstRate_ProduceZeroTax()
+    {
+        var inv = Invoice(gst: true, headerDiscount: 0m, Item(2, 1500m, 0m));
+
+        GstCalculator.Recalculate(inv, interState: false);
+
+        Assert.Equal(3000m, inv.TaxableValue);
+        Assert.Equal(0m, inv.TotalTax);
+        Assert.Equal(3000m, inv.GrandTotal);
+    }
 }

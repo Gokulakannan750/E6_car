@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace E6CarSpa.Api.Controllers;
 
-[Authorize(Roles = "Admin,Manager")]
+[Authorize]
 public class ReportsController(ReportsService reports) : ApiControllerBase
 {
     [HttpGet("sales")]

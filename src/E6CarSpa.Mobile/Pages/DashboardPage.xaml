@@ -26,28 +26,32 @@
                 <!-- Count tiles -->
                 <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="12" RowSpacing="12">
                     <Border Style="{StaticResource CardBorder}" Grid.Row="0" Grid.Column="0" StrokeThickness="0"
-                            Padding="16" StrokeShape="RoundRectangle 12">
+                            Padding="16" StrokeShape="RoundRectangle 12"
+                            BackgroundColor="{AppThemeBinding Light=#EEF2FF, Dark=#1E3A8A}">
                         <VerticalStackLayout Spacing="2">
-                            <Label x:Name="JobsLabel" Text="0" FontSize="26" FontAttributes="Bold" />
-                            <Label Text="Jobs today" FontSize="13" />
+                            <Label x:Name="JobsLabel" Text="0" FontSize="26" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark=#93C5FD}" />
+                            <Label Text="Jobs today" FontSize="13" TextColor="{AppThemeBinding Light={StaticResource PrimaryDark}, Dark=#BFDBFE}" />
                         </VerticalStackLayout>
                     </Border>
                     <Border Style="{StaticResource CardBorder}" Grid.Row="0" Grid.Column="1" StrokeThickness="0"
-                            Padding="16" StrokeShape="RoundRectangle 12">
+                            Padding="16" StrokeShape="RoundRectangle 12"
+                            BackgroundColor="{AppThemeBinding Light=#FFFBEB, Dark=#78350F}">
                         <VerticalStackLayout Spacing="2">
-                            <Label x:Name="QuotationsLabel" Text="0" FontSize="26" FontAttributes="Bold" />
-                            <Label Text="Quotations pending" FontSize="13" />
+                            <Label x:Name="QuotationsLabel" Text="0" FontSize="26" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark=#FDE68A}" />
+                            <Label Text="Quotations pending" FontSize="13" TextColor="{AppThemeBinding Light=#B45309, Dark=#FEF3C7}" />
                         </VerticalStackLayout>
                     </Border>
                     <Border Style="{StaticResource CardBorder}" Grid.Row="1" Grid.Column="0" StrokeThickness="0"
-                            Padding="16" StrokeShape="RoundRectangle 12">
+                            Padding="16" StrokeShape="RoundRectangle 12"
+                            BackgroundColor="{AppThemeBinding Light=#FEF2F2, Dark=#7F1D1D}">
                         <VerticalStackLayout Spacing="2">
-                            <Label x:Name="UnpaidLabel" Text="0" FontSize="26" FontAttributes="Bold" />
-                            <Label Text="Invoices unpaid" FontSize="13" />
+                            <Label x:Name="UnpaidLabel" Text="0" FontSize="26" FontAttributes="Bold" TextColor="{AppThemeBinding Light={StaticResource Error}, Dark=#FECACA}" />
+                            <Label Text="Invoices unpaid" FontSize="13" TextColor="{AppThemeBinding Light=#B91C1C, Dark=#FEE2E2}" />
                         </VerticalStackLayout>
                     </Border>
                     <Border Style="{StaticResource CardBorder}" Grid.Row="1" Grid.Column="1" StrokeThickness="0"
-                            Padding="16" StrokeShape="RoundRectangle 12">
+                            Padding="16" StrokeShape="RoundRectangle 12"
+                            BackgroundColor="{AppThemeBinding Light=#F3F4F6, Dark=#374151}">
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Tapped="OnLowStockTapped" />
                         </Border.GestureRecognizers>

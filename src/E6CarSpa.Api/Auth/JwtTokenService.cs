@@ -23,6 +23,7 @@ public class JwtTokenService(IOptions<JwtOptions> options)
             new Claim(ClaimTypes.Name, user.Username),
             new Claim("fullName", user.FullName),
             new Claim(ClaimTypes.Role, user.Role.ToString()),
+            new Claim("role", user.Role.ToString()), // Explicit lower-case role for safe mapping
         };
 
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_opt.Key));

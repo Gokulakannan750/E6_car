@@ -41,7 +41,10 @@ public class ApiFactory : WebApplicationFactory<Program>
                 .ToList();
             foreach (var d in toRemove) services.Remove(d);
 
-            services.AddDbContext<AppDbContext>(o => o.UseInMemoryDatabase(_dbName));
+            services.AddDbContext<AppDbContext>(o =>
+                o.UseInMemoryDatabase(_dbName)
+                 .ConfigureWarnings(w =>
+                     w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.InMemoryEventId.TransactionIgnoredWarning)));
         });
     }
 }

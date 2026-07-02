@@ -96,7 +96,7 @@ public class ApiIntegrationTests
     }
 
     [Fact]
-    public async Task Reports_AsWorker_ReturnsForbidden()
+    public async Task Reports_AsWorker_ReturnsOk_AfterRoleRestrictionRemoved()
     {
         using var factory = new ApiFactory();
         var client = factory.CreateClient();
@@ -110,7 +110,8 @@ public class ApiIntegrationTests
 
         var resp = await workerClient.GetAsync("/api/reports/sales?from=2026-01-01&to=2026-12-31");
 
-        Assert.Equal(HttpStatusCode.Forbidden, resp.StatusCode);
+        // Reports now open to all authenticated users (removed Roles="Admin,Manager" restriction)
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
     }
 
     [Fact]

@@ -88,14 +88,15 @@ public partial class InvoiceDetailPage : ContentPage
                 Quantity = i.Quantity,
                 UnitPrice = i.UnitPrice,
                 DiscountAmount = i.DiscountAmount,
-                GstRate = i.GstRate
+                GstRate = i.GstRate,
+                IsEditable = isQuotation
             };
             line.Changed += Recalc;
             _lines.Add(line);
         }
 
         // Show edit controls only when the bill can still be edited.
-        AddRow.IsVisible = canEdit;
+        AddRow.IsVisible = isQuotation;
         DiscountRow.IsEnabled = canEdit;
         NotesEditor.IsEnabled = canEdit;
         GstRow.IsEnabled = canEdit;
@@ -141,8 +142,12 @@ public partial class InvoiceDetailPage : ContentPage
         var subTotal = _lines.Sum(l => l.Quantity * l.UnitPrice);
         var lineDiscounts = _lines.Sum(l => l.DiscountAmount);
         var headerDiscount = ParseDecimal(DiscountEntry.Text);
-        var tax = GstSwitch.IsToggled ? _lines.Sum(l => l.TaxAmount) : 0m;
-        var grand = Math.Max(0, subTotal - lineDiscounts - headerDiscount + tax);
+        // GST is computed ONCE on the final taxable amount (subtotal minus all discounts)
+        // — mirrors the desktop NewJobViewModel and GstCalculator logic
+        var taxable = Math.Max(0, subTotal - lineDiscounts - headerDiscount);
+        var gstRate = _lines.Count > 0 ? _lines[0].GstRate : 0m;
+        var tax = GstSwitch.IsToggled ? Math.Round(taxable * gstRate / 100m, 2) : 0m;
+        var grand = Math.Round(taxable + tax, 2);
 
         SubTotalLabel.Text = $"₹{subTotal:N0}";
         TaxLabel.Text = $"₹{tax:N0}";

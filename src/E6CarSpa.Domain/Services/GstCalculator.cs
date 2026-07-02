@@ -58,49 +58,40 @@ public static class GstCalculator
         // Single tax figure for the whole invoice, then spread across lines
         // (proportional to each line's taxable share, last line absorbs the remainder)
         // purely so each row can still show its own line total.
+        // Single tax figure for the whole invoice, computed ONCE on the final TaxableValue
         var totalTax = invoice.IsGstApplicable ? Round(taxable * rate / 100m) : 0m;
 
-        decimal cgst = 0m, sgst = 0m, igst = 0m, allocatedTax = 0m;
         for (var i = 0; i < items.Count; i++)
         {
             var item = items[i];
             item.TaxableValue = lineTaxables[i];
 
-            decimal lineTax = 0m;
-            if (totalTax > 0m && taxable > 0m)
-                lineTax = (i == items.Count - 1)
-                    ? totalTax - allocatedTax
-                    : Round(totalTax * lineTaxables[i] / taxable);
-            allocatedTax += lineTax;
-
-            if (interState)
-            {
-                item.IgstAmount = lineTax;
-                item.CgstAmount = 0m;
-                item.SgstAmount = 0m;
-            }
-            else
-            {
-                var half = Round(lineTax / 2m);
-                item.CgstAmount = half;
-                item.SgstAmount = lineTax - half; // keep the pair summing to lineTax
-                item.IgstAmount = 0m;
-            }
-
-            item.LineTotal = Round(lineTaxables[i] + lineTax);
-
-            cgst += item.CgstAmount;
-            sgst += item.SgstAmount;
-            igst += item.IgstAmount;
+            // No per-line GST splits
+            item.CgstAmount = 0m;
+            item.SgstAmount = 0m;
+            item.IgstAmount = 0m;
+            
+            item.LineTotal = lineTaxables[i]; // No tax added to line total
         }
 
         invoice.SubTotal = Round(subTotal);
         invoice.TaxableValue = taxable;
-        invoice.CgstAmount = Round(cgst);
-        invoice.SgstAmount = Round(sgst);
-        invoice.IgstAmount = Round(igst);
+
+        if (interState)
+        {
+            invoice.IgstAmount = totalTax;
+            invoice.CgstAmount = 0m;
+            invoice.SgstAmount = 0m;
+        }
+        else
+        {
+            var half = Round(totalTax / 2m);
+            invoice.CgstAmount = half;
+            invoice.SgstAmount = totalTax - half; // keep the pair summing to totalTax
+            invoice.IgstAmount = 0m;
+        }
+
         invoice.TotalTax = totalTax;
-        // Totals are derived from the per-line figures, so they always reconcile.
         invoice.GrandTotal = Round(invoice.TaxableValue + invoice.TotalTax);
     }
 }

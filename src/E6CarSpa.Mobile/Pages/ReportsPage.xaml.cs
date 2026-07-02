@@ -60,18 +60,72 @@ public partial class ReportsPage : ContentPage
             TopServicesPanel.Children.Add(new Label
             {
                 Text = "No service sales in this range.",
-                TextColor = Color.FromArgb("#888"),
                 FontSize = 14
             });
         }
         else
         {
+            int rank = 0;
             foreach (var s in r.TopServices)
             {
-                var grid = new Grid { ColumnDefinitions = { new ColumnDefinition(GridLength.Star), new ColumnDefinition(GridLength.Auto) } };
-                grid.Add(new Label { Text = $"{s.Name}  ×{s.Quantity:N0}", TextColor = Color.FromArgb("#CCC"), FontSize = 14 }, 0, 0);
-                grid.Add(new Label { Text = $"₹{s.Amount:N0}", TextColor = Colors.White, FontSize = 14, HorizontalOptions = LayoutOptions.End }, 1, 0);
-                TopServicesPanel.Children.Add(grid);
+                rank++;
+                bool isTop3 = rank <= 3;
+
+                var border = new Border
+                {
+                    StrokeThickness = 0,
+                    StrokeShape = new Microsoft.Maui.Controls.Shapes.RoundRectangle { CornerRadius = new CornerRadius(8) },
+                    Padding = new Thickness(12, 8),
+                    BackgroundColor = isTop3
+                        ? Color.FromArgb("#FEF08A")   // amber highlight — matches desktop #FEF08A
+                        : Colors.Transparent,
+                    Margin = new Thickness(0, 2)
+                };
+
+                var grid = new Grid
+                {
+                    ColumnDefinitions =
+                    {
+                        new ColumnDefinition(new GridLength(24, GridUnitType.Absolute)),
+                        new ColumnDefinition(GridLength.Star),
+                        new ColumnDefinition(GridLength.Auto)
+                    },
+                    ColumnSpacing = 6
+                };
+
+                var rankLabel = new Label
+                {
+                    Text = isTop3 ? $"#{rank}" : $"{rank}.",
+                    FontSize = 13,
+                    FontAttributes = isTop3 ? FontAttributes.Bold : FontAttributes.None,
+                    TextColor = isTop3 ? Color.FromArgb("#92400E") : Color.FromArgb("#64748B"),
+                    VerticalOptions = LayoutOptions.Center
+                };
+
+                var nameLabel = new Label
+                {
+                    Text = $"{s.Name}  ×{s.Quantity:N0}",
+                    FontSize = 14,
+                    FontAttributes = isTop3 ? FontAttributes.Bold : FontAttributes.None,
+                    TextColor = isTop3 ? Color.FromArgb("#0F172A") : (Color)(Application.Current!.Resources["PrimaryDark"] ?? Color.FromArgb("#1E3A5F")),
+                    VerticalOptions = LayoutOptions.Center
+                };
+
+                var amtLabel = new Label
+                {
+                    Text = $"₹{s.Amount:N0}",
+                    FontSize = 14,
+                    FontAttributes = isTop3 ? FontAttributes.Bold : FontAttributes.None,
+                    TextColor = isTop3 ? Color.FromArgb("#0F172A") : (Color)(Application.Current!.Resources["Primary"] ?? Color.FromArgb("#1565C0")),
+                    HorizontalOptions = LayoutOptions.End,
+                    VerticalOptions = LayoutOptions.Center
+                };
+
+                grid.Add(rankLabel, 0, 0);
+                grid.Add(nameLabel, 1, 0);
+                grid.Add(amtLabel, 2, 0);
+                border.Content = grid;
+                TopServicesPanel.Children.Add(border);
             }
         }
 

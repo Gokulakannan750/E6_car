@@ -39,15 +39,16 @@
                                        FontSize="12" />
                                 <Entry Grid.Row="0" Grid.RowSpan="2" Grid.Column="1"
                                        Text="{Binding Quantity, Mode=TwoWay}" Keyboard="Numeric"
-                                       WidthRequest="58"
+                                       WidthRequest="58" IsEnabled="{Binding IsEditable}"
                                        HorizontalTextAlignment="Center" VerticalOptions="Center" />
                                 <Label Grid.Row="0" Grid.RowSpan="2" Grid.Column="2"
-                                       Text="{Binding LineTotal, StringFormat='₹{0:N0}'}"
+                                       Text="{Binding Taxable, StringFormat='₹{0:N0}'}"
                                        FontSize="15" VerticalOptions="Center"
                                        WidthRequest="74" HorizontalTextAlignment="End" />
                                 <Button Grid.Row="0" Grid.RowSpan="2" Grid.Column="3" Text="✕"
                                         BackgroundColor="Transparent" TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource Error}}"
                                         Padding="0" WidthRequest="32" VerticalOptions="Center"
+                                        IsVisible="{Binding IsEditable}"
                                         Clicked="OnRemoveLineClicked" />
                             </Grid>
                         </Border>

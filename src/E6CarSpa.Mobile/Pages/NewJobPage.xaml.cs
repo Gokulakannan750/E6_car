@@ -106,8 +106,11 @@ public partial class NewJobPage : ContentPage
         var subTotal = _lines.Sum(l => l.Quantity * l.UnitPrice);
         var lineDiscounts = _lines.Sum(l => l.DiscountAmount);
         var headerDiscount = ParseDecimal(DiscountEntry.Text);
-        var tax = GstSwitch.IsToggled ? _lines.Sum(l => l.TaxAmount) : 0m;
-        var grand = Math.Max(0, subTotal - lineDiscounts - headerDiscount + tax);
+        // Taxable = subtotal minus ALL discounts first, then GST once on that amount
+        var taxable = Math.Max(0, subTotal - lineDiscounts - headerDiscount);
+        var gstRate = _lines.Count > 0 ? _lines[0].GstRate : 0m;
+        var tax = GstSwitch.IsToggled ? Math.Round(taxable * gstRate / 100m, 2) : 0m;
+        var grand = Math.Round(taxable + tax, 2);
 
         SubTotalLabel.Text = $"₹{subTotal:N0}";
         TaxLabel.Text = $"₹{tax:N0}";
