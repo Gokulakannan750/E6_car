@@ -35,7 +35,7 @@ public partial class ShellWindow : Window
             if (api.IsLoggedIn)
             {
                 api.Logout();
-                _vm.NavigateAsync<DashboardViewModel>("Dashboard");
+                _ = _vm.NavigateAsync<DashboardViewModel>("Dashboard");
             }
         };
 
@@ -61,6 +61,6 @@ public partial class ShellWindow : Window
     {
         var api = App.Services.GetRequiredService<E6CarSpa.Desktop.Services.IApiClient>();
         api.Logout();
-        _vm.NavigateAsync<DashboardViewModel>("Dashboard");
+        _ = _vm.NavigateAsync<DashboardViewModel>("Dashboard");
     }
 }

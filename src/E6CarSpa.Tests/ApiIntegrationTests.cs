@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using E6CarSpa.Contracts;
 using E6CarSpa.Domain.Enums;
+using Microsoft.EntityFrameworkCore;
 
 namespace E6CarSpa.Tests;
 
@@ -180,5 +181,122 @@ public class ApiIntegrationTests
 
         // First 5 are 401 (bad creds); the 6th in the window is throttled.
         Assert.Equal(HttpStatusCode.TooManyRequests, last);
+    }
+
+    // ---------- account lockout ----------
+
+    [Fact]
+    public async Task Login_AfterFiveWrongPasswords_LocksTheAccount()
+    {
+        using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+
+        // 5 wrong attempts (the per-IP limiter permits exactly 5/window, so all reach the controller).
+        for (var i = 0; i < 5; i++)
+            await client.PostAsJsonAsync("/api/auth/login", new LoginRequest("admin", "wrong"));
+
+        await factory.WithDbAsync(async db =>
+        {
+            var admin = await db.Users.FirstAsync(u => u.Username == "admin");
+            Assert.NotNull(admin.LockoutEndAt);
+            Assert.True(admin.LockoutEndAt > DateTime.UtcNow);
+        });
+    }
+
+    [Fact]
+    public async Task Login_WhenLocked_RejectsEvenTheCorrectPassword()
+    {
+        using var factory = new ApiFactory();
+
+        // Lock the account out-of-band, then attempt a login with the RIGHT password.
+        await factory.WithDbAsync(async db =>
+        {
+            var admin = await db.Users.FirstAsync(u => u.Username == "admin");
+            admin.LockoutEndAt = DateTime.UtcNow.AddMinutes(15);
+            await db.SaveChangesAsync();
+        });
+
+        var client = factory.CreateClient();
+        var resp = await client.PostAsJsonAsync("/api/auth/login", new LoginRequest("admin", "admin@123"));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, resp.StatusCode);
+    }
+
+    // ---------- token revocation (security stamp) ----------
+
+    [Fact]
+    public async Task Token_IsRevoked_WhenSecurityStampRotates()
+    {
+        using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+        Authorize(client, await LoginAsync(client, "admin", "admin@123"));
+
+        // Token works now.
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/api/auth/users")).StatusCode);
+
+        // Simulate a password reset / forced logout: rotate the stamp.
+        await factory.WithDbAsync(async db =>
+        {
+            var admin = await db.Users.FirstAsync(u => u.Username == "admin");
+            admin.SecurityStamp = Guid.NewGuid().ToString("N");
+            await db.SaveChangesAsync();
+        });
+
+        // Same (still-unexpired, still-signed) token is now rejected.
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/auth/users")).StatusCode);
+    }
+
+    [Fact]
+    public async Task Token_IsRevoked_WhenUserDeactivated()
+    {
+        using var factory = new ApiFactory();
+        var admin = factory.CreateClient();
+        Authorize(admin, await LoginAsync(admin, "admin", "admin@123"));
+
+        var created = await admin.PostAsJsonAsync("/api/auth/users",
+            new CreateUserRequest("Temp Worker", "worker9", "worker@123", UserRole.Worker));
+        var worker = (await created.Content.ReadFromJsonAsync<UserDto>())!;
+
+        var workerClient = factory.CreateClient();
+        Authorize(workerClient, await LoginAsync(workerClient, "worker9", "worker@123"));
+        Assert.Equal(HttpStatusCode.OK, (await workerClient.GetAsync("/api/products")).StatusCode);
+
+        // Admin deactivates the worker.
+        var deactivate = await admin.PutAsJsonAsync($"/api/auth/users/{worker.Id}",
+            new UpdateUserRequest("Temp Worker", UserRole.Worker, IsActive: false, NewPassword: null));
+        deactivate.EnsureSuccessStatusCode();
+
+        // The worker's existing token stops working immediately.
+        Assert.Equal(HttpStatusCode.Unauthorized, (await workerClient.GetAsync("/api/products")).StatusCode);
+    }
+
+    // ---------- audit log ----------
+
+    [Fact]
+    public async Task SuccessfulLogin_IsAudited()
+    {
+        using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+        await LoginAsync(client, "admin", "admin@123");
+
+        await factory.WithDbAsync(async db =>
+            Assert.True(await db.AuditLogs.AnyAsync(a => a.Action == "Login.Success" && a.Username == "admin")));
+    }
+
+    [Fact]
+    public async Task AuditEndpoint_AsAdmin_Ok_AsWorker_Forbidden()
+    {
+        using var factory = new ApiFactory();
+        var admin = factory.CreateClient();
+        Authorize(admin, await LoginAsync(admin, "admin", "admin@123"));
+        var create = await admin.PostAsJsonAsync("/api/auth/users",
+            new CreateUserRequest("Floor Worker", "worker8", "worker@123", UserRole.Worker));
+        create.EnsureSuccessStatusCode();
+
+        Assert.Equal(HttpStatusCode.OK, (await admin.GetAsync("/api/audit")).StatusCode);
+
+        var workerClient = factory.CreateClient();
+        Authorize(workerClient, await LoginAsync(workerClient, "worker8", "worker@123"));
+        Assert.Equal(HttpStatusCode.Forbidden, (await workerClient.GetAsync("/api/audit")).StatusCode);
     }
 }

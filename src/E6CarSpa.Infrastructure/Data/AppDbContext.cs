@@ -19,6 +19,7 @@ public class AppDbContext : DbContext
     public DbSet<Payment> Payments => Set<Payment>();
     public DbSet<CompanySettings> CompanySettings => Set<CompanySettings>();
     public DbSet<NotificationLog> NotificationLogs => Set<NotificationLog>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -37,6 +38,18 @@ public class AppDbContext : DbContext
             e.HasIndex(x => x.Username).IsUnique();
             e.Property(x => x.Username).HasMaxLength(50).IsRequired();
             e.Property(x => x.FullName).HasMaxLength(120).IsRequired();
+            // Non-empty default so existing rows backfill cleanly when the column is added.
+            e.Property(x => x.SecurityStamp).HasMaxLength(64).IsRequired().HasDefaultValue("");
+        });
+
+        b.Entity<AuditLog>(e =>
+        {
+            e.HasIndex(x => x.CreatedAt);   // most queries are "recent events, newest first"
+            e.HasIndex(x => x.Action);
+            e.Property(x => x.Action).HasMaxLength(60).IsRequired();
+            e.Property(x => x.Username).HasMaxLength(50);
+            e.Property(x => x.Detail).HasMaxLength(500);
+            e.Property(x => x.IpAddress).HasMaxLength(64);
         });
 
         b.Entity<Customer>(e =>
@@ -117,6 +130,7 @@ public class AppDbContext : DbContext
         b.Entity<Payment>(e =>
         {
             e.HasIndex(x => x.PaidAt); // reports / dashboard filter collections by date
+            e.HasIndex(x => x.InvoiceId); // optimize joins in payment aggregation queries
             e.HasOne(x => x.Invoice).WithMany(i => i.Payments)
                 .HasForeignKey(x => x.InvoiceId).OnDelete(DeleteBehavior.Cascade);
         });

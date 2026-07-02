@@ -47,4 +47,12 @@ public class ApiFactory : WebApplicationFactory<Program>
                      w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.InMemoryEventId.TransactionIgnoredWarning)));
         });
     }
+
+    /// <summary>Run an action against the same in-memory database the app uses (for test setup/assertions).</summary>
+    public async Task WithDbAsync(Func<AppDbContext, Task> action)
+    {
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await action(db);
+    }
 }

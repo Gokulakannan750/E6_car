@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace E6CarSpa.Api.Controllers;
 
 [Authorize]
-public class ProductsController(AppDbContext db, InventoryService inventory) : ApiControllerBase
+public class ProductsController(AppDbContext db, InventoryService inventory, AuditService audit) : ApiControllerBase
 {
     [HttpGet]
     public async Task<ActionResult<List<ProductDto>>> GetAll([FromQuery] bool lowStockOnly = false)
@@ -30,6 +30,7 @@ public class ProductsController(AppDbContext db, InventoryService inventory) : A
         };
         db.Products.Add(p);
         await db.SaveChangesAsync();
+        await audit.LogAsync("Product.Create", $"name={p.Name}; cost={p.UnitCost}");
         return p.ToDto();
     }
 
@@ -44,6 +45,7 @@ public class ProductsController(AppDbContext db, InventoryService inventory) : A
         p.HsnSac = req.HsnSac; p.GstRate = req.GstRate; p.IsActive = req.IsActive;
         p.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
+        await audit.LogAsync("Product.Update", $"name={p.Name}; cost={p.UnitCost}; active={p.IsActive}");
         return p.ToDto();
     }
 

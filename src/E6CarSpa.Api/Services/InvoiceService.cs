@@ -82,7 +82,15 @@ public class InvoiceService(AppDbContext db, WhatsAppService whatsApp)
 
         await using var tx = await db.Database.BeginTransactionAsync();
 
-        var settings = await db.CompanySettings.FirstAsync();
+        // Lock the settings row for the duration of the transaction so two concurrent
+        // finalisations (e.g. desktop + mobile) can't read the same LastInvoiceSequence and
+        // issue duplicate invoice numbers. The in-memory test provider has no locking (or
+        // real transactions), so fall back to a plain read there.
+        var settings = db.Database.IsRelational()
+            ? await db.CompanySettings
+                .FromSqlRaw("""SELECT * FROM "CompanySettings" FOR UPDATE""")
+                .FirstAsync()
+            : await db.CompanySettings.FirstAsync();
         var next = settings.LastInvoiceSequence + 1;
         settings.LastInvoiceSequence = next;
         invoice.SequenceNumber = next;
@@ -100,6 +108,11 @@ public class InvoiceService(AppDbContext db, WhatsAppService whatsApp)
 
     public async Task<Invoice?> RecordPaymentAsync(Guid id, RecordPaymentRequest req, Guid? userId)
     {
+        // Server-side guard (clients validate too): a zero/negative "payment" would silently
+        // reduce AmountPaid and corrupt the balance.
+        if (req.Amount <= 0)
+            throw new InvalidOperationException("Payment amount must be greater than zero.");
+
         var invoice = await GetEntityAsync(id);
         if (invoice is null) return null;
         if (invoice.Status == InvoiceStatus.Cancelled)

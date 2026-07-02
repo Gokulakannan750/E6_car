@@ -19,6 +19,15 @@ public static class DbInitializer
         if (db.Database.IsRelational())
             await db.Database.MigrateAsync();
 
+        // Backfill: the SecurityStamp column is added with an empty default on existing rows.
+        // Give each a real random stamp so token-revocation works cleanly for pre-upgrade users.
+        var stampless = await db.Users.Where(u => u.SecurityStamp == "").ToListAsync();
+        if (stampless.Count > 0)
+        {
+            foreach (var u in stampless) u.SecurityStamp = Guid.NewGuid().ToString("N");
+            await db.SaveChangesAsync();
+        }
+
         if (!await db.CompanySettings.AnyAsync())
         {
             db.CompanySettings.Add(new CompanySettings
@@ -64,11 +73,7 @@ public static class DbInitializer
         if (!await db.Services.AnyAsync())
             db.Services.AddRange(SeedServices());
 
-
-
         await db.SaveChangesAsync();
-
-
     }
 
     private static List<Service> SeedServices() =>
@@ -87,74 +92,4 @@ public static class DbInitializer
         new() { Name = "Engine Bay Cleaning",     Category = "Cleaning",  DefaultPrice = 1000m  },
         new() { Name = "AMC Package (Annual)",    Category = "Package",   DefaultPrice = 12000m },
     ];
-
-    // Inventory is tracked as a simple count of units (bottles / pieces).
-    // ReorderLevel = number of units below which the item is flagged low-stock.
-    private static List<Product> SeedProducts() =>
-    [
-        new() { Name = "Ceramic Coating Solution", Category = "Coating",    StockQuantity = 0, ReorderLevel = 5,  UnitCost = 800m },
-        new() { Name = "Graphene Coating Solution",Category = "Coating",    StockQuantity = 0, ReorderLevel = 5,  UnitCost = 1200m },
-        new() { Name = "Teflon Polish",            Category = "Polish",     StockQuantity = 0, ReorderLevel = 5,  UnitCost = 300m },
-        new() { Name = "Rubbing Compound",         Category = "Polish",     StockQuantity = 0, ReorderLevel = 5,  UnitCost = 250m },
-        new() { Name = "Polishing Compound",       Category = "Polish",     StockQuantity = 0, ReorderLevel = 5,  UnitCost = 250m },
-        new() { Name = "Car Shampoo",              Category = "Consumable", StockQuantity = 0, ReorderLevel = 5,  UnitCost = 200m },
-        new() { Name = "Carnauba Wax",             Category = "Polish",     StockQuantity = 0, ReorderLevel = 5,  UnitCost = 350m },
-        new() { Name = "Rain Repellent Solution",  Category = "Treatment",  StockQuantity = 0, ReorderLevel = 5,  UnitCost = 300m },
-        new() { Name = "Underbody Coating Spray",  Category = "Coating",    StockQuantity = 0, ReorderLevel = 5,  UnitCost = 350m },
-        new() { Name = "Interior Cleaner",         Category = "Cleaning",   StockQuantity = 0, ReorderLevel = 5,  UnitCost = 250m },
-        new() { Name = "Dashboard Polish",         Category = "Cleaning",   StockQuantity = 0, ReorderLevel = 5,  UnitCost = 200m },
-        new() { Name = "Glass Cleaner",            Category = "Cleaning",   StockQuantity = 0, ReorderLevel = 5,  UnitCost = 150m },
-        new() { Name = "Tyre Polish",              Category = "Cleaning",   StockQuantity = 0, ReorderLevel = 5,  UnitCost = 200m },
-        new() { Name = "Sun Control Film",         Category = "Tinting",    StockQuantity = 0, ReorderLevel = 5,  UnitCost = 600m },
-        new() { Name = "Microfiber Cloth",         Category = "Consumable", StockQuantity = 0, ReorderLevel = 20, UnitCost = 40m },
-        new() { Name = "Polishing Pad",            Category = "Consumable", StockQuantity = 0, ReorderLevel = 10, UnitCost = 120m },
-        new() { Name = "Grinding Disc",            Category = "Bodyshop",   StockQuantity = 0, ReorderLevel = 10, UnitCost = 60m },
-        new() { Name = "Brush",                    Category = "Consumable", StockQuantity = 0, ReorderLevel = 10, UnitCost = 30m },
-        new() { Name = "Masking Tape",             Category = "Consumable", StockQuantity = 0, ReorderLevel = 10, UnitCost = 50m },
-        new() { Name = "Body Filler / Putty",      Category = "Bodyshop",   StockQuantity = 0, ReorderLevel = 3,  UnitCost = 350m },
-        new() { Name = "Primer",                   Category = "Bodyshop",   StockQuantity = 0, ReorderLevel = 3,  UnitCost = 500m },
-        new() { Name = "Automotive Paint",         Category = "Bodyshop",   StockQuantity = 0, ReorderLevel = 3,  UnitCost = 1200m },
-        new() { Name = "Thinner",                  Category = "Bodyshop",   StockQuantity = 0, ReorderLevel = 5,  UnitCost = 150m },
-        new() { Name = "Sandpaper",                Category = "Consumable", StockQuantity = 0, ReorderLevel = 20, UnitCost = 15m },
-    ];
-
-    private static async Task SeedBillOfMaterialsAsync(AppDbContext db)
-    {
-        var services = await db.Services.ToDictionaryAsync(s => s.Name, s => s.Id);
-        var products = await db.Products.ToDictionaryAsync(p => p.Name, p => p.Id);
-
-        void Link(string service, string product, decimal qty)
-        {
-            if (services.TryGetValue(service, out var sid) && products.TryGetValue(product, out var pid))
-                db.ServiceProducts.Add(new ServiceProduct { ServiceId = sid, ProductId = pid, DefaultQuantity = qty });
-        }
-
-        // Quantities are whole units consumed per service (editable later in the Catalogue screen).
-        Link("Ceramic Coating", "Ceramic Coating Solution", 1);
-        Link("Ceramic Coating", "Microfiber Cloth", 4);
-        Link("Ceramic Coating", "Polishing Pad", 1);
-
-        Link("Graphene Coating", "Graphene Coating Solution", 1);
-        Link("Graphene Coating", "Microfiber Cloth", 4);
-
-        Link("Teflon Machine Polishing", "Teflon Polish", 1);
-        Link("Teflon Machine Polishing", "Polishing Compound", 1);
-        Link("Teflon Machine Polishing", "Polishing Pad", 1);
-        Link("Teflon Machine Polishing", "Microfiber Cloth", 2);
-
-        Link("Ceramic Water Wash", "Car Shampoo", 1);
-        Link("Ceramic Water Wash", "Microfiber Cloth", 2);
-        Link("Foam Wash", "Car Shampoo", 1);
-
-        Link("Interior Cleaning", "Interior Cleaner", 1);
-        Link("Interior Cleaning", "Dashboard Polish", 1);
-        Link("Interior Cleaning", "Microfiber Cloth", 3);
-        Link("Interior Cleaning", "Brush", 1);
-
-        Link("Underbody Coating", "Underbody Coating Spray", 1);
-        Link("Rain Repellent", "Rain Repellent Solution", 1);
-        Link("Window Tinting / Sun Film", "Sun Control Film", 1);
-
-        await db.SaveChangesAsync();
-    }
 }

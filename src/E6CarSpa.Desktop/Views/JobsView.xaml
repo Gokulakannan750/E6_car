@@ -36,6 +36,9 @@
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="Date" Binding="{Binding CreatedAt, StringFormat='dd-MM-yyyy HH:mm'}" Width="140" />
                     <DataGridTextColumn Header="Invoice No." Binding="{Binding InvoiceNumber}" Width="120" />
+                    <DataGridTextColumn Header="Customer" Binding="{Binding CustomerName}" Width="*" />
+                    <DataGridTextColumn Header="Car No." Binding="{Binding CarNumber}" Width="100" />
+                    <DataGridTextColumn Header="Car Model" Binding="{Binding CarModel}" Width="120" />
                     <DataGridTemplateColumn Header="Status" Width="110">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
@@ -90,9 +93,6 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTextColumn Header="Customer" Binding="{Binding CustomerName}" Width="*" />
-                    <DataGridTextColumn Header="Car No." Binding="{Binding CarNumber}" Width="100" />
-                    <DataGridTextColumn Header="Car Model" Binding="{Binding CarModel}" Width="120" />
                     <DataGridTextColumn Header="Total ₹" Binding="{Binding GrandTotal, StringFormat='{}{0:N2}'}" Width="110" />
                     <DataGridTextColumn Header="Balance ₹" Binding="{Binding Balance, StringFormat='{}{0:N2}'}" Width="110" />
                     <DataGridTemplateColumn Width="80">

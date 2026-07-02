@@ -55,10 +55,7 @@ public static class GstCalculator
         }
         taxable = Round(taxable);
 
-        // Single tax figure for the whole invoice, then spread across lines
-        // (proportional to each line's taxable share, last line absorbs the remainder)
-        // purely so each row can still show its own line total.
-        // Single tax figure for the whole invoice, computed ONCE on the final TaxableValue
+        // Single tax figure for the whole invoice, computed ONCE on the final TaxableValue.
         var totalTax = invoice.IsGstApplicable ? Round(taxable * rate / 100m) : 0m;
 
         for (var i = 0; i < items.Count; i++)

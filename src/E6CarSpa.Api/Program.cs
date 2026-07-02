@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
 using E6CarSpa.Api.Auth;
@@ -79,8 +80,41 @@ builder.Services
             // Reject tokens that arrive with more than 5 minutes clock skew.
             ClockSkew = TimeSpan.FromMinutes(5)
         };
+        // Per-request revocation check: a signed, unexpired token is still rejected if the user
+        // was deactivated or their security stamp was rotated (password/role change). This is what
+        // makes "force logout" / instant deactivation possible without waiting for token expiry.
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = async context =>
+            {
+                var principal = context.Principal;
+                if (principal is null ||
+                    !Guid.TryParse(principal.FindFirstValue(ClaimTypes.NameIdentifier), out var userId))
+                {
+                    context.Fail("Invalid token subject.");
+                    return;
+                }
+
+                var dbCtx = context.HttpContext.RequestServices.GetRequiredService<AppDbContext>();
+                var user = await dbCtx.Users.AsNoTracking()
+                    .FirstOrDefaultAsync(u => u.Id == userId);
+
+                var stamp = principal.FindFirst("sstamp")?.Value;
+                if (user is null || !user.IsActive || user.SecurityStamp != stamp)
+                    context.Fail("Token has been revoked.");
+            }
+        };
     });
-builder.Services.AddAuthorization();
+// Secure-by-default: every endpoint requires an authenticated user UNLESS it opts out with
+// [AllowAnonymous]. The shop-floor billing endpoints (dashboard, customer lookup, quotations,
+// invoicing, payments) opt out deliberately — the desktop app runs without a login at the
+// counter — but anything added in future is closed until explicitly opened.
+builder.Services.AddAuthorization(options =>
+{
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
+});
 
 // ----- Reverse-proxy awareness -----
 // In production the API sits behind a TLS-terminating reverse proxy (Caddy) on the same host.
@@ -133,7 +167,11 @@ builder.Services.AddRateLimiter(options =>
 });
 
 // ----- Application services -----
-builder.Services.AddHttpClient("whatsapp");
+builder.Services.AddHttpContextAccessor();          // AuditService reads caller IP + identity
+builder.Services.AddScoped<AuditService>();
+// Short timeout: the send runs inside the payment request, so a hung provider must not
+// hold up the cashier (failures are recorded in NotificationLog, never thrown).
+builder.Services.AddHttpClient("whatsapp", c => c.Timeout = TimeSpan.FromSeconds(10));
 builder.Services.AddScoped<InvoiceService>();
 builder.Services.AddScoped<InventoryService>();
 builder.Services.AddScoped<ReportsService>();

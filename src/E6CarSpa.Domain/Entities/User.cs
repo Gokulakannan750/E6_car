@@ -11,4 +11,17 @@ public class User : BaseEntity
     public UserRole Role { get; set; } = UserRole.Worker;
     public bool IsActive { get; set; } = true;
     public DateTime? LastLoginAt { get; set; }
+
+    // ----- Brute-force lockout -----
+    /// <summary>Consecutive failed login attempts; reset to 0 on any successful login.</summary>
+    public int FailedLoginCount { get; set; }
+    /// <summary>When set and in the future, the account is temporarily locked and cannot log in.</summary>
+    public DateTime? LockoutEndAt { get; set; }
+
+    // ----- Token revocation -----
+    /// <summary>
+    /// Opaque value embedded in every issued JWT. Rotating it (on password change, role change,
+    /// or deactivation) instantly invalidates all previously issued tokens for this user.
+    /// </summary>
+    public string SecurityStamp { get; set; } = Guid.NewGuid().ToString("N");
 }

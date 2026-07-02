@@ -65,15 +65,20 @@ public class ReportsService(AppDbContext db)
     {
         var (start, end) = IndianTime.RangeUtc(from, to);
 
-        // Pull the flat rows, then group in memory (small data; avoids a complex SQL translation).
-        var items = await db.InvoiceItems.AsNoTracking()
-            .Where(it => it.Invoice!.CreatedAt >= start && it.Invoice.CreatedAt < end
-                         && Finalised.Contains(it.Invoice.Status))
-            .Select(it => new { it.GstRate, it.TaxableValue, it.CgstAmount, it.SgstAmount, it.IgstAmount })
+        // GST is charged once per invoice (on the total taxable value, at the first line's rate —
+        // see GstCalculator), so per-line tax columns are always zero. Aggregate from the invoice
+        // headers, keyed by each invoice's effective rate; group in memory (small data).
+        var invoices = await db.Invoices.AsNoTracking()
+            .Where(i => Finalised.Contains(i.Status) && i.CreatedAt >= start && i.CreatedAt < end)
+            .Select(i => new
+            {
+                Rate = i.Items.Select(it => (decimal?)it.GstRate).FirstOrDefault() ?? 0m,
+                i.TaxableValue, i.CgstAmount, i.SgstAmount, i.IgstAmount
+            })
             .ToListAsync();
 
-        var rows = items
-            .GroupBy(x => x.GstRate)
+        var rows = invoices
+            .GroupBy(x => x.Rate)
             .Select(g => new GstRateRow(
                 g.Key,
                 g.Sum(x => x.TaxableValue),

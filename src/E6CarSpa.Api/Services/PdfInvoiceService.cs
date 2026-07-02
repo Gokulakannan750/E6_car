@@ -58,7 +58,7 @@ public class PdfInvoiceService(AppDbContext db)
                         : (inv.IsGstApplicable ? "TAX INVOICE" : "INVOICE");
                     c.Item().AlignRight().Text(title).FontSize(16).Bold();
                     c.Item().AlignRight().Text($"No: {inv.InvoiceNumber ?? "(draft)"}");
-                    c.Item().AlignRight().Text($"Date: {inv.CreatedAt.ToLocalTime():dd-MM-yyyy}");
+                    c.Item().AlignRight().Text($"Date: {IndianTime.ToIstDate(inv.CreatedAt):dd-MM-yyyy}");
                 });
             });
             col.Item().PaddingTop(6).LineHorizontal(1).LineColor(Colors.Grey.Medium);

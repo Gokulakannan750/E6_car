@@ -1,3 +1,4 @@
+using E6CarSpa.Api.Services;
 using E6CarSpa.Contracts;
 using E6CarSpa.Domain.Enums;
 using E6CarSpa.Infrastructure.Data;
@@ -8,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace E6CarSpa.Api.Controllers;
 
 
-public class SettingsController(AppDbContext db) : ApiControllerBase
+public class SettingsController(AppDbContext db, AuditService audit) : ApiControllerBase
 {
 
 
@@ -22,7 +23,9 @@ public class SettingsController(AppDbContext db) : ApiControllerBase
     }
 
     /// <summary>Returns the company logo image (or 404 if none set).</summary>
+    // Anonymous: the desktop shell loads its watermark logo before anyone logs in.
     [HttpGet("logo")]
+    [AllowAnonymous]
     public async Task<IActionResult> GetLogo()
     {
         var s = await db.CompanySettings.FirstAsync();
@@ -44,6 +47,7 @@ public class SettingsController(AppDbContext db) : ApiControllerBase
         s.LogoBytes = bytes;
         s.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
+        await audit.LogAsync("Settings.LogoUpload", $"bytes={bytes.Length}");
         return Ok();
     }
 
@@ -56,6 +60,7 @@ public class SettingsController(AppDbContext db) : ApiControllerBase
         s.LogoBytes = null;
         s.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
+        await audit.LogAsync("Settings.LogoDelete");
         return Ok();
     }
 
@@ -70,10 +75,13 @@ public class SettingsController(AppDbContext db) : ApiControllerBase
         s.InvoicePrefix = req.InvoicePrefix; s.DefaultGstRate = req.DefaultGstRate;
         s.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
+        await audit.LogAsync("Settings.Update", $"gstin={s.Gstin}; prefix={s.InvoicePrefix}; gst={s.DefaultGstRate}");
         return await Get();
     }
 
+    // Anonymous: the desktop Dashboard is the no-login landing screen.
     [HttpGet("/api/dashboard")]
+    [AllowAnonymous]
     public async Task<ActionResult<DashboardSummaryDto>> Dashboard()
     {
         var (start, end) = Services.IndianTime.TodayUtc();
@@ -82,23 +90,25 @@ public class SettingsController(AppDbContext db) : ApiControllerBase
         var quotationsPending = await db.Invoices.CountAsync(i => i.Status == InvoiceStatus.Quotation);
         var invoicesUnpaid = await db.Invoices.CountAsync(i => i.Status == InvoiceStatus.Invoiced);
 
-        var paymentsToday = await db.Payments.AsNoTracking()
-            .Where(p => p.PaidAt >= start && p.PaidAt < end).ToListAsync();
+        var paymentsQuery = db.Payments.AsNoTracking()
+            .Where(p => p.PaidAt >= start && p.PaidAt < end);
+        var totalCollected = await paymentsQuery.SumAsync(p => (decimal?)p.Amount) ?? 0m;
+        var cashToday = await paymentsQuery.Where(p => p.Method == PaymentMethod.Cash).SumAsync(p => (decimal?)p.Amount) ?? 0m;
+        var cardToday = await paymentsQuery.Where(p => p.Method == PaymentMethod.Card).SumAsync(p => (decimal?)p.Amount) ?? 0m;
+        var upiToday = await paymentsQuery.Where(p => p.Method == PaymentMethod.Upi).SumAsync(p => (decimal?)p.Amount) ?? 0m;
+
         var lowStock = await db.Products.CountAsync(p => p.IsActive && p.StockQuantity <= p.ReorderLevel);
 
         var activeJobs = await db.Invoices.AsNoTracking()
             .Where(i => i.CreatedAt >= start && i.CreatedAt < end && (i.Status == InvoiceStatus.Quotation || i.Status == InvoiceStatus.InProgress))
             .OrderByDescending(i => i.CreatedAt)
-            .Select(i => new LiveJobDto(i.InvoiceNumber, i.Vehicle.CarNumber, i.Vehicle.CarModel, i.Status, i.GrandTotal))
+            .Select(i => new LiveJobDto(i.InvoiceNumber ?? "", i.Vehicle!.CarNumber, i.Vehicle.CarModel, i.Status, i.GrandTotal))
             .ToListAsync();
 
         return new DashboardSummaryDto(
             TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, Services.IndianTime.Zone).Date,
             jobsToday, quotationsPending, invoicesUnpaid,
-            paymentsToday.Sum(p => p.Amount),
-            paymentsToday.Where(p => p.Method == PaymentMethod.Cash).Sum(p => p.Amount),
-            paymentsToday.Where(p => p.Method == PaymentMethod.Card).Sum(p => p.Amount),
-            paymentsToday.Where(p => p.Method == PaymentMethod.Upi).Sum(p => p.Amount),
+            totalCollected, cashToday, cardToday, upiToday,
             lowStock,
             activeJobs);
     }

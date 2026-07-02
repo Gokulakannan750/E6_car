@@ -1,4 +1,5 @@
 using E6CarSpa.Api.Mapping;
+using E6CarSpa.Api.Services;
 using E6CarSpa.Contracts;
 using E6CarSpa.Domain.Entities;
 using E6CarSpa.Infrastructure.Data;
@@ -9,9 +10,11 @@ using Microsoft.EntityFrameworkCore;
 namespace E6CarSpa.Api.Controllers;
 
 
-public class ServicesController(AppDbContext db) : ApiControllerBase
+public class ServicesController(AppDbContext db, AuditService audit) : ApiControllerBase
 {
+    // Anonymous: the no-login New Job screen needs the service catalogue to build a quotation.
     [HttpGet]
+    [AllowAnonymous]
     public async Task<ActionResult<List<ServiceDto>>> GetAll([FromQuery] bool includeInactive = false)
     {
         var q = db.Services.AsNoTracking().AsQueryable();
@@ -30,6 +33,7 @@ public class ServicesController(AppDbContext db) : ApiControllerBase
         };
         db.Services.Add(s);
         await db.SaveChangesAsync();
+        await audit.LogAsync("Service.Create", $"name={s.Name}; price={s.DefaultPrice}; gst={s.GstRate}");
         return s.ToDto();
     }
 
@@ -43,6 +47,7 @@ public class ServicesController(AppDbContext db) : ApiControllerBase
         s.HsnSac = req.HsnSac; s.GstRate = req.GstRate; s.IsActive = req.IsActive;
         s.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
+        await audit.LogAsync("Service.Update", $"name={s.Name}; price={s.DefaultPrice}; gst={s.GstRate}; active={s.IsActive}");
         return s.ToDto();
     }
 
@@ -75,6 +80,7 @@ public class ServicesController(AppDbContext db) : ApiControllerBase
             });
 
         await db.SaveChangesAsync();
+        await audit.LogAsync("Service.BomUpdate", $"serviceId={id}; lines={req.Items.Count}");
         return await GetBom(id);
     }
 }

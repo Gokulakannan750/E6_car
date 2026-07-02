@@ -1,4 +1,6 @@
 using E6CarSpa.Mobile.Services;
+using Plugin.Fingerprint;
+using Plugin.Fingerprint.Abstractions;
 
 namespace E6CarSpa.Mobile.Pages;
 
@@ -31,7 +33,9 @@ public partial class LoginPage : ContentPage
         {
             await AppServices.Api.LoginAsync(username, password);
             Settings.LastUsername = username;
-            // Swap the whole window over to the tabbed monitor shell.
+            await SecureStorage.SetAsync("saved_password", password);
+            
+            // Swap to the tabbed monitor shell.
             if (Application.Current?.Windows.Count > 0)
                 Application.Current.Windows[0].Page = new AppShell();
         }
@@ -49,6 +53,63 @@ public partial class LoginPage : ContentPage
         }
     }
 
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+        try
+        {
+            await CheckBiometricAvailabilityAsync();
+        }
+        catch (Exception)
+        {
+            // Biometric check is non-critical; silently ignore failures.
+        }
+    }
+
+    private async Task CheckBiometricAvailabilityAsync()
+    {
+        if (!string.IsNullOrWhiteSpace(Settings.LastUsername))
+        {
+            var isAvailable = await CrossFingerprint.Current.IsAvailableAsync(true);
+            if (isAvailable)
+            {
+                BiometricButton.IsVisible = true;
+            }
+        }
+    }
+
+    private void OnTogglePasswordClicked(object? sender, EventArgs e)
+    {
+        PasswordEntry.IsPassword = !PasswordEntry.IsPassword;
+        TogglePasswordBtn.Opacity = PasswordEntry.IsPassword ? 0.5 : 1.0;
+    }
+
+    private async void OnBiometricClicked(object? sender, EventArgs e)
+    {
+        try
+        {
+            var request = new AuthenticationRequestConfiguration("Login", "Please authenticate to access E6 Car Spa");
+            var result = await CrossFingerprint.Current.AuthenticateAsync(request);
+            if (result.Authenticated)
+            {
+                var password = await SecureStorage.GetAsync("saved_password");
+                if (!string.IsNullOrWhiteSpace(password))
+                {
+                    PasswordEntry.Text = password;
+                    OnLoginClicked(this, EventArgs.Empty);
+                }
+                else
+                {
+                    ShowError("No password saved for biometric login. Please login with password first.");
+                }
+            }
+        }
+        catch (Exception)
+        {
+            ShowError("Biometric authentication failed. Please login with password.");
+        }
+    }
+
     private void ShowError(string message)
     {
         ErrorLabel.Text = message;
@@ -60,6 +121,7 @@ public partial class LoginPage : ContentPage
         Busy.IsRunning = busy;
         Busy.IsVisible = busy;
         LoginButton.IsEnabled = !busy;
+        BiometricButton.IsEnabled = !busy;
         if (busy) ErrorLabel.IsVisible = false;
     }
 }

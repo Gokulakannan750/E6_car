@@ -13,6 +13,12 @@ public static class MauiProgram
 			{
 				fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
 				fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+			})
+			.ConfigureMauiHandlers(handlers =>
+			{
+#if ANDROID
+				handlers.AddHandler(typeof(Shell), typeof(E6CarSpa.Mobile.Platforms.Android.CustomShellRenderer));
+#endif
 			});
 
 #if DEBUG
