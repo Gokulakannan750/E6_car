@@ -2,7 +2,7 @@ using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using E6CarSpa.Contracts;
-using E6CarSpa.Desktop.Services;
+using E6CarSpa.Client;
 
 namespace E6CarSpa.Desktop.ViewModels;
 

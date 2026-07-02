@@ -1,16 +1,20 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using E6CarSpa.Contracts;
 using E6CarSpa.Domain.Enums;
 
-namespace E6CarSpa.Desktop.Services;
+namespace E6CarSpa.Client;
 
+/// <summary>
+/// Typed surface of the E6 Car Spa Web API, shared by the desktop (WPF) and mobile (MAUI)
+/// clients so the two apps can never drift apart on how they talk to the server.
+/// </summary>
 public interface IApiClient
 {
     UserDto? CurrentUser { get; }
     bool IsLoggedIn { get; }
     event Action? OnUnauthorized;
+
+    /// <summary>Point the client at a different server (used by the mobile Settings screen).</summary>
+    void SetBaseUrl(string baseUrl);
 
     Task<UserDto> LoginAsync(string username, string password);
     void Logout();

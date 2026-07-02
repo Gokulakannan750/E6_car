@@ -72,6 +72,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\E6CarSpa.Client\E6CarSpa.Client.csproj" />
 	  <ProjectReference Include="..\E6CarSpa.Contracts\E6CarSpa.Contracts.csproj" />
 	</ItemGroup>
 

@@ -94,7 +94,9 @@
                     <Button Content="👥  Customers" Style="{StaticResource NavButton}" Command="{Binding ShowCustomersCommand}" />
                     <Button Content="➕  New Job" Style="{StaticResource NavButton}" Command="{Binding ShowNewJobCommand}" />
                     <Button Content="🧾  Jobs &amp; Invoices" Style="{StaticResource NavButton}" Command="{Binding ShowJobsCommand}" />
-                    <Button Content="📦  Inventory" Style="{StaticResource NavButton}" Command="{Binding ShowInventoryCommand}" />
+                    <!-- Inventory is under construction — nav hidden until the client wants it.
+                         The screen (InventoryView/ViewModel) and API endpoints are still in place;
+                         restore this button to bring it back. -->
                     <Button Content="🗂  Catalogue" Style="{StaticResource NavButton}" Command="{Binding ShowCatalogueCommand}" />
                     <Button Content="📈  Reports" Style="{StaticResource NavButton}" Command="{Binding ShowReportsCommand}" />
                     <Button Content="⚙  Settings" Style="{StaticResource NavButton}" Command="{Binding ShowSettingsCommand}" />

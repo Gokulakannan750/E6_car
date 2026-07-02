@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using E6CarSpa.Contracts;
+using E6CarSpa.Client;
 using E6CarSpa.Mobile.Services;
 using E6CarSpa.Mobile.ViewModels;
 

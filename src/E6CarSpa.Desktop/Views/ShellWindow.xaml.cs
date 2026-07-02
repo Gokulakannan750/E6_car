@@ -31,7 +31,7 @@ public partial class ShellWindow : Window
         };
         _inactivityTimer.Tick += (_, _) =>
         {
-            var api = App.Services.GetRequiredService<E6CarSpa.Desktop.Services.IApiClient>();
+            var api = App.Services.GetRequiredService<E6CarSpa.Client.IApiClient>();
             if (api.IsLoggedIn)
             {
                 api.Logout();
@@ -59,7 +59,7 @@ public partial class ShellWindow : Window
 
     private void Logout_Click(object sender, RoutedEventArgs e)
     {
-        var api = App.Services.GetRequiredService<E6CarSpa.Desktop.Services.IApiClient>();
+        var api = App.Services.GetRequiredService<E6CarSpa.Client.IApiClient>();
         api.Logout();
         _ = _vm.NavigateAsync<DashboardViewModel>("Dashboard");
     }

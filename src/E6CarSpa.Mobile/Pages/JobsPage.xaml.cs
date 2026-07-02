@@ -1,5 +1,6 @@
 using E6CarSpa.Contracts;
 using E6CarSpa.Domain.Enums;
+using E6CarSpa.Client;
 using E6CarSpa.Mobile.Services;
 
 namespace E6CarSpa.Mobile.Pages;

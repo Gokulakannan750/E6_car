@@ -4,7 +4,7 @@ using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using E6CarSpa.Contracts;
-using E6CarSpa.Desktop.Services;
+using E6CarSpa.Client;
 using E6CarSpa.Domain.Enums;
 
 namespace E6CarSpa.Desktop.ViewModels;
@@ -156,7 +156,7 @@ public partial class InvoiceDetailViewModel(IApiClient api) : ObservableObject
             await SaveChangesAsync();
             var finalised = await api.FinaliseAsync(Invoice.Id);
             BindInvoice(finalised);
-            Info = $"Invoice {finalised.InvoiceNumber} generated. Inventory updated.";
+            Info = $"Invoice {finalised.InvoiceNumber} generated.";
         }
         catch (Exception ex) { Error = ex.Message; }
         finally { IsBusy = false; }

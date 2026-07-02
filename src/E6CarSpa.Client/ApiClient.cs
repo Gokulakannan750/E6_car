@@ -1,35 +1,32 @@
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using E6CarSpa.Contracts;
 using E6CarSpa.Domain.Enums;
-using E6CarSpa.Mobile.Services;
 
-namespace E6CarSpa.Mobile.Services;
+namespace E6CarSpa.Client;
 
 /// <summary>
-/// Thin typed wrapper over the E6 Car Spa Web API. Holds the JWT after login and attaches
-/// it to every request. All calls throw <see cref="ApiException"/> on non-success responses.
+/// Thin typed wrapper over the E6 Car Spa Web API, shared by the desktop and mobile apps.
+/// Holds the JWT after login and attaches it to every request. All calls throw
+/// <see cref="ApiException"/> on non-success responses.
 /// </summary>
-public class ApiClient : IApiClient
+public class ApiClient(HttpClient http) : IApiClient
 {
     private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
 
-    // Owned (not DI-injected) so the base URL can be changed at runtime from the Settings screen.
-    private HttpClient http;
+    private HttpClient http = http;
 
-    public ApiClient() => http = Build(Settings.ApiUrl);
-
-    private static HttpClient Build(string baseUrl) =>
-        new() { BaseAddress = new Uri(baseUrl), Timeout = TimeSpan.FromSeconds(30) };
-
-    /// <summary>Rebuild the underlying client against a new server URL, preserving any auth header.</summary>
+    /// <summary>
+    /// Rebuild the underlying client against a new server URL, preserving any auth header
+    /// (the mobile Settings screen changes the server address at runtime).
+    /// </summary>
     public void SetBaseUrl(string baseUrl)
     {
-        var auth = http.DefaultRequestHeaders.Authorization;
-        http = Build(baseUrl);
-        http.DefaultRequestHeaders.Authorization = auth;
+        var old = http;
+        http = new HttpClient { BaseAddress = new Uri(baseUrl), Timeout = old.Timeout };
+        http.DefaultRequestHeaders.Authorization = old.DefaultRequestHeaders.Authorization;
+        old.Dispose();
     }
 
     public UserDto? CurrentUser { get; private set; }
@@ -205,7 +202,7 @@ public class ApiClient : IApiClient
     private async Task EnsureSuccess(HttpResponseMessage resp)
     {
         if (resp.IsSuccessStatusCode) return;
-        
+
         if (resp.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             OnUnauthorized?.Invoke();
 

@@ -15,8 +15,12 @@ public partial class LineItemVm : ObservableObject
     [ObservableProperty] private decimal _gstRate = 18m;
 
     public decimal Taxable => Math.Max(0, (Quantity * UnitPrice) - DiscountAmount);
-    public decimal TaxAmount => Math.Round(Taxable * GstRate / 100m, 2);
-    public decimal LineTotal => Math.Round(Taxable + TaxAmount, 2);
+
+    /// <summary>
+    /// Line total EXCLUDING tax — GST is charged once on the whole invoice (see GstCalculator),
+    /// so this matches the server's stored LineTotal and the saved-invoice grid/PDF.
+    /// </summary>
+    public decimal LineTotal => Taxable;
 
     /// <summary>Raised so the parent VM can recompute invoice totals.</summary>
     public event Action? Changed;
@@ -29,7 +33,6 @@ public partial class LineItemVm : ObservableObject
     private void Recalc()
     {
         OnPropertyChanged(nameof(Taxable));
-        OnPropertyChanged(nameof(TaxAmount));
         OnPropertyChanged(nameof(LineTotal));
         Changed?.Invoke();
     }

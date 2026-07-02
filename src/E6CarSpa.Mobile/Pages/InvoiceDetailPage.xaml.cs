@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using E6CarSpa.Contracts;
 using E6CarSpa.Domain.Enums;
+using E6CarSpa.Client;
 using E6CarSpa.Mobile.Services;
 using E6CarSpa.Mobile.ViewModels;
 
@@ -185,7 +186,7 @@ public partial class InvoiceDetailPage : ContentPage
     {
         if (_invoice is null) return;
         bool ok = await DisplayAlertAsync("Generate invoice",
-            "This assigns an invoice number and deducts stock. Continue?", "Generate", "Cancel");
+            "This assigns a permanent invoice number. Continue?", "Generate", "Cancel");
         if (!ok) return;
 
         SetBusy(true);
@@ -194,7 +195,7 @@ public partial class InvoiceDetailPage : ContentPage
             await SaveChangesAsync();                      // persist edits first
             var finalised = await AppServices.Api.FinaliseAsync(_invoice!.Id);
             Bind(finalised);
-            ShowInfo($"Invoice {finalised.InvoiceNumber} generated. Inventory updated.");
+            ShowInfo($"Invoice {finalised.InvoiceNumber} generated.");
         }
         catch (Exception ex) { ShowError(ex is ApiException a ? a.Message : "Could not finalise."); }
         finally { SetBusy(false); }

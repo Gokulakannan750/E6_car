@@ -1,6 +1,6 @@
 using System.Net.Http;
 using System.Windows;
-using E6CarSpa.Desktop.Services;
+using E6CarSpa.Client;
 using E6CarSpa.Desktop.ViewModels;
 using E6CarSpa.Desktop.Views;
 using Microsoft.Extensions.DependencyInjection;

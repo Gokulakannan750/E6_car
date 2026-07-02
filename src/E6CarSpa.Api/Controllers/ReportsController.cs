@@ -16,7 +16,10 @@ public class ReportsController(ReportsService reports) : ApiControllerBase
     public async Task<ActionResult<GstSummaryDto>> Gst([FromQuery] DateTime from, [FromQuery] DateTime to)
         => await reports.GstAsync(from, to);
 
+    // Anonymous: the no-login Customers screen shows a customer's visit history when a row
+    // is selected — without this, selecting a customer popped the login window.
     [HttpGet("customer")]
+    [AllowAnonymous]
     public async Task<ActionResult<CustomerHistoryDto>> Customer([FromQuery] string phone)
     {
         var result = await reports.CustomerAsync(phone);

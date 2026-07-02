@@ -299,4 +299,130 @@ public class ApiIntegrationTests
         Authorize(workerClient, await LoginAsync(workerClient, "worker8", "worker@123"));
         Assert.Equal(HttpStatusCode.Forbidden, (await workerClient.GetAsync("/api/audit")).StatusCode);
     }
+
+    // ---------- deny-by-default authorization posture ----------
+    // The fallback policy closes every endpoint that hasn't explicitly opted out with
+    // [AllowAnonymous]. These tests pin both sides of that contract so a future regression
+    // (like the one that silently removed the fallback policy) fails loudly.
+
+    [Theory]
+    [InlineData("/api/settings")]        // company settings (GSTIN etc.) need a login
+    [InlineData("/api/products")]        // inventory needs a login
+    [InlineData("/api/audit")]           // audit trail needs a login
+    [InlineData("/api/reports/sales?from=2026-01-01&to=2026-01-31")]
+    public async Task ProtectedGets_WithoutToken_ReturnUnauthorized(string url)
+    {
+        using var factory = new ApiFactory();
+        var resp = await factory.CreateClient().GetAsync(url);
+        Assert.Equal(HttpStatusCode.Unauthorized, resp.StatusCode);
+    }
+
+    [Fact]
+    public async Task ProtectedWrites_WithoutToken_ReturnUnauthorized()
+    {
+        using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+
+        var svc = await client.PostAsJsonAsync("/api/services",
+            new SaveServiceRequest("Hack", "X", 1m, "", 18m, true));
+        Assert.Equal(HttpStatusCode.Unauthorized, svc.StatusCode);
+
+        var settings = await client.PutAsJsonAsync("/api/settings",
+            new SaveCompanySettingsRequest("X", null, null, null, null, null, null, null, null, null, "X/", 18m));
+        Assert.Equal(HttpStatusCode.Unauthorized, settings.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("/api/services")]                    // New Job screen loads the catalogue
+    [InlineData("/api/dashboard")]                   // no-login landing screen
+    [InlineData("/api/customers/by-phone/9000000000")]
+    [InlineData("/api/invoices")]                    // Jobs list
+    public async Task ShopFloorGets_WithoutToken_RemainOpen(string url)
+    {
+        // The desktop app deliberately runs without a login at the counter; these endpoints
+        // opt out of the fallback policy. If one starts returning 401, the shop can't bill.
+        using var factory = new ApiFactory();
+        var resp = await factory.CreateClient().GetAsync(url);
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+    }
+
+    [Fact]
+    public async Task CustomerHistory_WithoutToken_IsOpen()
+    {
+        // The no-login Customers screen loads a customer's visit history on row select;
+        // this endpoint opting out of the fallback policy is what keeps that popup-free.
+        using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+
+        (await client.PostAsJsonAsync("/api/invoices/quotation",
+            new CreateQuotationRequest("History Cust", "9555555555", "TN12 D 1200", "Car",
+                0m, null, [new InvoiceItemInput(null, null, "Wash", 1, 500m, 0m)])))
+            .EnsureSuccessStatusCode();
+
+        var resp = await client.GetAsync("/api/reports/customer?phone=9555555555");
+
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+    }
+
+    [Fact]
+    public async Task Quotation_WithoutToken_CanBeCreated()
+    {
+        using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+
+        var resp = await client.PostAsJsonAsync("/api/invoices/quotation",
+            new CreateQuotationRequest("Walk In", "9123456789", "TN33 Z 9999", "Swift",
+                0m, null, [new InvoiceItemInput(null, null, "Foam Wash", 1, 400m, 0m)]));
+
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+    }
+
+    // ---------- payment validation ----------
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-500)]
+    public async Task Payment_WithNonPositiveAmount_ReturnsBadRequest(decimal amount)
+    {
+        using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+
+        var quote = await client.PostAsJsonAsync("/api/invoices/quotation",
+            new CreateQuotationRequest("Cust", "9333333333", "TN10 B 1000", "Car",
+                0m, null, [new InvoiceItemInput(null, null, "Wash", 1, 1000m, 0m)]));
+        var invoice = (await quote.Content.ReadFromJsonAsync<InvoiceDto>())!;
+
+        var pay = await client.PostAsJsonAsync($"/api/invoices/{invoice.Id}/payments",
+            new RecordPaymentRequest(PaymentMethod.Cash, amount, null));
+
+        Assert.Equal(HttpStatusCode.BadRequest, pay.StatusCode);
+    }
+
+    // ---------- GST summary report ----------
+
+    [Fact]
+    public async Task GstReport_AfterFinalisingGstInvoice_ShowsNonZeroTax()
+    {
+        // Regression: per-line tax columns are always zero now (tax lives on the invoice
+        // header), so the report must aggregate headers — it used to return all-zero rows.
+        using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+        Authorize(client, await LoginAsync(client, "admin", "admin@123"));
+
+        var quote = await client.PostAsJsonAsync("/api/invoices/quotation",
+            new CreateQuotationRequest("Cust", "9444444444", "TN11 C 1100", "Car",
+                0m, null, [new InvoiceItemInput(null, null, "Coating", 1, 1000m, 0m)]));
+        var invoice = (await quote.Content.ReadFromJsonAsync<InvoiceDto>())!;
+        (await client.PostAsync($"/api/invoices/{invoice.Id}/finalise", null)).EnsureSuccessStatusCode();
+
+        var day = DateTime.UtcNow.AddHours(5.5).Date.ToString("yyyy-MM-dd"); // IST "today"
+        var report = await client.GetFromJsonAsync<GstSummaryDto>($"/api/reports/gst?from={day}&to={day}");
+
+        var row = Assert.Single(report!.Rows, r => r.GstRate == 18m);
+        Assert.Equal(1000m, row.TaxableValue);
+        Assert.Equal(180m, row.Total);          // 90 CGST + 90 SGST
+        Assert.Equal(90m, row.Cgst);
+        Assert.Equal(90m, row.Sgst);
+        Assert.Equal(180m, report.TotalTax);
+    }
 }

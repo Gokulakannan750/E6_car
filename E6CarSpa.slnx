@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/E6CarSpa.Api/E6CarSpa.Api.csproj" />
+    <Project Path="src/E6CarSpa.Client/E6CarSpa.Client.csproj" />
     <Project Path="src/E6CarSpa.Contracts/E6CarSpa.Contracts.csproj" />
     <Project Path="src/E6CarSpa.Desktop/E6CarSpa.Desktop.csproj" />
     <Project Path="src/E6CarSpa.Domain/E6CarSpa.Domain.csproj" />

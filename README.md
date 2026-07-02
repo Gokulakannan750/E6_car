@@ -55,6 +55,24 @@ Edit `src/E6CarSpa.Api/appsettings.json` (or override via environment variables 
 > **Security:** set a real, random `Jwt:Key` and keep production secrets out of source control
 > (use `appsettings.Production.json` or environment variables — both are git-ignored).
 
+### Authorization model
+
+The API is **deny-by-default**: every endpoint requires a valid JWT unless it explicitly opts
+out with `[AllowAnonymous]`. The opted-out surface is the shop-floor billing workflow — the
+desktop app deliberately runs **without a login** at the counter (dashboard, customer lookup,
+service catalogue, quotations/invoices/payments/PDF), while Reports, Inventory, Catalogue
+editing, Settings, user management, and the audit trail all require a login (role-gated:
+Admin / Manager / Worker). This contract is pinned by integration tests
+(`ProtectedGets_WithoutToken_ReturnUnauthorized`, `ShopFloorGets_WithoutToken_RemainOpen`).
+Additional protections: per-IP rate limiting (5 login attempts/min), per-account lockout
+(5 wrong passwords → 15 min), instant token revocation via security stamps (password/role
+change, deactivation), and an immutable audit log of security- and money-relevant actions.
+
+> ⚠️ Because billing endpoints are anonymous **by design**, the API must never be exposed
+> directly to the public internet without weighing that trade-off: anyone who can reach it can
+> read customer data and create invoices. Prefer a VPN/private network between the shop and the
+> server, or IP-allowlist the shop's address at the reverse proxy.
+
 ## Running (development)
 
 1. **Start the API** (creates the database, applies migrations, and seeds the catalogue + admin user on first run):

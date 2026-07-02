@@ -24,9 +24,9 @@ public class LineItemVm : INotifyPropertyChanged
     private decimal _discountAmount;
     public decimal DiscountAmount { get => _discountAmount; set { if (Set(ref _discountAmount, value)) Recalc(); } }
 
+    // Per-line amount EXCLUDING tax — GST is charged once on the whole invoice (see
+    // GstCalculator), so lines never show their own tax.
     public decimal Taxable => Math.Max(0, (Quantity * UnitPrice) - DiscountAmount);
-    public decimal TaxAmount => Math.Round(Taxable * GstRate / 100m, 2);
-    public decimal LineTotal => Math.Round(Taxable + TaxAmount, 2);
 
     /// <summary>Raised so the parent page can recompute the invoice totals.</summary>
     public event Action? Changed;
@@ -35,8 +35,6 @@ public class LineItemVm : INotifyPropertyChanged
     private void Recalc()
     {
         OnPropertyChanged(nameof(Taxable));
-        OnPropertyChanged(nameof(TaxAmount));
-        OnPropertyChanged(nameof(LineTotal));
         Changed?.Invoke();
     }
 

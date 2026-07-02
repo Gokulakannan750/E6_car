@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using E6CarSpa.Contracts;
-using E6CarSpa.Desktop.Services;
+using E6CarSpa.Client;
 
 namespace E6CarSpa.Desktop.ViewModels;
 

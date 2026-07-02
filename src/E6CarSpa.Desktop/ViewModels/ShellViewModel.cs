@@ -1,6 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using E6CarSpa.Desktop.Services;
+using E6CarSpa.Client;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace E6CarSpa.Desktop.ViewModels;
