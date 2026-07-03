@@ -36,3 +36,7 @@ appsettings.json
 appsettings.Production.json
 appsettings.Local.json
 secrets.json
+
+## Android release signing — keystore + password must NEVER be in git.
+## Back the folder up off-machine instead (see deploy/android/KEYSTORE-INFO.txt).
+deploy/android/
