@@ -14,6 +14,7 @@ public partial class JobsPage : ContentPage
         ("Quotation", InvoiceStatus.Quotation),
         ("Invoiced", InvoiceStatus.Invoiced),
         ("Paid", InvoiceStatus.Paid),
+        ("Cancelled", InvoiceStatus.Cancelled),
     };
 
     public JobsPage()
