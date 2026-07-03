@@ -3,9 +3,11 @@ using System.Diagnostics;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.Windows;
 using E6CarSpa.Contracts;
 using E6CarSpa.Client;
 using E6CarSpa.Domain.Enums;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace E6CarSpa.Desktop.ViewModels;
 
@@ -40,6 +42,8 @@ public partial class InvoiceDetailViewModel(IApiClient api) : ObservableObject
     public bool IsQuotation => Invoice is { Status: InvoiceStatus.Quotation or InvoiceStatus.InProgress };
     public bool CanPay => Invoice is not null && Invoice.Status != InvoiceStatus.Paid
                           && Invoice.Status != InvoiceStatus.Cancelled && Invoice.Balance > 0;
+    public bool CanCancel => Invoice is not null && Invoice.Status != InvoiceStatus.Paid
+                             && Invoice.Status != InvoiceStatus.Cancelled;
     public string Title => Invoice is null ? "" :
         $"{(Invoice.Status == InvoiceStatus.Quotation ? "Quotation" : "Invoice")} {Invoice.InvoiceNumber ?? "(draft)"}";
 
@@ -163,6 +167,43 @@ public partial class InvoiceDetailViewModel(IApiClient api) : ObservableObject
     }
 
     [RelayCommand]
+    private async Task CancelBillAsync()
+    {
+        if (Invoice is null || !CanCancel) return;
+
+        // The counter runs anonymous, but the cancel endpoint needs a Manager/Admin token —
+        // raise the same login popup the gated nav pages use, then re-check the role.
+        if (api.CurrentUser?.Role is not (UserRole.Admin or UserRole.Manager))
+        {
+            var login = App.Services.GetRequiredService<Views.LoginWindow>();
+            if (Application.Current.MainWindow is { IsVisible: true } owner) login.Owner = owner;
+            login.ShowDialog();
+            App.Services.GetService<ShellViewModel>()?.RefreshAuthState();
+            if (api.CurrentUser?.Role is not (UserRole.Admin or UserRole.Manager))
+            {
+                Error = "Cancelling a bill needs a Manager or Admin login.";
+                return;
+            }
+        }
+
+        var what = Invoice.InvoiceNumber is null ? "this quotation" : $"invoice {Invoice.InvoiceNumber}";
+        var confirm = MessageBox.Show(
+            $"Cancel {what}? The bill is kept for the records but can no longer be edited or paid. This cannot be undone.",
+            "Cancel bill", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        if (confirm != MessageBoxResult.Yes) return;
+
+        try
+        {
+            IsBusy = true; Error = ""; Info = "";
+            var updated = await api.CancelInvoiceAsync(Invoice.Id);
+            BindInvoice(updated);
+            Info = "Bill cancelled.";
+        }
+        catch (Exception ex) { Error = ex.Message; }
+        finally { IsBusy = false; }
+    }
+
+    [RelayCommand]
     private async Task PrintAsync()
     {
         if (Invoice is null) return;
@@ -212,6 +253,7 @@ public partial class InvoiceDetailViewModel(IApiClient api) : ObservableObject
         OnPropertyChanged(nameof(CanEdit));
         OnPropertyChanged(nameof(IsQuotation));
         OnPropertyChanged(nameof(CanPay));
+        OnPropertyChanged(nameof(CanCancel));
         OnPropertyChanged(nameof(Title));
     }
 }

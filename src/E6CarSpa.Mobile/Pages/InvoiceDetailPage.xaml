@@ -103,6 +103,11 @@
                     Clicked="OnFinaliseClicked" />
             <Button x:Name="PdfButton" Text="View PDF"
                     Clicked="OnPdfClicked" />
+            <Button x:Name="CancelBillButton" Text="Cancel bill"
+                    BackgroundColor="Transparent" BorderWidth="1"
+                    TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource Error}}"
+                    BorderColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource Error}}"
+                    Clicked="OnCancelBillClicked" />
 
             <!-- Payment -->
             <Border Style="{StaticResource CardBorder}" x:Name="PaymentPanel" StrokeThickness="0" Padding="14"

@@ -13,6 +13,7 @@ public partial class InvoiceDetailPage : ContentPage
     private static readonly PaymentMethod[] Methods = { PaymentMethod.Cash, PaymentMethod.Card, PaymentMethod.Upi };
 
     private readonly ObservableCollection<LineItemVm> _lines = new();
+    private readonly ThemeRowRefresher _themeRows = new();
     private List<ServiceDto> _catalogue = new();
     private InvoiceDto? _invoice;
     private Guid _id;
@@ -31,6 +32,16 @@ public partial class InvoiceDetailPage : ContentPage
         BindableLayout.SetItemsSource(LinesHost, _lines);
         foreach (var m in Methods) MethodPicker.Items.Add(m.ToString());
         MethodPicker.SelectedIndex = 0;
+    }
+
+    protected override void OnAppearing()
+    {
+        base.OnAppearing();
+        if (_themeRows.RowsAreStale())
+        {
+            BindableLayout.SetItemsSource(LinesHost, null);
+            BindableLayout.SetItemsSource(LinesHost, _lines);
+        }
     }
 
     private async Task LoadAsync()
@@ -103,6 +114,7 @@ public partial class InvoiceDetailPage : ContentPage
         GstRow.IsEnabled = canEdit;
         SaveButton.IsVisible = canEdit;
         FinaliseButton.IsVisible = isQuotation;
+        CancelBillButton.IsVisible = inv.Status != InvoiceStatus.Paid && inv.Status != InvoiceStatus.Cancelled;
         PaymentPanel.IsVisible = canPay;
         AmountEntry.Text = inv.Balance.ToString("0.##");
 
@@ -198,6 +210,25 @@ public partial class InvoiceDetailPage : ContentPage
             ShowInfo($"Invoice {finalised.InvoiceNumber} generated.");
         }
         catch (Exception ex) { ShowError(ex is ApiException a ? a.Message : "Could not finalise."); }
+        finally { SetBusy(false); }
+    }
+
+    private async void OnCancelBillClicked(object? sender, EventArgs e)
+    {
+        if (_invoice is null) return;
+        bool ok = await DisplayAlertAsync("Cancel bill",
+            "The bill is kept for the records but can no longer be edited or paid. This cannot be undone. Continue?",
+            "Cancel bill", "Keep it");
+        if (!ok) return;
+
+        SetBusy(true);
+        try
+        {
+            var updated = await AppServices.Api.CancelInvoiceAsync(_invoice.Id);
+            Bind(updated);
+            ShowInfo("Bill cancelled.");
+        }
+        catch (Exception ex) { ShowError(ex is ApiException a ? a.Message : "Could not cancel the bill."); }
         finally { SetBusy(false); }
     }
 

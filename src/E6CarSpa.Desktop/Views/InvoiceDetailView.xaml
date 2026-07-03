@@ -55,7 +55,6 @@
                         <DataGridTextColumn Header="Service / Item" Binding="{Binding Description}" Width="*" IsReadOnly="True" />
                         <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="70" />
                         <DataGridTextColumn Header="Rate ₹" Binding="{Binding UnitPrice}" Width="100" />
-                        <DataGridTextColumn Header="Disc ₹" Binding="{Binding DiscountAmount}" Width="90" />
                         <DataGridTextColumn Header="Total ₹" Binding="{Binding LineTotal, StringFormat='{}{0:N2}'}" Width="110" IsReadOnly="True" />
                         <!-- Extra-wide, left-aligned so the button itself never sits under the
                              vertical scrollbar that appears once the lines overflow. -->
@@ -98,7 +97,7 @@
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <Grid.RowDefinitions>
-                                <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
+                                <RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition /><RowDefinition />
                             </Grid.RowDefinitions>
                             <TextBlock Grid.Row="0" Text="Sub Total" FontSize="14" Margin="0,4" />
                             <TextBlock Grid.Row="0" Grid.Column="1" Text="{Binding SubTotal, StringFormat='₹{0:N2}'}"
@@ -110,9 +109,12 @@
                             <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding GrandTotal, StringFormat='₹{0:N2}'}"
                                        FontWeight="Bold" FontSize="18" Foreground="{StaticResource PrimaryBrush}"
                                        HorizontalAlignment="Right" Margin="0,6,0,4" />
-                            <TextBlock Grid.Row="3" Text="Balance" Foreground="{StaticResource DangerBrush}" FontSize="14"
+                            <TextBlock Grid.Row="3" Text="Discount" FontSize="14" Margin="0,4" />
+                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding DiscountTotal, StringFormat='- ₹{0:N2}'}"
+                                       FontSize="14" HorizontalAlignment="Right" Margin="0,4" />
+                            <TextBlock Grid.Row="4" Text="Balance" Foreground="{StaticResource DangerBrush}" FontSize="14"
                                        FontWeight="SemiBold" Margin="0,4" />
-                            <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Invoice.Balance, StringFormat='₹{0:N2}'}"
+                            <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Invoice.Balance, StringFormat='₹{0:N2}'}"
                                        Foreground="{StaticResource DangerBrush}" FontWeight="Bold" FontSize="15"
                                        HorizontalAlignment="Right" Margin="0,4" />
                         </Grid>
@@ -122,6 +124,11 @@
 
             <!-- Action buttons -->
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,0,6">
+                <Button Content="🚫 Cancel Bill" Style="{StaticResource SecondaryButton}" Width="150" Margin="8,0"
+                        Foreground="{StaticResource DangerBrush}"
+                        Command="{Binding CancelBillCommand}"
+                        Visibility="{Binding CanCancel, Converter={StaticResource BoolToVis}}"
+                        ToolTip="Marks the bill as Cancelled (needs a Manager or Admin login)" />
                 <Button Content="💾 Save Changes" Style="{StaticResource SecondaryButton}" Width="170" Margin="8,0"
                         Command="{Binding SaveChangesCommand}" IsEnabled="{Binding CanEdit}" />
                 <Button Content="✅ Generate Invoice" Width="190" Margin="8,0"

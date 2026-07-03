@@ -90,18 +90,16 @@ public class PdfInvoiceService(AppDbContext db)
                 {
                     cols.ConstantColumn(22);   // #
                     cols.RelativeColumn(3);    // description
-                    cols.ConstantColumn(48);   // HSN/SAC
-                    cols.ConstantColumn(34);   // qty
-                    cols.ConstantColumn(60);   // rate
-                    cols.ConstantColumn(60);   // taxable
-                    cols.ConstantColumn(40);   // gst %
-                    cols.ConstantColumn(64);   // amount
+                    cols.ConstantColumn(52);   // HSN/SAC
+                    cols.ConstantColumn(40);   // qty
+                    cols.ConstantColumn(72);   // rate
+                    cols.ConstantColumn(76);   // amount
                 });
 
                 table.Header(header =>
                 {
                     void H(string t) => header.Cell().Background(Colors.Grey.Lighten2).Padding(4).Text(t).Bold();
-                    H("#"); H("Description"); H("HSN/SAC"); H("Qty"); H("Rate"); H("Taxable"); H("GST%"); H("Amount");
+                    H("#"); H("Description"); H("HSN/SAC"); H("Qty"); H("Rate"); H("Amount");
                 });
 
                 int n = 1;
@@ -117,8 +115,6 @@ public class PdfInvoiceService(AppDbContext db)
                     C(item.HsnSac);
                     C(item.Quantity.ToString("0.##"), true);
                     C(item.UnitPrice.ToString("0.00"), true);
-                    C(item.TaxableValue.ToString("0.00"), true);
-                    C(item.GstRate.ToString("0.#"), true);
                     C(item.LineTotal.ToString("0.00"), true);
                 }
             });
@@ -138,7 +134,6 @@ public class PdfInvoiceService(AppDbContext db)
                         });
                     }
                     Line("Sub Total", inv.SubTotal);
-                    if (inv.DiscountAmount > 0) Line("Discount", inv.DiscountAmount);
                     if (inv.IsGstApplicable)   // GST lines only on a GST bill
                     {
                         Line("Taxable Value", inv.TaxableValue);
@@ -147,6 +142,7 @@ public class PdfInvoiceService(AppDbContext db)
                     }
                     totals.Item().PaddingVertical(2).LineHorizontal(0.5f);
                     Line("Grand Total", inv.GrandTotal, bold: true);
+                    if (inv.DiscountAmount > 0) Line("Discount", -inv.DiscountAmount);
                     Line("Paid", inv.AmountPaid);
                     Line("Balance", inv.Balance, bold: true);
                 });

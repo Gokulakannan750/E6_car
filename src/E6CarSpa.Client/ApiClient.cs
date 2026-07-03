@@ -103,6 +103,9 @@ public class ApiClient(HttpClient http) : IApiClient
     public Task<InvoiceDto> FinaliseAsync(Guid id) =>
         PostAsync<InvoiceDto>($"api/invoices/{id}/finalise", new { });
 
+    public Task<InvoiceDto> CancelInvoiceAsync(Guid id) =>
+        PostAsync<InvoiceDto>($"api/invoices/{id}/cancel", new { });
+
     public Task<InvoiceDto> PayAsync(Guid id, RecordPaymentRequest req) =>
         PostAsync<InvoiceDto>($"api/invoices/{id}/payments", req);
 
