@@ -3,9 +3,14 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:c="clr-namespace:E6CarSpa.Contracts;assembly=E6CarSpa.Contracts"
+    xmlns:conv="clr-namespace:E6CarSpa.Mobile.Converters"
     x:Class="E6CarSpa.Mobile.Pages.JobsPage"
     Title="Jobs"
    >
+
+    <ContentPage.Resources>
+        <conv:StatusToColorConverter x:Key="StatusColor" />
+    </ContentPage.Resources>
 
     <Grid RowDefinitions="Auto,Auto,*" Padding="16" RowSpacing="10">
 
@@ -39,7 +44,8 @@
                                     <Label Text="{Binding GrandTotal, StringFormat='₹{0:N0}'}"
                                            FontSize="16" FontAttributes="Bold"
                                            HorizontalOptions="End" />
-                                    <Label Text="{Binding Status}" FontSize="12"
+                                    <Label Text="{Binding Status}" FontSize="12" FontAttributes="Bold"
+                                           TextColor="{Binding Status, Converter={StaticResource StatusColor}}"
                                            HorizontalOptions="End" />
                                     <Label Text="{Binding Balance, StringFormat='Due ₹{0:N0}'}"
                                            TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource Warning}}" FontSize="12" HorizontalOptions="End" />

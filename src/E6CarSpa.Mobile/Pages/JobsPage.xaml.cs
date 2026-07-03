@@ -27,6 +27,7 @@ public partial class JobsPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        ThemeColors.ApplyTo(StatusPicker);
         // Reload every time the tab is shown so newly created/paid jobs appear.
         await LoadAsync();
     }

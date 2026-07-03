@@ -23,6 +23,7 @@ public partial class NewJobPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        ThemeColors.ApplyTo(ServicePicker);
         if (_themeRows.RowsAreStale())
         {
             BindableLayout.SetItemsSource(LinesHost, null);

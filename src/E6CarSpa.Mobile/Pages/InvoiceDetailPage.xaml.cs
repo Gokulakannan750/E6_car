@@ -37,6 +37,7 @@ public partial class InvoiceDetailPage : ContentPage
     protected override void OnAppearing()
     {
         base.OnAppearing();
+        ThemeColors.ApplyTo(ServicePicker, MethodPicker);
         if (_themeRows.RowsAreStale())
         {
             BindableLayout.SetItemsSource(LinesHost, null);
@@ -83,6 +84,7 @@ public partial class InvoiceDetailPage : ContentPage
         CustomerLabel.Text = $"{inv.CustomerName}  •  {inv.CustomerPhone}";
         CarLabel.Text = string.IsNullOrWhiteSpace(inv.CarModel) ? inv.CarNumber : $"{inv.CarNumber}  ({inv.CarModel})";
         StatusLabel.Text = inv.Status.ToString();
+        StatusLabel.TextColor = ThemeColors.ForStatus(inv.Status);
 
         DiscountEntry.Text = inv.DiscountAmount.ToString("0.##");
         NotesEditor.Text = inv.Notes ?? "";
