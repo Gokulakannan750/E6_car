@@ -5,6 +5,7 @@ namespace E6CarSpa.Mobile.Pages;
 
 public partial class DashboardPage : ContentPage
 {
+    private readonly ThemeRowRefresher _themeRows = new();
     private bool _loadedOnce;
 
     public DashboardPage()
@@ -15,6 +16,11 @@ public partial class DashboardPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        if (_themeRows.RowsAreStale() && JobsList.ItemsSource is { } rows)
+        {
+            JobsList.ItemsSource = null;
+            JobsList.ItemsSource = rows;
+        }
         if (!_loadedOnce)
         {
             _loadedOnce = true;

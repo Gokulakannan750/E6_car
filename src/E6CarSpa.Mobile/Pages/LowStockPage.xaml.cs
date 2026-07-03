@@ -5,6 +5,7 @@ namespace E6CarSpa.Mobile.Pages;
 
 public partial class LowStockPage : ContentPage
 {
+    private readonly ThemeRowRefresher _themeRows = new();
     private bool _loadedOnce;
 
     public LowStockPage()
@@ -15,6 +16,11 @@ public partial class LowStockPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        if (_themeRows.RowsAreStale() && List.ItemsSource is { } rows)
+        {
+            List.ItemsSource = null;
+            List.ItemsSource = rows;
+        }
         if (!_loadedOnce)
         {
             _loadedOnce = true;

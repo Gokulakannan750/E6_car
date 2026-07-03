@@ -9,6 +9,7 @@ namespace E6CarSpa.Mobile.Pages;
 public partial class NewJobPage : ContentPage
 {
     private readonly ObservableCollection<LineItemVm> _lines = new();
+    private readonly ThemeRowRefresher _themeRows = new();
     private List<ServiceDto> _catalogue = new();
     private bool _loadedOnce;
 
@@ -22,6 +23,11 @@ public partial class NewJobPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        if (_themeRows.RowsAreStale())
+        {
+            BindableLayout.SetItemsSource(LinesHost, null);
+            BindableLayout.SetItemsSource(LinesHost, _lines);
+        }
         if (_loadedOnce) return;
         _loadedOnce = true;
         try

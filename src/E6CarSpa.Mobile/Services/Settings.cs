@@ -6,9 +6,10 @@ namespace E6CarSpa.Mobile.Services;
 /// </summary>
 public static class Settings
 {
-    // Default points at the Android emulator's host loopback (10.0.2.2 = the dev PC's localhost).
+    // Default points at the dev PC's Wi-Fi LAN address for real-phone testing (phone and PC on
+    // the same Wi-Fi). Android emulator uses http://10.0.2.2:5080 instead (host loopback).
     // In production the owner sets this to the public HTTPS VPS address on the Settings screen.
-    private const string DefaultApiUrl = "http://10.0.2.2:5080";
+    private const string DefaultApiUrl = "http://192.168.1.6:5080";
 
     public static string ApiUrl
     {
