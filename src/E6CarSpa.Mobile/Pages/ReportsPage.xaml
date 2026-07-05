@@ -2,6 +2,7 @@
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:c="clr-namespace:E6CarSpa.Contracts;assembly=E6CarSpa.Contracts"
     x:Class="E6CarSpa.Mobile.Pages.ReportsPage"
     Title="Reports"
    >
@@ -37,19 +38,45 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="8">
+                <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="8">
                     <Label Grid.Row="0" Grid.Column="0" Text="Collected" />
                     <Label Grid.Row="0" Grid.Column="1" x:Name="CollectedLabel" HorizontalOptions="End" />
                     <Label Grid.Row="1" Grid.Column="0" Text="Outstanding" />
                     <Label Grid.Row="1" Grid.Column="1" x:Name="OutstandingLabel" HorizontalOptions="End" TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource Warning}}" />
-                    <Label Grid.Row="2" Grid.Column="0" Text="Total GST" />
-                    <Label Grid.Row="2" Grid.Column="1" x:Name="TaxLabel" HorizontalOptions="End" />
+                    <Label Grid.Row="2" Grid.Column="0" Text="Taxable value" />
+                    <Label Grid.Row="2" Grid.Column="1" x:Name="TaxableLabel" HorizontalOptions="End" />
+                    <Label Grid.Row="3" Grid.Column="0" Text="Total GST" />
+                    <Label Grid.Row="3" Grid.Column="1" x:Name="TaxLabel" HorizontalOptions="End" />
                 </Grid>
 
                 <BoxView HeightRequest="1" />
 
                 <Label Text="Payment split" FontSize="15" FontAttributes="Bold" />
                 <Label x:Name="SplitLabel" FontSize="14" />
+
+                <Label Text="Daily sales" FontSize="15" FontAttributes="Bold" Margin="0,6,0,0" />
+                <Label x:Name="DailyEmptyLabel" Text="No sales in this range." FontSize="13" IsVisible="False" />
+                <VerticalStackLayout x:Name="DailyPanel" Spacing="8">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="c:DailySalesRow">
+                            <VerticalStackLayout Spacing="0">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <Label Grid.Column="0" Text="{Binding Date, StringFormat='{0:dd MMM yyyy}'}" FontSize="13" FontAttributes="Bold" />
+                                    <Label Grid.Column="1" Text="{Binding GrandTotal, StringFormat='₹{0:N0}'}" FontSize="13" FontAttributes="Bold" />
+                                </Grid>
+                                <Label FontSize="11"
+                                       TextColor="{AppThemeBinding Light={StaticResource LightTextSecondary}, Dark={StaticResource DarkTextSecondary}}">
+                                    <Label.Text>
+                                        <MultiBinding StringFormat="{}{0} invoice(s) · collected ₹{1:N0}">
+                                            <Binding Path="InvoiceCount" />
+                                            <Binding Path="Collected" />
+                                        </MultiBinding>
+                                    </Label.Text>
+                                </Label>
+                            </VerticalStackLayout>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
 
                 <Label Text="Top services" FontSize="15" FontAttributes="Bold" Margin="0,6,0,0" />
                 <VerticalStackLayout x:Name="TopServicesPanel" Spacing="6" />

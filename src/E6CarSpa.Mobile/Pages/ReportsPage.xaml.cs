@@ -52,8 +52,12 @@ public partial class ReportsPage : ContentPage
         InvoiceCountLabel.Text = $"{r.InvoiceCount} invoice(s) • {r.From:dd MMM} – {r.To:dd MMM yyyy}";
         CollectedLabel.Text = $"₹{r.Collected:N0}";
         OutstandingLabel.Text = $"₹{r.Outstanding:N0}";
+        TaxableLabel.Text = $"₹{r.TaxableValue:N0}";
         TaxLabel.Text = $"₹{r.TotalTax:N0}";
         SplitLabel.Text = $"Cash ₹{r.Cash:N0}    Card ₹{r.Card:N0}    UPI ₹{r.Upi:N0}";
+
+        BindableLayout.SetItemsSource(DailyPanel, r.Daily);
+        DailyEmptyLabel.IsVisible = r.Daily.Count == 0;
 
         TopServicesPanel.Children.Clear();
         if (r.TopServices.Count == 0)
