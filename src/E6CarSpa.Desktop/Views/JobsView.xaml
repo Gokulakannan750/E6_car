@@ -32,14 +32,15 @@
 
         <Border Grid.Row="2" Style="{StaticResource Card}">
             <DataGrid ItemsSource="{Binding Jobs}" SelectionMode="Single"
-                      MouseDoubleClick="Jobs_DoubleClick">
+                      MouseDoubleClick="Jobs_DoubleClick"
+                      HorizontalScrollBarVisibility="Auto">
                 <DataGrid.Columns>
-                    <DataGridTextColumn Header="Date" Binding="{Binding CreatedAt, StringFormat='dd-MM-yyyy HH:mm'}" Width="140" />
-                    <DataGridTextColumn Header="Invoice No." Binding="{Binding InvoiceNumber}" Width="120" />
-                    <DataGridTextColumn Header="Customer" Binding="{Binding CustomerName}" Width="*" />
-                    <DataGridTextColumn Header="Car No." Binding="{Binding CarNumber}" Width="100" />
-                    <DataGridTextColumn Header="Car Model" Binding="{Binding CarModel}" Width="120" />
-                    <DataGridTemplateColumn Header="Status" Width="110">
+                    <DataGridTextColumn Header="Date" Binding="{Binding CreatedAt, StringFormat='dd-MM-yyyy HH:mm'}" Width="130" MinWidth="115" />
+                    <DataGridTextColumn Header="Invoice No." Binding="{Binding InvoiceNumber}" Width="95" MinWidth="80" />
+                    <DataGridTextColumn Header="Customer" Binding="{Binding CustomerName}" Width="1.4*" MinWidth="120" />
+                    <DataGridTextColumn Header="Car No." Binding="{Binding CarNumber}" Width="90" MinWidth="80" />
+                    <DataGridTextColumn Header="Car Model" Binding="{Binding CarModel}" Width="1*" MinWidth="100" />
+                    <DataGridTemplateColumn Header="Status" Width="100" MinWidth="95">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Border CornerRadius="4" Padding="8,4" HorizontalAlignment="Left" VerticalAlignment="Center">
@@ -93,9 +94,9 @@
                             </DataTemplate>
                         </DataGridTemplateColumn.CellTemplate>
                     </DataGridTemplateColumn>
-                    <DataGridTextColumn Header="Total ₹" Binding="{Binding GrandTotal, StringFormat='{}{0:N2}'}" Width="110" />
-                    <DataGridTextColumn Header="Balance ₹" Binding="{Binding Balance, StringFormat='{}{0:N2}'}" Width="110" />
-                    <DataGridTemplateColumn Width="80">
+                    <DataGridTextColumn Header="Total ₹" Binding="{Binding GrandTotal, StringFormat='{}{0:N2}'}" Width="95" MinWidth="80" />
+                    <DataGridTextColumn Header="Balance ₹" Binding="{Binding Balance, StringFormat='{}{0:N2}'}" Width="95" MinWidth="80" />
+                    <DataGridTemplateColumn Width="72">
                         <DataGridTemplateColumn.CellTemplate>
                             <DataTemplate>
                                 <Button Content="Open" Padding="8,4"

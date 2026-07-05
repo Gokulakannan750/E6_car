@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="clr-namespace:E6CarSpa.Desktop.ViewModels"
         xmlns:views="clr-namespace:E6CarSpa.Desktop.Views"
-        Title="E6 Car Spa" Height="860" Width="1220" MinHeight="700" MinWidth="1100"
+        Title="E6 Car Spa" Height="860" Width="1220" MinHeight="600" MinWidth="1000"
         Icon="/E6CarSpa.Desktop;component/Assets/logo.ico"
         WindowStartupLocation="Manual" Background="{StaticResource BgBrush}">
 

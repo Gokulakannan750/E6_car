@@ -1,9 +1,12 @@
 <UserControl x:Class="E6CarSpa.Desktop.Views.NewJobView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!-- The page itself never scrolls — it fills the window height (Row 2 = "*"). Only the
-         Services list and the Bill grid (each individually height-bounded) scroll internally. -->
-    <Grid Margin="20">
+    <!-- On a tall-enough window the content fills the height (Row 2 = "*") and the Services list
+         and Bill grid scroll internally. On a short laptop screen the whole page instead scrolls
+         (the outer ScrollViewer) so the totals + Save button are never clipped: MinHeight keeps the
+         content at least the viewport height, and it grows past that only when it can't fit. -->
+    <ScrollViewer x:Name="RootScroll" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <Grid Margin="20" MinHeight="{Binding ViewportHeight, ElementName=RootScroll}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -216,4 +219,5 @@
                 </Border>
             </Grid>
     </Grid>
+    </ScrollViewer>
 </UserControl>
