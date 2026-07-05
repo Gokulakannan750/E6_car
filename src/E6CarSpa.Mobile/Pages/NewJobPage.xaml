@@ -51,6 +51,10 @@
                 </BindableLayout.ItemTemplate>
             </FlexLayout>
 
+            <Label Text="Tip: enter a phone or car number and tap Look up to find an existing customer."
+                   FontSize="12"
+                   TextColor="{AppThemeBinding Light={StaticResource LightTextSecondary}, Dark={StaticResource DarkTextSecondary}}" />
+
             <BoxView HeightRequest="1" Margin="0,4" />
 
             <!-- Add a service -->
@@ -123,6 +127,15 @@
                     <Grid ColumnDefinitions="*,Auto">
                         <Label Grid.Column="0" Text="Grand total" FontAttributes="Bold" />
                         <Label Grid.Column="1" x:Name="GrandLabel" Text="₹0" FontSize="18" FontAttributes="Bold" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0" Text="Discount" />
+                        <Label Grid.Column="1" x:Name="DiscountLabel" Text="- ₹0" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0" Text="Balance" FontAttributes="Bold" />
+                        <Label Grid.Column="1" x:Name="BalanceLabel" Text="₹0" FontAttributes="Bold"
+                               TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource Error}}" />
                     </Grid>
                 </VerticalStackLayout>
             </Border>

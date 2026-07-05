@@ -144,6 +144,8 @@ public partial class NewJobPage : ContentPage
         SubTotalLabel.Text = $"₹{subTotal:N0}";
         TaxLabel.Text = $"₹{tax:N0}";
         GrandLabel.Text = $"₹{grand:N0}";
+        DiscountLabel.Text = $"- ₹{(lineDiscounts + headerDiscount):N0}";
+        BalanceLabel.Text = $"₹{grand:N0}";   // a new quotation has no payments yet
     }
 
     private async void OnSaveClicked(object? sender, EventArgs e)

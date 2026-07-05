@@ -13,6 +13,7 @@ public partial class InvoiceDetailPage : ContentPage
     private static readonly PaymentMethod[] Methods = { PaymentMethod.Cash, PaymentMethod.Card, PaymentMethod.Upi };
 
     private readonly ObservableCollection<LineItemVm> _lines = new();
+    private readonly ObservableCollection<PaymentDto> _payments = new();
     private readonly ThemeRowRefresher _themeRows = new();
     private List<ServiceDto> _catalogue = new();
     private InvoiceDto? _invoice;
@@ -30,6 +31,7 @@ public partial class InvoiceDetailPage : ContentPage
     {
         InitializeComponent();
         BindableLayout.SetItemsSource(LinesHost, _lines);
+        BindableLayout.SetItemsSource(PaymentsHost, _payments);
         foreach (var m in Methods) MethodPicker.Items.Add(m.ToString());
         MethodPicker.SelectedIndex = 0;
     }
@@ -120,6 +122,12 @@ public partial class InvoiceDetailPage : ContentPage
         PaymentPanel.IsVisible = canPay;
         AmountEntry.Text = inv.Balance.ToString("0.##");
 
+        // Payments received history
+        _payments.Clear();
+        foreach (var p in inv.Payments) _payments.Add(p);
+        PaymentsHistoryPanel.IsVisible = _payments.Count > 0;
+        PaidSummaryLabel.Text = $"Total paid: ₹{inv.AmountPaid:N0}   ·   Balance: ₹{inv.Balance:N0}";
+
         Recalc();
     }
 
@@ -167,6 +175,7 @@ public partial class InvoiceDetailPage : ContentPage
         SubTotalLabel.Text = $"₹{subTotal:N0}";
         TaxLabel.Text = $"₹{tax:N0}";
         GrandLabel.Text = $"₹{grand:N0}";
+        DiscountLabel.Text = $"- ₹{(lineDiscounts + headerDiscount):N0}";
         BalanceLabel.Text = $"₹{(_invoice?.Balance ?? 0):N0}";
     }
 

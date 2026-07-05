@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:E6CarSpa.Mobile.ViewModels"
+    xmlns:c="clr-namespace:E6CarSpa.Contracts;assembly=E6CarSpa.Contracts"
     x:Class="E6CarSpa.Mobile.Pages.InvoiceDetailPage"
     Title="Invoice"
    >
@@ -86,6 +87,10 @@
                         <Label Grid.Column="1" x:Name="GrandLabel" Text="₹0" FontSize="18" FontAttributes="Bold" />
                     </Grid>
                     <Grid ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0" Text="Discount" />
+                        <Label Grid.Column="1" x:Name="DiscountLabel" Text="- ₹0" />
+                    </Grid>
+                    <Grid ColumnDefinitions="*,Auto">
                         <Label Grid.Column="0" Text="Balance due" />
                         <Label Grid.Column="1" x:Name="BalanceLabel" Text="₹0" TextColor="{AppThemeBinding Light={StaticResource Warning}, Dark={StaticResource Warning}}" />
                     </Grid>
@@ -123,6 +128,33 @@
                     <Button x:Name="PayButton" Text="Take payment"
                             FontAttributes="Bold"
                             Clicked="OnPayClicked" />
+                    <Label Text="Tip: enter less than the balance for a part-payment — the bill stays open. On full payment a WhatsApp thank-you is sent."
+                           FontSize="12"
+                           TextColor="{AppThemeBinding Light={StaticResource LightTextSecondary}, Dark={StaticResource DarkTextSecondary}}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Payments received (history of all part / full payments) -->
+            <Border Style="{StaticResource CardBorder}" x:Name="PaymentsHistoryPanel" StrokeThickness="0" Padding="14"
+                    StrokeShape="RoundRectangle 12" Margin="0,6,0,0" IsVisible="False">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Payments received" FontSize="16" FontAttributes="Bold" />
+                    <VerticalStackLayout x:Name="PaymentsHost" Spacing="8">
+                        <BindableLayout.ItemTemplate>
+                            <DataTemplate x:DataType="c:PaymentDto">
+                                <VerticalStackLayout Spacing="0">
+                                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                                        <Label Grid.Column="0" Text="{Binding PaidAt, StringFormat='{0:dd-MM-yyyy HH:mm}'}" FontSize="12" />
+                                        <Label Grid.Column="1" Text="{Binding Method}" FontSize="12" />
+                                        <Label Grid.Column="2" Text="{Binding Amount, StringFormat='₹{0:N0}'}" FontSize="12" FontAttributes="Bold" />
+                                    </Grid>
+                                    <Label Text="{Binding Reference}" FontSize="11"
+                                           TextColor="{AppThemeBinding Light={StaticResource LightTextSecondary}, Dark={StaticResource DarkTextSecondary}}" />
+                                </VerticalStackLayout>
+                            </DataTemplate>
+                        </BindableLayout.ItemTemplate>
+                    </VerticalStackLayout>
+                    <Label x:Name="PaidSummaryLabel" FontSize="13" FontAttributes="Bold" Margin="0,4,0,0" />
                 </VerticalStackLayout>
             </Border>
 
