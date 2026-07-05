@@ -35,11 +35,18 @@
             <FlexLayout x:Name="VehiclesHost" Wrap="Wrap" Direction="Row" IsVisible="False">
                 <BindableLayout.ItemTemplate>
                     <DataTemplate x:DataType="c:VehicleDto">
-                        <Button Text="{Binding CarNumber}" Clicked="OnPickVehicleClicked"
+                        <Button Clicked="OnPickVehicleClicked"
                                 Margin="0,0,8,8" Padding="14,6" FontSize="13"
                                 BackgroundColor="Transparent" BorderWidth="1"
                                 TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Primary}}"
-                                BorderColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Primary}}" />
+                                BorderColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Primary}}">
+                            <Button.Text>
+                                <MultiBinding StringFormat="{}{0} — {1}">
+                                    <Binding Path="CarNumber" />
+                                    <Binding Path="CarModel" />
+                                </MultiBinding>
+                            </Button.Text>
+                        </Button>
                     </DataTemplate>
                 </BindableLayout.ItemTemplate>
             </FlexLayout>
