@@ -4,6 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:vm="clr-namespace:E6CarSpa.Mobile.ViewModels"
     xmlns:beh="clr-namespace:E6CarSpa.Mobile.Behaviors"
+    xmlns:c="clr-namespace:E6CarSpa.Contracts;assembly=E6CarSpa.Contracts"
     x:Class="E6CarSpa.Mobile.Pages.NewJobPage"
     Title="New Job"
    >
@@ -29,6 +30,19 @@
             <Entry x:Name="CarModelEntry" Placeholder="Car model (optional)"
                    />
             <Label x:Name="LookupInfo" TextColor="{AppThemeBinding Light={StaticResource Success}, Dark={StaticResource Success}}" FontSize="13" IsVisible="False" />
+
+            <!-- Tap a car to fill it in (shown when an existing customer has more than one). -->
+            <FlexLayout x:Name="VehiclesHost" Wrap="Wrap" Direction="Row" IsVisible="False">
+                <BindableLayout.ItemTemplate>
+                    <DataTemplate x:DataType="c:VehicleDto">
+                        <Button Text="{Binding CarNumber}" Clicked="OnPickVehicleClicked"
+                                Margin="0,0,8,8" Padding="14,6" FontSize="13"
+                                BackgroundColor="Transparent" BorderWidth="1"
+                                TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Primary}}"
+                                BorderColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Primary}}" />
+                    </DataTemplate>
+                </BindableLayout.ItemTemplate>
+            </FlexLayout>
 
             <BoxView HeightRequest="1" Margin="0,4" />
 

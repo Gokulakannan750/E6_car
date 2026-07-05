@@ -9,6 +9,7 @@ namespace E6CarSpa.Mobile.Pages;
 public partial class NewJobPage : ContentPage
 {
     private readonly ObservableCollection<LineItemVm> _lines = new();
+    private readonly ObservableCollection<VehicleDto> _knownVehicles = new();
     private readonly ThemeRowRefresher _themeRows = new();
     private List<ServiceDto> _catalogue = new();
     private bool _loadedOnce;
@@ -17,6 +18,7 @@ public partial class NewJobPage : ContentPage
     {
         InitializeComponent();
         BindableLayout.SetItemsSource(LinesHost, _lines);
+        BindableLayout.SetItemsSource(VehiclesHost, _knownVehicles);
         _lines.CollectionChanged += (_, _) => { NoLinesLabel.IsVisible = _lines.Count == 0; Recalc(); };
     }
 
@@ -45,6 +47,8 @@ public partial class NewJobPage : ContentPage
     private async void OnLookupClicked(object? sender, EventArgs e)
     {
         ErrorLabel.IsVisible = false;
+        _knownVehicles.Clear();
+        VehiclesHost.IsVisible = false;
         var phone = PhoneEntry.Text?.Trim() ?? "";
         var car = CarNumberEntry.Text?.Trim() ?? "";
         if (phone.Length == 0 && car.Length == 0)
@@ -68,7 +72,15 @@ public partial class NewJobPage : ContentPage
                     CarNumberEntry.Text = c.Vehicles[0].CarNumber;
                     CarModelEntry.Text = c.Vehicles[0].CarModel;
                 }
-                LookupInfo.Text = $"Existing customer — {c.Vehicles.Count} vehicle(s) on file.";
+                else if (c.Vehicles.Count > 1)
+                {
+                    // Multiple cars on file — show them as tap-to-fill chips.
+                    foreach (var v in c.Vehicles) _knownVehicles.Add(v);
+                    VehiclesHost.IsVisible = true;
+                }
+                LookupInfo.Text = c.Vehicles.Count > 1
+                    ? $"Existing customer — tap one of the {c.Vehicles.Count} cars below."
+                    : $"Existing customer — {c.Vehicles.Count} vehicle(s) on file.";
             }
             else
             {
@@ -79,6 +91,15 @@ public partial class NewJobPage : ContentPage
         catch (Exception ex)
         {
             ShowError(ex is ApiException a ? a.Message : "Lookup failed.");
+        }
+    }
+
+    private void OnPickVehicleClicked(object? sender, EventArgs e)
+    {
+        if (sender is Button { BindingContext: VehicleDto v })
+        {
+            CarNumberEntry.Text = v.CarNumber;
+            CarModelEntry.Text = v.CarModel;
         }
     }
 
