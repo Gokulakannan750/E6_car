@@ -100,6 +100,10 @@ public partial class NewJobPage : ContentPage
         {
             CarNumberEntry.Text = v.CarNumber;
             CarModelEntry.Text = v.CarModel;
+            // Car chosen — collapse the chips and confirm which one is in use.
+            VehiclesHost.IsVisible = false;
+            _knownVehicles.Clear();
+            LookupInfo.Text = $"Using {v.CarNumber}.";
         }
     }
 
