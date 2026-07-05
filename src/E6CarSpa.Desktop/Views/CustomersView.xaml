@@ -13,7 +13,7 @@
             
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
                 <Grid Width="280" Margin="0,0,12,0">
-                    <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged, Delay=300}" 
+                    <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                               Margin="0" Height="40" Padding="12,0" VerticalContentAlignment="Center" />
                     <TextBlock Text="Search customers..." IsHitTestVisible="False" 
                                Foreground="{StaticResource MutedBrush}" 

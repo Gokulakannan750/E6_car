@@ -26,8 +26,23 @@ public partial class CustomersViewModel(IApiClient api) : ObservableObject, IAsy
     [ObservableProperty] private VehicleDto? _selectedVehicle;
     [ObservableProperty] private List<InvoiceListItemDto> _filteredInvoices = new();
 
+    // Bumped on every keystroke; lets a debounced/in-flight search know it has been superseded.
+    private int _searchGeneration;
+
     public async Task InitializeAsync()
     {
+        await LoadCustomersAsync();
+    }
+
+    // Live search: each keystroke schedules a load after a short quiet period so we don't hit the
+    // API on every character, and a stale request can't overwrite the results of a newer one.
+    partial void OnSearchTextChanged(string value) => _ = DebouncedSearchAsync();
+
+    private async Task DebouncedSearchAsync()
+    {
+        var gen = ++_searchGeneration;
+        await Task.Delay(250);
+        if (gen != _searchGeneration) return;   // the user typed again — let the newer keystroke win
         await LoadCustomersAsync();
     }
 
@@ -73,11 +88,13 @@ public partial class CustomersViewModel(IApiClient api) : ObservableObject, IAsy
     [RelayCommand]
     private async Task LoadCustomersAsync()
     {
+        var gen = _searchGeneration;
         IsBusy = true;
         Error = "";
         try
         {
             var data = await api.GetCustomersAsync(SearchText);
+            if (gen != _searchGeneration) return;   // a newer search started while this was in flight
             Customers.Clear();
             if (data != null)
             {
