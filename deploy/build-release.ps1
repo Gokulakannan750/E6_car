@@ -53,10 +53,22 @@ try {
 
     $out = Get-Item "deploy\Output\E6CarSpa-Setup.exe"
 
-    # NOTE: intentionally left UNSIGNED. A self-signed certificate is trusted only on the machine
-    # that created it; on any other PC Windows can't validate it and shows a certificate error,
-    # which is worse than no signature. An unsigned installer just gets the milder SmartScreen
-    # "More info -> Run anyway" prompt. Sign here only with a real (CA-issued) code-signing cert.
+    # Sign with the Trovotech Solutions code-signing certificate. On its own this only shows a
+    # VERIFIED publisher on machines that trust the cert — so each client PC must run
+    # deploy/trust-publisher.ps1 once (imports deploy/E6CarSpa-Publisher.cer) to make the
+    # signature validate there with no warning. (For universal, out-of-the-box trust you'd need a
+    # CA-issued EV certificate instead; the self-signed cert is fine for known/deployed PCs.)
+    Write-Host "== Signing installer ==" -ForegroundColor Cyan
+    $cert = Get-ChildItem Cert:\CurrentUser\My |
+        Where-Object { $_.Subject -match 'CN=Trovotech Solutions' -and $_.HasPrivateKey } |
+        Select-Object -First 1
+    if ($cert) {
+        Set-AuthenticodeSignature -FilePath $out.FullName -Certificate $cert `
+            -HashAlgorithm SHA256 -TimestampServer 'http://timestamp.digicert.com' | Out-Null
+        Write-Host "Signed as 'Trovotech Solutions' (run trust-publisher.ps1 on each client PC)." -ForegroundColor Green
+    } else {
+        Write-Host "WARNING: Trovotech signing cert not found — installer left UNSIGNED." -ForegroundColor Yellow
+    }
 
     Write-Host ("== DONE -> {0} ({1:N1} MB) ==" -f $out.FullName, ($out.Length / 1MB)) -ForegroundColor Green
     Write-Host "Reinstall this on the shop PC to apply the changes." -ForegroundColor Yellow
