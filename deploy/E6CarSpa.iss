@@ -17,6 +17,9 @@ LicenseFile=license.txt
 DefaultDirName={autopf}\E6 Car Spa
 DefaultGroupName=E6 Car Spa
 DisableProgramGroupPage=yes
+; Always show the "Select Destination Location" page — even on an upgrade — so the
+; installer can pick where to install (default is 'auto', which hides it once installed).
+DisableDirPage=no
 OutputDir=Output
 OutputBaseFilename=E6CarSpa-Setup
 Compression=lzma2

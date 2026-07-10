@@ -52,13 +52,11 @@ try {
     if ($LASTEXITCODE) { throw 'Installer compilation failed.' }
 
     $out = Get-Item "deploy\Output\E6CarSpa-Setup.exe"
-    
-    Write-Host "== Signing Installer ==" -ForegroundColor Cyan
-    $cert = Get-ChildItem "Cert:\CurrentUser\My" | Where-Object Subject -match "CN=Trovotech Solutions" | Select-Object -First 1
-    if ($cert) {
-        Set-AuthenticodeSignature -FilePath $out.FullName -Certificate $cert -TimestampServer "http://timestamp.digicert.com" | Out-Null
-        Write-Host "Signed installer with self-signed certificate." -ForegroundColor Green
-    }
+
+    # NOTE: intentionally left UNSIGNED. A self-signed certificate is trusted only on the machine
+    # that created it; on any other PC Windows can't validate it and shows a certificate error,
+    # which is worse than no signature. An unsigned installer just gets the milder SmartScreen
+    # "More info -> Run anyway" prompt. Sign here only with a real (CA-issued) code-signing cert.
 
     Write-Host ("== DONE -> {0} ({1:N1} MB) ==" -f $out.FullName, ($out.Length / 1MB)) -ForegroundColor Green
     Write-Host "Reinstall this on the shop PC to apply the changes." -ForegroundColor Yellow
