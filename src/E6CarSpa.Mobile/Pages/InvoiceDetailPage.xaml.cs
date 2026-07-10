@@ -118,7 +118,9 @@ public partial class InvoiceDetailPage : ContentPage
         GstRow.IsEnabled = canEdit;
         SaveButton.IsVisible = canEdit;
         FinaliseButton.IsVisible = isQuotation;
-        CancelBillButton.IsVisible = inv.Status != InvoiceStatus.Paid && inv.Status != InvoiceStatus.Cancelled;
+        // Cancel only once nothing is paid — payments must be reversed first.
+        CancelBillButton.IsVisible = inv.Status != InvoiceStatus.Paid && inv.Status != InvoiceStatus.Cancelled
+                                     && inv.AmountPaid <= 0;
         PaymentPanel.IsVisible = canPay;
         AmountEntry.Text = inv.Balance.ToString("0.##");
 
@@ -240,6 +242,25 @@ public partial class InvoiceDetailPage : ContentPage
             ShowInfo("Bill cancelled.");
         }
         catch (Exception ex) { ShowError(ex is ApiException a ? a.Message : "Could not cancel the bill."); }
+        finally { SetBusy(false); }
+    }
+
+    private async void OnReversePaymentClicked(object? sender, EventArgs e)
+    {
+        if (_invoice is null || sender is not Button { BindingContext: PaymentDto p }) return;
+        bool ok = await DisplayAlertAsync("Reverse payment",
+            $"Reverse this {p.Method} payment of ₹{p.Amount:N0}? It records a refund entry and reopens the balance. This cannot be undone.",
+            "Reverse", "Keep it");
+        if (!ok) return;
+
+        SetBusy(true);
+        try
+        {
+            var updated = await AppServices.Api.ReversePaymentAsync(_invoice.Id, p.Id);
+            Bind(updated);
+            ShowInfo("Payment reversed.");
+        }
+        catch (Exception ex) { ShowError(ex is ApiException a ? a.Message : "Could not reverse the payment."); }
         finally { SetBusy(false); }
     }
 

@@ -27,11 +27,18 @@ public static class Mappers
         new(i.Id, i.ServiceId, i.ProductId, i.Description, i.HsnSac, i.Quantity, i.UnitPrice,
             i.DiscountAmount, i.GstRate, i.TaxableValue, i.CgstAmount, i.SgstAmount, i.IgstAmount, i.LineTotal);
 
-    public static PaymentDto ToDto(this Payment p) =>
-        new(p.Id, p.Method, p.Amount, p.Reference, p.PaidAt);
+    public static PaymentDto ToDto(this Payment p, bool isReversed = false) =>
+        new(p.Id, p.Method, p.Amount, p.Reference, p.PaidAt, p.ReversalOfPaymentId, isReversed);
 
-    public static InvoiceDto ToDto(this Invoice inv) =>
-        new(inv.Id, inv.InvoiceNumber, inv.Status,
+    public static InvoiceDto ToDto(this Invoice inv)
+    {
+        // A payment is "reversed" if some other payment on this invoice points back at it.
+        var reversedIds = inv.Payments
+            .Where(p => p.ReversalOfPaymentId.HasValue)
+            .Select(p => p.ReversalOfPaymentId!.Value)
+            .ToHashSet();
+
+        return new(inv.Id, inv.InvoiceNumber, inv.Status,
             inv.CustomerId, inv.Customer?.Name ?? "", inv.Customer?.Phone ?? "",
             inv.VehicleId, inv.Vehicle?.CarNumber ?? "", inv.Vehicle?.CarModel ?? "",
             inv.SubTotal, inv.DiscountAmount, inv.TaxableValue,
@@ -39,8 +46,9 @@ public static class Mappers
             inv.GrandTotal, inv.AmountPaid, inv.Balance,
             inv.Notes, inv.CreatedAt, inv.CompletedAt,
             inv.Items.Select(x => x.ToDto()).ToList(),
-            inv.Payments.Select(x => x.ToDto()).ToList(),
+            inv.Payments.OrderBy(p => p.PaidAt).Select(x => x.ToDto(reversedIds.Contains(x.Id))).ToList(),
             inv.IsGstApplicable);
+    }
 
     public static InvoiceListItemDto ToListItem(this Invoice inv) =>
         new(inv.Id, inv.InvoiceNumber, inv.Status,

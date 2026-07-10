@@ -74,6 +74,15 @@ public class InvoicesController(InvoiceService invoices, PdfInvoiceService pdf) 
         return inv is null ? NotFound() : inv.ToDto();
     }
 
+    /// <summary>Reverse (refund / correct) a single payment. Manager/Admin only — it moves money.</summary>
+    [HttpPost("{id:guid}/payments/{paymentId:guid}/reverse")]
+    [Authorize(Roles = "Admin,Manager")]
+    public async Task<ActionResult<InvoiceDto>> ReversePayment(Guid id, Guid paymentId)
+    {
+        var inv = await invoices.ReversePaymentAsync(id, paymentId, CurrentUserId);
+        return inv is null ? NotFound() : inv.ToDto();
+    }
+
     /// <summary>Print: returns the invoice (or quotation) as a PDF.</summary>
     [HttpGet("{id:guid}/pdf")]
     [AllowAnonymous]

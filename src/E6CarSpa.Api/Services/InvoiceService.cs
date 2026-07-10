@@ -159,9 +159,56 @@ public class InvoiceService(AppDbContext db, WhatsAppService whatsApp)
     {
         var invoice = await GetEntityAsync(id);
         if (invoice is null) return null;
-        if (invoice.Status == InvoiceStatus.Paid)
-            throw new InvalidOperationException("A paid invoice cannot be cancelled.");
+        if (invoice.Status == InvoiceStatus.Cancelled)
+            return invoice; // already cancelled — idempotent
+        // Money must be returned first: reverse every payment before cancelling, so the books
+        // (and the "Collected" total in reports) never show cash against a voided bill.
+        if (invoice.AmountPaid > 0)
+            throw new InvalidOperationException(
+                "Reverse the payment(s) on this bill before cancelling it.");
         invoice.Status = InvoiceStatus.Cancelled;
+        await db.SaveChangesAsync();
+        return invoice;
+    }
+
+    /// <summary>
+    /// Reverse (refund / correct) a single payment. Records a linked negative payment rather than
+    /// deleting the original, so the full history is preserved and reports net the cash out by its
+    /// reversal date. If reversing drops a Paid invoice below its total, it returns to Invoiced.
+    /// </summary>
+    public async Task<Invoice?> ReversePaymentAsync(Guid invoiceId, Guid paymentId, Guid? userId)
+    {
+        var invoice = await GetEntityAsync(invoiceId);
+        if (invoice is null) return null;
+
+        var original = invoice.Payments.FirstOrDefault(p => p.Id == paymentId)
+            ?? throw new InvalidOperationException("Payment not found on this invoice.");
+        if (original.ReversalOfPaymentId is not null)
+            throw new InvalidOperationException("A reversal entry cannot itself be reversed.");
+        if (invoice.Payments.Any(p => p.ReversalOfPaymentId == paymentId))
+            throw new InvalidOperationException("This payment has already been reversed.");
+
+        var reversal = new Payment
+        {
+            InvoiceId = invoice.Id,
+            Method = original.Method,                 // refund goes back to the same tender bucket
+            Amount = -original.Amount,
+            Reference = $"Reversal of {original.Reference ?? original.Method.ToString()}",
+            ReversalOfPaymentId = original.Id,
+            ReceivedByUserId = userId,
+            PaidAt = DateTime.UtcNow
+        };
+        invoice.Payments.Add(reversal);
+        db.Payments.Add(reversal);                    // explicit Add: invoice is already tracked
+        invoice.AmountPaid = invoice.Payments.Sum(p => p.Amount);
+
+        // No longer fully settled → reopen it (a fresh payment can be taken again).
+        if (invoice.Status == InvoiceStatus.Paid && invoice.Balance > 0)
+        {
+            invoice.Status = InvoiceStatus.Invoiced;
+            invoice.CompletedAt = null;
+        }
+
         await db.SaveChangesAsync();
         return invoice;
     }

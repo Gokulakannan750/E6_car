@@ -142,14 +142,21 @@
                     <VerticalStackLayout x:Name="PaymentsHost" Spacing="8">
                         <BindableLayout.ItemTemplate>
                             <DataTemplate x:DataType="c:PaymentDto">
-                                <VerticalStackLayout Spacing="0">
+                                <VerticalStackLayout Spacing="2">
                                     <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
                                         <Label Grid.Column="0" Text="{Binding PaidAt, StringFormat='{0:dd-MM-yyyy HH:mm}'}" FontSize="12" />
                                         <Label Grid.Column="1" Text="{Binding Method}" FontSize="12" />
                                         <Label Grid.Column="2" Text="{Binding Amount, StringFormat='₹{0:N0}'}" FontSize="12" FontAttributes="Bold" />
                                     </Grid>
-                                    <Label Text="{Binding Reference}" FontSize="11"
-                                           TextColor="{AppThemeBinding Light={StaticResource LightTextSecondary}, Dark={StaticResource DarkTextSecondary}}" />
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <Label Grid.Column="0" Text="{Binding Reference}" FontSize="11" VerticalOptions="Center"
+                                               TextColor="{AppThemeBinding Light={StaticResource LightTextSecondary}, Dark={StaticResource DarkTextSecondary}}" />
+                                        <Button Grid.Column="1" Text="↩ Reverse" FontSize="11" Padding="10,0" HeightRequest="32"
+                                                BackgroundColor="Transparent"
+                                                TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource Error}}"
+                                                IsVisible="{Binding CanReverse}"
+                                                Clicked="OnReversePaymentClicked" />
+                                    </Grid>
                                 </VerticalStackLayout>
                             </DataTemplate>
                         </BindableLayout.ItemTemplate>

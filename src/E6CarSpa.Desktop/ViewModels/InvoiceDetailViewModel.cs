@@ -42,8 +42,10 @@ public partial class InvoiceDetailViewModel(IApiClient api) : ObservableObject
     public bool IsQuotation => Invoice is { Status: InvoiceStatus.Quotation or InvoiceStatus.InProgress };
     public bool CanPay => Invoice is not null && Invoice.Status != InvoiceStatus.Paid
                           && Invoice.Status != InvoiceStatus.Cancelled && Invoice.Balance > 0;
+    // Cancel is only offered once no money is on the bill — any payment must be reversed first
+    // (that keeps the books and the "Collected" report straight).
     public bool CanCancel => Invoice is not null && Invoice.Status != InvoiceStatus.Paid
-                             && Invoice.Status != InvoiceStatus.Cancelled;
+                             && Invoice.Status != InvoiceStatus.Cancelled && Invoice.AmountPaid <= 0;
     public string Title => Invoice is null ? "" :
         $"{(Invoice.Status == InvoiceStatus.Quotation ? "Quotation" : "Invoice")} {Invoice.InvoiceNumber ?? "(draft)"}";
 
@@ -198,6 +200,41 @@ public partial class InvoiceDetailViewModel(IApiClient api) : ObservableObject
             var updated = await api.CancelInvoiceAsync(Invoice.Id);
             BindInvoice(updated);
             Info = "Bill cancelled.";
+        }
+        catch (Exception ex) { Error = ex.Message; }
+        finally { IsBusy = false; }
+    }
+
+    [RelayCommand]
+    private async Task ReversePaymentAsync(PaymentDto? payment)
+    {
+        if (Invoice is null || payment is null || !payment.CanReverse) return;
+
+        // Refunds move money — same Manager/Admin gate (and login popup) as cancelling a bill.
+        if (api.CurrentUser?.Role is not (UserRole.Admin or UserRole.Manager))
+        {
+            var login = App.Services.GetRequiredService<Views.LoginWindow>();
+            if (Application.Current.MainWindow is { IsVisible: true } owner) login.Owner = owner;
+            login.ShowDialog();
+            App.Services.GetService<ShellViewModel>()?.RefreshAuthState();
+            if (api.CurrentUser?.Role is not (UserRole.Admin or UserRole.Manager))
+            {
+                Error = "Reversing a payment needs a Manager or Admin login.";
+                return;
+            }
+        }
+
+        var confirm = MessageBox.Show(
+            $"Reverse this {payment.Method} payment of ₹{payment.Amount:N2}? It records a refund entry and reopens the balance. This cannot be undone.",
+            "Reverse payment", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+        if (confirm != MessageBoxResult.Yes) return;
+
+        try
+        {
+            IsBusy = true; Error = ""; Info = "";
+            var updated = await api.ReversePaymentAsync(Invoice.Id, payment.Id);
+            BindInvoice(updated);
+            Info = "Payment reversed.";
         }
         catch (Exception ex) { Error = ex.Message; }
         finally { IsBusy = false; }

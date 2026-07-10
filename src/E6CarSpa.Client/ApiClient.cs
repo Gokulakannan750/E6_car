@@ -109,6 +109,9 @@ public class ApiClient(HttpClient http) : IApiClient
     public Task<InvoiceDto> PayAsync(Guid id, RecordPaymentRequest req) =>
         PostAsync<InvoiceDto>($"api/invoices/{id}/payments", req);
 
+    public Task<InvoiceDto> ReversePaymentAsync(Guid invoiceId, Guid paymentId) =>
+        PostAsync<InvoiceDto>($"api/invoices/{invoiceId}/payments/{paymentId}/reverse", new { });
+
     public async Task<byte[]> GetInvoicePdfAsync(Guid id)
     {
         var resp = await http.GetAsync($"api/invoices/{id}/pdf");

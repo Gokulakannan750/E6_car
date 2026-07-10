@@ -35,6 +35,7 @@ public interface IApiClient
     Task<InvoiceDto> FinaliseAsync(Guid id);
     Task<InvoiceDto> CancelInvoiceAsync(Guid id);
     Task<InvoiceDto> PayAsync(Guid id, RecordPaymentRequest req);
+    Task<InvoiceDto> ReversePaymentAsync(Guid invoiceId, Guid paymentId);
     Task<byte[]> GetInvoicePdfAsync(Guid id);
     Task<List<ProductDto>?> GetProductsAsync(bool lowStockOnly = false);
     Task<ProductDto> PurchaseAsync(StockPurchaseRequest req);
