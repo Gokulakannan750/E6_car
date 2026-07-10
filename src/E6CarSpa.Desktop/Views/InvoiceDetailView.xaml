@@ -182,18 +182,6 @@
                             <DataGridTextColumn Header="Method" Binding="{Binding Method}" Width="100" />
                             <DataGridTextColumn Header="Amount ₹" Binding="{Binding Amount, StringFormat='{}{0:N2}'}" Width="120" />
                             <DataGridTextColumn Header="Reference" Binding="{Binding Reference}" Width="*" />
-                            <DataGridTemplateColumn Width="110">
-                                <DataGridTemplateColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <Button Content="↩ Reverse" Background="Transparent" Foreground="{StaticResource DangerBrush}"
-                                                Padding="6,2" HorizontalAlignment="Left"
-                                                Command="{Binding DataContext.ReversePaymentCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                CommandParameter="{Binding}"
-                                                Visibility="{Binding CanReverse, Converter={StaticResource BoolToVis}}"
-                                                ToolTip="Refund / undo this payment (needs a Manager or Admin login)" />
-                                    </DataTemplate>
-                                </DataGridTemplateColumn.CellTemplate>
-                            </DataGridTemplateColumn>
                         </DataGrid.Columns>
                     </DataGrid>
                     <TextBlock Margin="0,6,0,0">

@@ -7,17 +7,7 @@ public record InvoiceItemDto(
     decimal Quantity, decimal UnitPrice, decimal DiscountAmount, decimal GstRate,
     decimal TaxableValue, decimal CgstAmount, decimal SgstAmount, decimal IgstAmount, decimal LineTotal);
 
-/// <summary>
-/// A payment (or a reversal of one). <paramref name="ReversalOfPaymentId"/> is non-null when this row
-/// reverses an earlier payment (its Amount is negative); <paramref name="IsReversed"/> is true when this
-/// payment has itself been reversed by a later row (so the UI can hide the "Reverse" action for it).
-/// </summary>
-public record PaymentDto(Guid Id, PaymentMethod Method, decimal Amount, string? Reference, DateTime PaidAt,
-    Guid? ReversalOfPaymentId, bool IsReversed)
-{
-    /// <summary>True for a normal, not-yet-reversed payment — the only kind that can be reversed.</summary>
-    public bool CanReverse => ReversalOfPaymentId is null && !IsReversed;
-}
+public record PaymentDto(Guid Id, PaymentMethod Method, decimal Amount, string? Reference, DateTime PaidAt);
 
 public record InvoiceDto(
     Guid Id,

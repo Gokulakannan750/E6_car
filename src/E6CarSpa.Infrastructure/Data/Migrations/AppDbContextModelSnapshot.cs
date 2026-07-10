@@ -381,9 +381,6 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                     b.Property<string>("Reference")
                         .HasColumnType("text");
 
-                    b.Property<Guid?>("ReversalOfPaymentId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 

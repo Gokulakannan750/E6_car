@@ -231,59 +231,6 @@ namespace E6CarSpa.Tests
             Assert.NotNull(after!.InvoiceNumber); // a number was assigned on the way in
         }
 
-        // ---------- payment reversal ----------
-
-        [Fact]
-        public async Task ReversePayment_ReopensPaidInvoice_AndZeroesAmountPaid()
-        {
-            using var db = CreateDbContext();
-            var svc = NewService(db);
-            var q = await svc.CreateQuotationAsync(Quote(price: 1000m), null); // grand 1180
-            var paid = await svc.RecordPaymentAsync(q.Id, new RecordPaymentRequest(PaymentMethod.Cash, 1180m, null), null);
-            Assert.Equal(InvoiceStatus.Paid, paid!.Status);
-            var paymentId = paid.Payments.Single(p => p.ReversalOfPaymentId == null).Id;
-
-            var after = await svc.ReversePaymentAsync(q.Id, paymentId, null);
-
-            Assert.Equal(InvoiceStatus.Invoiced, after!.Status);   // reopened, no longer settled
-            Assert.Null(after.CompletedAt);
-            Assert.Equal(0m, after.AmountPaid);                    // net of original + reversal
-            Assert.Equal(1180m, after.Balance);
-            Assert.Equal(2, after.Payments.Count);                 // history preserved, not deleted
-            Assert.Contains(after.Payments, p => p.Amount == -1180m);
-        }
-
-        [Fact]
-        public async Task Cancel_BlockedWhilePaymentLive_AllowedAfterReversal()
-        {
-            using var db = CreateDbContext();
-            var svc = NewService(db);
-            var q = await svc.CreateQuotationAsync(Quote(price: 1000m), null);
-            var partial = await svc.RecordPaymentAsync(q.Id, new RecordPaymentRequest(PaymentMethod.Upi, 500m, null), null);
-            var paymentId = partial!.Payments.Single(p => p.ReversalOfPaymentId == null).Id;
-
-            // Money still on the bill → cancel is refused.
-            await Assert.ThrowsAsync<InvalidOperationException>(() => svc.CancelAsync(q.Id));
-
-            // Reverse the payment, then cancel goes through.
-            await svc.ReversePaymentAsync(q.Id, paymentId, null);
-            var cancelled = await svc.CancelAsync(q.Id);
-            Assert.Equal(InvoiceStatus.Cancelled, cancelled!.Status);
-        }
-
-        [Fact]
-        public async Task ReversePayment_Twice_Throws()
-        {
-            using var db = CreateDbContext();
-            var svc = NewService(db);
-            var q = await svc.CreateQuotationAsync(Quote(price: 1000m), null);
-            var paid = await svc.RecordPaymentAsync(q.Id, new RecordPaymentRequest(PaymentMethod.Cash, 500m, null), null);
-            var paymentId = paid!.Payments.Single(p => p.ReversalOfPaymentId == null).Id;
-            await svc.ReversePaymentAsync(q.Id, paymentId, null);
-
-            await Assert.ThrowsAsync<InvalidOperationException>(() => svc.ReversePaymentAsync(q.Id, paymentId, null));
-        }
-
         // ---------- customer / vehicle resolution ----------
 
         [Fact]
