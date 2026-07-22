@@ -134,8 +134,14 @@
                 <Button Content="✅ Generate Invoice" Width="190" Margin="8,0"
                         Command="{Binding FinaliseCommand}"
                         Visibility="{Binding IsQuotation, Converter={StaticResource BoolToVis}}" />
-                <Button Content="🖨 Print" Style="{StaticResource SecondaryButton}" Width="130" Margin="8,0"
-                        Command="{Binding PrintCommand}" />
+                <!-- Before generation: prints the QUOTATION (customer, car, services). -->
+                <Button Content="🖨 Print Quotation" Style="{StaticResource SecondaryButton}" Width="160" Margin="8,0"
+                        Command="{Binding PrintCommand}"
+                        Visibility="{Binding IsQuotation, Converter={StaticResource BoolToVis}}" />
+                <!-- After generation: prints the tax INVOICE. -->
+                <Button Content="🖨 Print Invoice" Style="{StaticResource SecondaryButton}" Width="150" Margin="8,0"
+                        Command="{Binding PrintCommand}"
+                        Visibility="{Binding IsFinalised, Converter={StaticResource BoolToVis}}" />
             </StackPanel>
 
             <!-- Payment -->

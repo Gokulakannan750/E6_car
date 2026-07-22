@@ -53,11 +53,14 @@ public class PdfInvoiceService(AppDbContext db)
                 });
                 row.ConstantItem(190).Column(c =>
                 {
-                    var title = inv.Status == Domain.Enums.InvoiceStatus.Quotation
+                    var isQuotation = inv.Status is Domain.Enums.InvoiceStatus.Quotation or Domain.Enums.InvoiceStatus.InProgress;
+                    var title = isQuotation
                         ? "QUOTATION"
                         : (inv.IsGstApplicable ? "TAX INVOICE" : "INVOICE");
                     c.Item().AlignRight().Text(title).FontSize(16).Bold();
-                    c.Item().AlignRight().Text($"No: {inv.InvoiceNumber ?? "(draft)"}");
+                    // A quotation has no invoice number yet — don't print a "(draft)" number.
+                    if (!string.IsNullOrEmpty(inv.InvoiceNumber))
+                        c.Item().AlignRight().Text($"No: {inv.InvoiceNumber}");
                     c.Item().AlignRight().Text($"Date: {IndianTime.ToIstDate(inv.CreatedAt):dd-MM-yyyy}");
                 });
             });
@@ -67,13 +70,14 @@ public class PdfInvoiceService(AppDbContext db)
 
     private static void ComposeBody(IContainer container, CompanySettings s, Invoice inv)
     {
+        var isQuotation = inv.Status is Domain.Enums.InvoiceStatus.Quotation or Domain.Enums.InvoiceStatus.InProgress;
         container.PaddingTop(8).Column(col =>
         {
             col.Item().Row(row =>
             {
                 row.RelativeItem().Column(c =>
                 {
-                    c.Item().Text("Bill To").Bold();
+                    c.Item().Text(isQuotation ? "Customer" : "Bill To").Bold();
                     c.Item().Text(inv.Customer?.Name ?? "");
                     c.Item().Text($"Phone: {inv.Customer?.Phone}");
                 });
@@ -81,6 +85,8 @@ public class PdfInvoiceService(AppDbContext db)
                 {
                     c.Item().Text("Vehicle").Bold();
                     c.Item().Text(inv.Vehicle?.CarNumber ?? "");
+                    if (!string.IsNullOrWhiteSpace(inv.Vehicle?.CarModel))
+                        c.Item().Text(inv.Vehicle!.CarModel);
                 });
             });
 
@@ -143,13 +149,21 @@ public class PdfInvoiceService(AppDbContext db)
                     totals.Item().PaddingVertical(2).LineHorizontal(0.5f);
                     Line("Grand Total", inv.GrandTotal, bold: true);
                     if (inv.DiscountAmount > 0) Line("Discount", -inv.DiscountAmount);
-                    Line("Paid", inv.AmountPaid);
-                    Line("Balance", inv.Balance, bold: true);
+                    // Payment status only makes sense on a real invoice; a quotation is just an estimate.
+                    if (!isQuotation)
+                    {
+                        Line("Paid", inv.AmountPaid);
+                        Line("Balance", inv.Balance, bold: true);
+                    }
                 });
             });
 
+            if (isQuotation)
+                col.Item().PaddingTop(10).Text("This is a quotation / estimate, not a tax invoice. Prices are valid for 15 days.")
+                    .Italic().FontColor(Colors.Grey.Darken1);
+
             if (!string.IsNullOrWhiteSpace(inv.Notes))
-                col.Item().PaddingTop(10).Text($"Notes: {inv.Notes}").Italic().FontColor(Colors.Grey.Darken1);
+                col.Item().PaddingTop(6).Text($"Notes: {inv.Notes}").Italic().FontColor(Colors.Grey.Darken1);
         });
     }
 }

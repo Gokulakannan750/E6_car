@@ -40,6 +40,8 @@ public partial class InvoiceDetailViewModel(IApiClient api) : ObservableObject
     // Derived UI state
     public bool CanEdit => Invoice is { Status: InvoiceStatus.Quotation or InvoiceStatus.InProgress or InvoiceStatus.Invoiced };
     public bool IsQuotation => Invoice is { Status: InvoiceStatus.Quotation or InvoiceStatus.InProgress };
+    /// <summary>True once the invoice has been generated — drives the "Print Invoice" button.</summary>
+    public bool IsFinalised => Invoice is not null && !IsQuotation;
     public bool CanPay => Invoice is not null && Invoice.Status != InvoiceStatus.Paid
                           && Invoice.Status != InvoiceStatus.Cancelled && Invoice.Balance > 0;
     public bool CanCancel => Invoice is not null && Invoice.Status != InvoiceStatus.Paid
@@ -254,6 +256,7 @@ public partial class InvoiceDetailViewModel(IApiClient api) : ObservableObject
         OnPropertyChanged(nameof(IsQuotation));
         OnPropertyChanged(nameof(CanPay));
         OnPropertyChanged(nameof(CanCancel));
+        OnPropertyChanged(nameof(IsFinalised));
         OnPropertyChanged(nameof(Title));
     }
 }
