@@ -65,9 +65,9 @@
                 
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="From:" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" Margin="0,0,8,0" />
-                    <DatePicker SelectedDate="{Binding FromDate}" Width="130" Margin="0,0,16,0" Padding="4" />
+                    <DatePicker SelectedDate="{Binding FromDate}" Width="140" Height="38" VerticalContentAlignment="Center" Margin="0,0,16,0" />
                     <TextBlock Text="To:" VerticalAlignment="Center" Foreground="{StaticResource MutedBrush}" Margin="0,0,8,0" />
-                    <DatePicker SelectedDate="{Binding ToDate}" Width="130" Margin="0,0,16,0" Padding="4" />
+                    <DatePicker SelectedDate="{Binding ToDate}" Width="140" Height="38" VerticalContentAlignment="Center" Margin="0,0,16,0" />
                     <Button Content="Run Report" Padding="20,8" Command="{Binding RunCommand}" IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}" />
                 </StackPanel>
             </Grid>

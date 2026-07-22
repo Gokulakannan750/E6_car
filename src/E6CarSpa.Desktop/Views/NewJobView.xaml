@@ -32,7 +32,8 @@
                     </StackPanel>
                     <StackPanel Grid.Column="1" Margin="0,0,10,0">
                         <TextBlock Text="Phone" />
-                        <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" />
+                        <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" MaxLength="10"
+                                 PreviewTextInput="PhoneBox_PreviewTextInput" DataObject.Pasting="PhoneBox_Pasting" />
                     </StackPanel>
                     <StackPanel Grid.Column="2" Margin="0,0,10,0">
                         <TextBlock Text="Car Number" />
