@@ -129,7 +129,10 @@
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto" />
-                            <RowDefinition Height="*" MinHeight="130" />
+                            <!-- Auto (not *) so the grid sizes to its rows and the totals sit right
+                                 under the last line, moving down as services are added. A MaxHeight
+                                 caps very long bills (internal scroll then); the outer page scrolls too. -->
+                            <RowDefinition Height="Auto" MinHeight="72" />
                             <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
@@ -137,7 +140,7 @@
 
                         <!-- Line items -->
                         <DataGrid Grid.Row="1" ItemsSource="{Binding Lines}" IsReadOnly="False" CanUserAddRows="False"
-                                  Margin="0,8,0,0">
+                                  Margin="0,8,0,0" MaxHeight="360" VerticalScrollBarVisibility="Auto">
                             <DataGrid.Columns>
                                 <DataGridTextColumn Header="Service / Item" Binding="{Binding Description}" Width="*" IsReadOnly="True" />
                                 <DataGridTextColumn Header="Qty" Binding="{Binding Quantity}" Width="60" />
