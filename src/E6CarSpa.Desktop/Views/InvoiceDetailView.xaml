@@ -134,11 +134,13 @@
                 <Button Content="✅ Generate Invoice" Width="190" Margin="8,0"
                         Command="{Binding FinaliseCommand}"
                         Visibility="{Binding IsQuotation, Converter={StaticResource BoolToVis}}" />
-                <!-- Before generation: prints the QUOTATION (customer, car, services). -->
-                <Button Content="🖨 Print Quotation" Style="{StaticResource SecondaryButton}" Width="160" Margin="8,0"
-                        Command="{Binding PrintCommand}"
-                        Visibility="{Binding IsQuotation, Converter={StaticResource BoolToVis}}" />
-                <!-- After generation: prints the tax INVOICE. -->
+                <!-- Before generation: prints the JOB CARD (customer, car, services to do — NO prices)
+                     to hand to the workshop floor. -->
+                <Button Content="🖨 Print Job Card" Style="{StaticResource SecondaryButton}" Width="160" Margin="8,0"
+                        Command="{Binding PrintJobCardCommand}"
+                        Visibility="{Binding IsQuotation, Converter={StaticResource BoolToVis}}"
+                        ToolTip="Work order for the floor — services to do, no amounts" />
+                <!-- After generation: prints the tax INVOICE (with amounts). -->
                 <Button Content="🖨 Print Invoice" Style="{StaticResource SecondaryButton}" Width="150" Margin="8,0"
                         Command="{Binding PrintCommand}"
                         Visibility="{Binding IsFinalised, Converter={StaticResource BoolToVis}}" />

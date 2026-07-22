@@ -85,4 +85,16 @@ public class InvoicesController(InvoiceService invoices, PdfInvoiceService pdf) 
         var name = (inv.InvoiceNumber ?? "quotation").Replace("/", "-");
         return File(bytes, "application/pdf", $"{name}.pdf");
     }
+
+    /// <summary>Print the JOB CARD (services to do, NO prices) for the workshop floor.</summary>
+    [HttpGet("{id:guid}/jobcard")]
+    [AllowAnonymous]
+    public async Task<IActionResult> JobCard(Guid id)
+    {
+        var inv = await invoices.GetEntityAsync(id);
+        if (inv is null) return NotFound();
+        var bytes = await pdf.RenderJobCardAsync(inv);
+        var car = (inv.Vehicle?.CarNumber ?? "car").Replace("/", "-").Replace(" ", "");
+        return File(bytes, "application/pdf", $"jobcard-{car}.pdf");
+    }
 }

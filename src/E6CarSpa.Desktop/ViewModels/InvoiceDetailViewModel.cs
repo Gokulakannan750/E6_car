@@ -222,6 +222,24 @@ public partial class InvoiceDetailViewModel(IApiClient api) : ObservableObject
         finally { IsBusy = false; }
     }
 
+    /// <summary>Print the workshop job card — services to do, no prices — for the floor staff.</summary>
+    [RelayCommand]
+    private async Task PrintJobCardAsync()
+    {
+        if (Invoice is null) return;
+        try
+        {
+            IsBusy = true; Error = "";
+            var bytes = await api.GetJobCardPdfAsync(Invoice.Id);
+            var car = (Invoice.CarNumber ?? Invoice.Id.ToString()).Replace("/", "-").Replace(" ", "");
+            var file = Path.Combine(Path.GetTempPath(), $"E6_JobCard_{car}.pdf");
+            await File.WriteAllBytesAsync(file, bytes);
+            Process.Start(new ProcessStartInfo(file) { UseShellExecute = true });
+        }
+        catch (Exception ex) { Error = ex.Message; }
+        finally { IsBusy = false; }
+    }
+
     [RelayCommand]
     private async Task RecordPaymentAsync()
     {

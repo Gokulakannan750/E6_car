@@ -116,6 +116,13 @@ public class ApiClient(HttpClient http) : IApiClient
         return await resp.Content.ReadAsByteArrayAsync();
     }
 
+    public async Task<byte[]> GetJobCardPdfAsync(Guid id)
+    {
+        var resp = await http.GetAsync($"api/invoices/{id}/jobcard");
+        await EnsureSuccess(resp);
+        return await resp.Content.ReadAsByteArrayAsync();
+    }
+
     // ---------- Inventory ----------
     public Task<List<ProductDto>?> GetProductsAsync(bool lowStockOnly = false) =>
         GetAsync<List<ProductDto>>($"api/products?lowStockOnly={lowStockOnly}");

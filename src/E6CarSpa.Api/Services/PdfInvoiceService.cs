@@ -166,4 +166,153 @@ public class PdfInvoiceService(AppDbContext db)
                 col.Item().PaddingTop(6).Text($"Notes: {inv.Notes}").Italic().FontColor(Colors.Grey.Darken1);
         });
     }
+
+    // ---------- Job card (work order for the workshop floor — NO prices) ----------
+
+    /// <summary>
+    /// Renders a JOB CARD: the customer, the vehicle, and the list of services to perform — with
+    /// NO rates, amounts, tax or totals. Printed at the quotation stage and handed to the workers.
+    /// </summary>
+    public async Task<byte[]> RenderJobCardAsync(Invoice invoice)
+    {
+        var s = await db.CompanySettings.FirstAsync();
+
+        var doc = Document.Create(container =>
+        {
+            container.Page(page =>
+            {
+                page.Size(PageSizes.A4);
+                page.Margin(28);
+                page.DefaultTextStyle(t => t.FontSize(10).FontColor(Colors.Black));
+
+                page.Header().Element(h => ComposeJobCardHeader(h, s, invoice));
+                page.Content().Element(c => ComposeJobCardBody(c, invoice));
+                page.Footer().AlignCenter().Text("Work order — for workshop use only. This is not a bill.")
+                    .FontSize(8).FontColor(Colors.Grey.Darken1);
+            });
+        });
+
+        return doc.GeneratePdf();
+    }
+
+    private const string BrandRed = "#B71C1C";
+
+    private static void ComposeJobCardHeader(IContainer container, CompanySettings s, Invoice inv)
+    {
+        container.Column(col =>
+        {
+            col.Item().Row(row =>
+            {
+                row.RelativeItem().Column(c =>
+                {
+                    if (s.LogoBytes is { Length: > 0 })
+                        c.Item().PaddingBottom(4).Width(140).Image(s.LogoBytes).FitWidth();
+                    c.Item().Text(s.Name).FontSize(14).Bold().FontColor(BrandRed);
+                });
+                row.ConstantItem(200).AlignRight().Column(c =>
+                {
+                    c.Item().AlignRight().Text("JOB CARD").FontSize(22).Bold().FontColor(BrandRed);
+                    c.Item().AlignRight().Text("Workshop work order").FontSize(9).FontColor(Colors.Grey.Darken1);
+                });
+            });
+            col.Item().PaddingTop(6).LineHorizontal(2).LineColor(BrandRed);
+        });
+    }
+
+    // A form-style job card (bordered fields + a services checklist) — deliberately NOT the
+    // invoice/quotation layout, and with NO prices, so it can be handed to the workshop floor.
+    private static void ComposeJobCardBody(IContainer container, Invoice inv)
+    {
+        container.PaddingTop(12).Column(col =>
+        {
+            col.Spacing(14);
+
+            // ── Job details form ──
+            col.Item().Table(t =>
+            {
+                t.ColumnsDefinition(c =>
+                {
+                    c.ConstantColumn(95);   // label
+                    c.RelativeColumn();     // value
+                    c.ConstantColumn(75);   // label
+                    c.RelativeColumn();     // value
+                });
+
+                void Label(string text) => t.Cell().Border(0.75f).BorderColor(Colors.Grey.Medium)
+                    .Background(Colors.Grey.Lighten3).PaddingVertical(6).PaddingHorizontal(8)
+                    .Text(text).Bold().FontSize(9);
+                void Value(string text, bool big = false)
+                {
+                    var span = t.Cell().Border(0.75f).BorderColor(Colors.Grey.Medium)
+                        .PaddingVertical(6).PaddingHorizontal(8).Text(text).FontSize(big ? 13 : 10);
+                    if (big) span.Bold();
+                }
+
+                Label("Date");        Value($"{IndianTime.ToIstDate(inv.CreatedAt):dd-MM-yyyy}");
+                Label("Job Ref");     Value(inv.Vehicle?.CarNumber ?? "");
+                Label("Customer");    Value(inv.Customer?.Name ?? "");
+                Label("Phone");       Value(inv.Customer?.Phone ?? "");
+                Label("Vehicle No");  Value(inv.Vehicle?.CarNumber ?? "", big: true);
+                Label("Model");       Value(inv.Vehicle?.CarModel ?? "");
+                Label("Time In");     Value("");     // filled in by the workshop
+                Label("Time Out");    Value("");
+            });
+
+            // ── Jobs to be done (checklist — no prices) ──
+            col.Item().Column(c =>
+            {
+                c.Item().PaddingBottom(4).Text("Jobs to be done").Bold().FontSize(12).FontColor(BrandRed);
+                c.Item().Table(table =>
+                {
+                    table.ColumnsDefinition(cols =>
+                    {
+                        cols.ConstantColumn(30);   // #
+                        cols.RelativeColumn();     // service
+                        cols.ConstantColumn(50);   // qty
+                        cols.ConstantColumn(70);   // done
+                    });
+
+                    table.Header(header =>
+                    {
+                        void H(string t2) => header.Cell().Border(0.75f).BorderColor(Colors.Grey.Medium)
+                            .Background(Colors.Grey.Lighten2).Padding(6).Text(t2).Bold();
+                        H("#"); H("Service"); H("Qty"); H("Done");
+                    });
+
+                    int n = 1;
+                    foreach (var item in inv.Items)
+                    {
+                        void C(string t2, bool center = false)
+                        {
+                            var cell = table.Cell().Border(0.75f).BorderColor(Colors.Grey.Lighten1).Padding(6).MinHeight(24);
+                            (center ? cell.AlignCenter() : cell).Text(t2);
+                        }
+                        C((n++).ToString(), true);
+                        C(item.Description);
+                        C(item.Quantity.ToString("0.##"), true);
+                        C("");   // left blank for the worker to tick
+                    }
+                });
+            });
+
+            if (!string.IsNullOrWhiteSpace(inv.Notes))
+                col.Item().Text($"Notes: {inv.Notes}").Italic().FontColor(Colors.Grey.Darken1);
+
+            // ── Sign-off ──
+            col.Item().PaddingTop(24).Row(row =>
+            {
+                row.RelativeItem().Column(c =>
+                {
+                    c.Item().LineHorizontal(0.75f);
+                    c.Item().PaddingTop(2).Text("Worker signature").FontSize(9).FontColor(Colors.Grey.Darken1);
+                });
+                row.ConstantItem(50);
+                row.RelativeItem().Column(c =>
+                {
+                    c.Item().LineHorizontal(0.75f);
+                    c.Item().PaddingTop(2).Text("Checked by").FontSize(9).FontColor(Colors.Grey.Darken1);
+                });
+            });
+        });
+    }
 }
