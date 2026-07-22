@@ -131,8 +131,9 @@
                     <DockPanel>
                         <TextBlock DockPanel.Dock="Top" Text="3 · Bill" Style="{StaticResource H2}" />
 
-                        <!-- Totals + actions: pinned to the bottom so they are always visible. -->
-                        <StackPanel DockPanel.Dock="Bottom">
+                        <!-- Totals + actions: pinned to the bottom so they are always visible.
+                             Top margin adds a small gap between the last service line and the totals. -->
+                        <StackPanel DockPanel.Dock="Bottom" Margin="0,14,0,0">
                             <Grid Margin="0,8,0,0">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
