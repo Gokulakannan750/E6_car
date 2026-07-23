@@ -143,6 +143,15 @@ public partial class NewJobViewModel(IApiClient api, ShellViewModel shell) : Obs
         catch (Exception ex) { Error = ex.Message; }
     }
 
+    /// <summary>Wipes the customer + vehicle details so a fresh intake can be typed.</summary>
+    [RelayCommand]
+    private void ClearDetails()
+    {
+        CustomerName = Phone = CarNumber = CarModel = LookupInfo = "";
+        KnownVehicles.Clear();
+        Error = "";
+    }
+
     [RelayCommand]
     private void SelectVehicle(VehicleDto v)
     {

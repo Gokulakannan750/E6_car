@@ -25,6 +25,7 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0" Margin="0,0,10,0">
                         <TextBlock Text="Customer Name" />
@@ -32,12 +33,21 @@
                     </StackPanel>
                     <StackPanel Grid.Column="1" Margin="0,0,10,0">
                         <TextBlock Text="Phone" />
+                        <!-- Enter runs the lookup, so the counter never has to reach for the mouse. -->
                         <TextBox Text="{Binding Phone, UpdateSourceTrigger=PropertyChanged}" MaxLength="10"
-                                 PreviewTextInput="PhoneBox_PreviewTextInput" DataObject.Pasting="PhoneBox_Pasting" />
+                                 PreviewTextInput="PhoneBox_PreviewTextInput" DataObject.Pasting="PhoneBox_Pasting">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Enter" Command="{Binding LookupCommand}" />
+                            </TextBox.InputBindings>
+                        </TextBox>
                     </StackPanel>
                     <StackPanel Grid.Column="2" Margin="0,0,10,0">
                         <TextBlock Text="Car Number" />
-                        <TextBox Text="{Binding CarNumber, UpdateSourceTrigger=PropertyChanged}" MaxLength="100" CharacterCasing="Upper" />
+                        <TextBox Text="{Binding CarNumber, UpdateSourceTrigger=PropertyChanged}" MaxLength="100" CharacterCasing="Upper">
+                            <TextBox.InputBindings>
+                                <KeyBinding Key="Enter" Command="{Binding LookupCommand}" />
+                            </TextBox.InputBindings>
+                        </TextBox>
                     </StackPanel>
                     <StackPanel Grid.Column="3" Margin="0,0,10,0">
                         <TextBlock Text="Car Model" />
@@ -49,7 +59,13 @@
                         <TextBlock Text=" " Opacity="0" />
                         <Button Content="🔍 Look up"
                                 Style="{StaticResource SecondaryButton}" Command="{Binding LookupCommand}"
-                                ToolTip="Search by Phone or Car Number" />
+                                ToolTip="Search by Phone or Car Number (or just press Enter)" />
+                    </StackPanel>
+                    <StackPanel Grid.Column="5" Margin="8,0,0,0">
+                        <TextBlock Text=" " Opacity="0" />
+                        <Button Content="✖ Clear" Style="{StaticResource SecondaryButton}"
+                                Command="{Binding ClearDetailsCommand}"
+                                ToolTip="Clear the customer and vehicle details" />
                     </StackPanel>
                 </Grid>
                     <TextBlock Text="Tip: Enter a phone number or car number and click Look up to find an existing customer."
