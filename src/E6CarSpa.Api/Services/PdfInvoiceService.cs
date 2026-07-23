@@ -49,7 +49,9 @@ public class PdfInvoiceService(AppDbContext db)
                     c.Item().Text($"{s.AddressLine2}");
                     c.Item().Text($"{s.City} - {s.Pincode}, {s.State}");
                     c.Item().Text($"Phone: {s.Phone}");
-                    if (!string.IsNullOrWhiteSpace(s.Gstin)) c.Item().Text($"GSTIN: {s.Gstin}").Bold();
+                    // GSTIN belongs on a GST bill only — a non-GST invoice must not show it.
+                    if (inv.IsGstApplicable && !string.IsNullOrWhiteSpace(s.Gstin))
+                        c.Item().Text($"GSTIN: {s.Gstin}").Bold();
                 });
                 row.ConstantItem(190).Column(c =>
                 {

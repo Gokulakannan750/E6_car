@@ -48,7 +48,8 @@ public partial class ShellViewModel(IApiClient api) : ObservableObject
 
     public async Task NavigateAsync<TViewModel>(string navKey) where TViewModel : class
     {
-        if ((navKey == "Reports" || navKey == "Inventory" || navKey == "Catalogue" || navKey == "Settings") && !IsLoggedIn)
+        // Catalogue is open to the counter (no login) — services/prices are edited on the floor.
+        if ((navKey == "Reports" || navKey == "Inventory" || navKey == "Settings") && !IsLoggedIn)
         {
             // Trigger the login popup
             var shell = App.Services.GetService<Views.ShellWindow>();

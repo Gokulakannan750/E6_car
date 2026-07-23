@@ -128,14 +128,15 @@ public class ApiIntegrationTests
     }
 
     [Fact]
-    public async Task Products_WithoutToken_ReturnsUnauthorized()
+    public async Task Products_WithoutToken_AreOpenToTheCounter()
     {
+        // The Catalogue screen is used without a login, so the product list is open.
         using var factory = new ApiFactory();
         var client = factory.CreateClient();
 
         var resp = await client.GetAsync("/api/products");
 
-        Assert.Equal(HttpStatusCode.Unauthorized, resp.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
     }
 
     [Fact]
@@ -259,7 +260,7 @@ public class ApiIntegrationTests
 
         var workerClient = factory.CreateClient();
         Authorize(workerClient, await LoginAsync(workerClient, "worker9", "worker@123"));
-        Assert.Equal(HttpStatusCode.OK, (await workerClient.GetAsync("/api/products")).StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await workerClient.GetAsync("/api/settings")).StatusCode);
 
         // Admin deactivates the worker.
         var deactivate = await admin.PutAsJsonAsync($"/api/auth/users/{worker.Id}",
@@ -267,7 +268,7 @@ public class ApiIntegrationTests
         deactivate.EnsureSuccessStatusCode();
 
         // The worker's existing token stops working immediately.
-        Assert.Equal(HttpStatusCode.Unauthorized, (await workerClient.GetAsync("/api/products")).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await workerClient.GetAsync("/api/settings")).StatusCode);
     }
 
     // ---------- audit log ----------
@@ -307,7 +308,6 @@ public class ApiIntegrationTests
 
     [Theory]
     [InlineData("/api/settings")]        // company settings (GSTIN etc.) need a login
-    [InlineData("/api/products")]        // inventory needs a login
     [InlineData("/api/audit")]           // audit trail needs a login
     [InlineData("/api/reports/sales?from=2026-01-01&to=2026-01-31")]
     public async Task ProtectedGets_WithoutToken_ReturnUnauthorized(string url)
@@ -323,10 +323,6 @@ public class ApiIntegrationTests
         using var factory = new ApiFactory();
         var client = factory.CreateClient();
 
-        var svc = await client.PostAsJsonAsync("/api/services",
-            new SaveServiceRequest("Hack", "X", 1m, "", 18m, true));
-        Assert.Equal(HttpStatusCode.Unauthorized, svc.StatusCode);
-
         var settings = await client.PutAsJsonAsync("/api/settings",
             new SaveCompanySettingsRequest("X", null, null, null, null, null, null, null, null, null, "X/", 18m));
         Assert.Equal(HttpStatusCode.Unauthorized, settings.StatusCode);
@@ -337,6 +333,7 @@ public class ApiIntegrationTests
     [InlineData("/api/dashboard")]                   // no-login landing screen
     [InlineData("/api/customers/by-phone/9000000000")]
     [InlineData("/api/invoices")]                    // Jobs list
+    [InlineData("/api/products")]                    // Catalogue screen (no login)
     public async Task ShopFloorGets_WithoutToken_RemainOpen(string url)
     {
         // The desktop app deliberately runs without a login at the counter; these endpoints

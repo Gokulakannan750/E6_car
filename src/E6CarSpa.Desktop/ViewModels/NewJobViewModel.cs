@@ -82,26 +82,12 @@ public partial class NewJobViewModel(IApiClient api, ShellViewModel shell) : Obs
     }
 
     /// <summary>
-    /// Add a service to the catalogue without leaving the billing screen. Creating a service is a
-    /// Manager/Admin action, so the counter (which runs anonymous) gets the same login popup used
-    /// for cancelling a bill.
+    /// Add a service to the catalogue without leaving the billing screen. No login required —
+    /// the catalogue is open to the counter.
     /// </summary>
     [RelayCommand]
     private async Task AddNewServiceAsync()
     {
-        if (api.CurrentUser?.Role is not (UserRole.Admin or UserRole.Manager))
-        {
-            var login = App.Services.GetRequiredService<Views.LoginWindow>();
-            if (Application.Current.MainWindow is { IsVisible: true } owner) login.Owner = owner;
-            login.ShowDialog();
-            shell.RefreshAuthState();
-            if (api.CurrentUser?.Role is not (UserRole.Admin or UserRole.Manager))
-            {
-                Error = "Adding a service needs a Manager or Admin login.";
-                return;
-            }
-        }
-
         var dialog = new Views.NewServiceDialog();
         if (Application.Current.MainWindow is { IsVisible: true } main) dialog.Owner = main;
         if (dialog.ShowDialog() != true) return;
