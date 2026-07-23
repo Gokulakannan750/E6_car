@@ -37,6 +37,9 @@ public partial class DashboardPage : ContentPage
     private async void OnLowStockTapped(object? sender, TappedEventArgs e) =>
         await Shell.Current.GoToAsync("lowstock");
 
+    private async void OnAdvancesTapped(object? sender, TappedEventArgs e) =>
+        await Shell.Current.GoToAsync("advances");
+
     private async Task LoadAsync()
     {
         ErrorLabel.IsVisible = false;
