@@ -243,19 +243,20 @@ public class PdfInvoiceService(AppDbContext db)
                 void Label(string text) => t.Cell().Border(0.75f).BorderColor(Colors.Grey.Medium)
                     .Background(Colors.Grey.Lighten3).PaddingVertical(6).PaddingHorizontal(8)
                     .Text(text).Bold().FontSize(9);
-                void Value(string text, bool big = false)
+                // colSpan lets the final value fill the rest of the row, since an odd number of
+                // fields would otherwise leave an empty box hanging off the end.
+                void Value(string text, bool big = false, int colSpan = 1)
                 {
-                    var span = t.Cell().Border(0.75f).BorderColor(Colors.Grey.Medium)
+                    var span = t.Cell().ColumnSpan((uint)colSpan).Border(0.75f).BorderColor(Colors.Grey.Medium)
                         .PaddingVertical(6).PaddingHorizontal(8).Text(text).FontSize(big ? 13 : 10);
                     if (big) span.Bold();
                 }
 
                 Label("Date");        Value($"{IndianTime.ToIstDate(inv.CreatedAt):dd-MM-yyyy}");
-                Label("Job Ref");     Value(inv.Vehicle?.CarNumber ?? "");
                 Label("Customer");    Value(inv.Customer?.Name ?? "");
                 Label("Phone");       Value(inv.Customer?.Phone ?? "");
                 Label("Vehicle No");  Value(inv.Vehicle?.CarNumber ?? "", big: true);
-                Label("Model");       Value(inv.Vehicle?.CarModel ?? "");
+                Label("Model");       Value(inv.Vehicle?.CarModel ?? "", colSpan: 3);
             });
 
             // ── Jobs to be done (checklist — no prices) ──
@@ -292,15 +293,6 @@ public class PdfInvoiceService(AppDbContext db)
                         C(item.Description);
                         C(item.Quantity.ToString("0.##"), true);
                         C("");   // left blank for the worker to tick
-                    }
-
-                    // Two spare rows so the floor can hand-write any extra job they take on.
-                    for (var spare = 0; spare < 2; spare++)
-                    {
-                        C((n++).ToString(), true);
-                        C("");
-                        C("");
-                        C("");
                     }
                 });
             });
