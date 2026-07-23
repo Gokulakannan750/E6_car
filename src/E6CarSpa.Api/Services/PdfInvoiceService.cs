@@ -277,18 +277,28 @@ public class PdfInvoiceService(AppDbContext db)
                         H("#"); H("Service"); H("Qty"); H("Done");
                     });
 
+                    void C(string t2, bool center = false)
+                    {
+                        var cell = table.Cell().Border(0.75f).BorderColor(Colors.Grey.Lighten1).Padding(6).MinHeight(24);
+                        (center ? cell.AlignCenter() : cell).Text(t2);
+                    }
+
                     int n = 1;
                     foreach (var item in inv.Items)
                     {
-                        void C(string t2, bool center = false)
-                        {
-                            var cell = table.Cell().Border(0.75f).BorderColor(Colors.Grey.Lighten1).Padding(6).MinHeight(24);
-                            (center ? cell.AlignCenter() : cell).Text(t2);
-                        }
                         C((n++).ToString(), true);
                         C(item.Description);
                         C(item.Quantity.ToString("0.##"), true);
                         C("");   // left blank for the worker to tick
+                    }
+
+                    // Two spare rows so the floor can hand-write any extra job they take on.
+                    for (var spare = 0; spare < 2; spare++)
+                    {
+                        C((n++).ToString(), true);
+                        C("");
+                        C("");
+                        C("");
                     }
                 });
             });
