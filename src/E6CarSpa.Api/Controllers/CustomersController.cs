@@ -45,7 +45,14 @@ public class CustomersController(AppDbContext db) : ApiControllerBase
         if (!string.IsNullOrWhiteSpace(q))
         {
             var s = q.Trim().ToLower();
-            query = query.Where(c => c.Name.ToLower().Contains(s) || c.Phone.Contains(s));
+            // Car numbers are stored without spaces, so match a space-stripped term too
+            // ("TN 56 P 3334" still finds TN56P3334).
+            var car = s.Replace(" ", "");
+            query = query.Where(c =>
+                c.Name.ToLower().Contains(s) ||
+                c.Phone.Contains(s) ||
+                c.Vehicles.Any(v => v.CarNumber.ToLower().Contains(car) ||
+                                    (v.CarModel != null && v.CarModel.ToLower().Contains(s))));
         }
         return await query.OrderBy(c => c.Name).Take(200).Select(c => c.ToDto()).ToListAsync();
     }
