@@ -27,8 +27,21 @@ public class WhatsAppOptions
     /// <summary>Bearer token / API key for the provider.</summary>
     public string AccessToken { get; set; } = "";
 
-    /// <summary>Approved template name to use for the post-payment thank-you.</summary>
+    /// <summary>Approved template name to use for the post-payment thank-you (fully paid).</summary>
     public string PaymentTemplateName { get; set; } = "payment_thank_you";
+
+    /// <summary>
+    /// Approved template sent when an invoice is generated. Must be created in Meta with a
+    /// DOCUMENT header so the invoice PDF can be attached, plus 3 body parameters
+    /// (customer name, invoice number, amount).
+    /// </summary>
+    public string InvoiceTemplateName { get; set; } = "invoice_generated";
+
+    /// <summary>
+    /// Approved template sent after a PART payment: 4 body parameters
+    /// (customer name, amount paid, balance remaining, car number).
+    /// </summary>
+    public string PartialPaymentTemplateName { get; set; } = "payment_partial";
 
     /// <summary>Template language code, e.g. "en" or "en_US".</summary>
     public string TemplateLanguage { get; set; } = "en";

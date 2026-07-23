@@ -12,7 +12,7 @@ namespace E6CarSpa.Api.Services;
 /// including GST recalculation, sequential invoice numbering, inventory consumption
 /// and the post-payment WhatsApp notification.
 /// </summary>
-public class InvoiceService(AppDbContext db, WhatsAppService whatsApp)
+public class InvoiceService(AppDbContext db, WhatsAppService whatsApp, PdfInvoiceService pdf)
 {
     private static readonly Func<IQueryable<Invoice>, IQueryable<Invoice>> WithGraph =
         q => q.Include(i => i.Customer)
@@ -121,6 +121,16 @@ public class InvoiceService(AppDbContext db, WhatsAppService whatsApp)
 
         await db.SaveChangesAsync();
         await tx.CommitAsync();
+
+        // WhatsApp the invoice (PDF attached) to the customer. Never blocks or breaks billing:
+        // rendering/sending problems are swallowed and recorded in NotificationLog.
+        try
+        {
+            var bytes = await pdf.RenderAsync(invoice);
+            await whatsApp.SendInvoiceAsync(invoice, bytes);
+        }
+        catch { /* notification failure must not fail the finalise */ }
+
         return invoice;
     }
 
@@ -168,9 +178,11 @@ public class InvoiceService(AppDbContext db, WhatsAppService whatsApp)
 
         await db.SaveChangesAsync();
 
-        // Fire the automatic thank-you only once, when the bill is fully settled.
+        // Tell the customer where they stand: a thank-you once settled, otherwise what's left.
         if (nowFullyPaid)
             await whatsApp.SendPaymentThankYouAsync(invoice);
+        else if (invoice.Balance > 0)
+            await whatsApp.SendPartialPaymentAsync(invoice, req.Amount);
 
         return invoice;
     }

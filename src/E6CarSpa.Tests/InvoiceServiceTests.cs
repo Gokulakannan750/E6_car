@@ -56,7 +56,7 @@ namespace E6CarSpa.Tests
             // Arrange
             using var db = CreateDbContext();
             var whatsapp = CreateWhatsAppService(db);
-            var service = new InvoiceService(db, whatsapp);
+            var service = new InvoiceService(db, whatsapp, new PdfInvoiceService(db));
 
             var req = new CreateQuotationRequest(
                 CustomerName: "John Doe",
@@ -95,7 +95,7 @@ namespace E6CarSpa.Tests
             // Arrange
             using var db = CreateDbContext();
             var whatsapp = CreateWhatsAppService(db);
-            var service = new InvoiceService(db, whatsapp);
+            var service = new InvoiceService(db, whatsapp, new PdfInvoiceService(db));
 
             var req = new CreateQuotationRequest(
                 CustomerName: "Jane Doe",
@@ -154,7 +154,7 @@ namespace E6CarSpa.Tests
                 Items: new List<InvoiceItemInput> { new(null, null, "Service", 1, price, 0m) },
                 ApplyGst: gst);
 
-        private InvoiceService NewService(AppDbContext db) => new(db, CreateWhatsAppService(db));
+        private InvoiceService NewService(AppDbContext db) => new(db, CreateWhatsAppService(db), new PdfInvoiceService(db));
 
         // ---------- numbering ----------
 
