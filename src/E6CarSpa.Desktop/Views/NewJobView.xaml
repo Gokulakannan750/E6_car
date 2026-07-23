@@ -96,7 +96,20 @@
                 <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,14,0" Padding="18">
                     <DockPanel>
                         <TextBlock DockPanel.Dock="Top" Text="2 · Services" Style="{StaticResource H2}" />
-                        <TextBlock DockPanel.Dock="Top" Text="Double-click to add to the bill" Style="{StaticResource Muted}" Margin="0,0,0,8" />
+                        <TextBlock DockPanel.Dock="Top" Text="Double-click to add to the bill" Style="{StaticResource Muted}" Margin="0,0,0,6" />
+                        <!-- Search the catalogue, and add a new service without leaving this screen. -->
+                        <Grid DockPanel.Dock="Top" Margin="0,0,0,8">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBox Grid.Column="0" Margin="0,0,6,0"
+                                     Text="{Binding ServiceSearch, UpdateSourceTrigger=PropertyChanged}"
+                                     ToolTip="Search services by name or category" />
+                            <Button Grid.Column="1" Content="➕ New" Style="{StaticResource SecondaryButton}"
+                                    Padding="12,6" Command="{Binding AddNewServiceCommand}"
+                                    ToolTip="Add a new service to the catalogue (needs a Manager or Admin login)" />
+                        </Grid>
                         <ListBox x:Name="CatalogueList" ItemsSource="{Binding Catalogue}"
                                  SelectedItem="{Binding SelectedService}"
                                  MouseDoubleClick="Catalogue_DoubleClick"

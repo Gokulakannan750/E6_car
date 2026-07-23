@@ -1,8 +1,11 @@
 using System.Collections.ObjectModel;
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using E6CarSpa.Contracts;
 using E6CarSpa.Client;
+using E6CarSpa.Domain.Enums;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace E6CarSpa.Desktop.ViewModels;
 
@@ -21,10 +24,16 @@ public partial class NewJobViewModel(IApiClient api, ShellViewModel shell) : Obs
 
     public ObservableCollection<VehicleDto> KnownVehicles { get; } = new();
 
-    // Step 2 — catalogue + chosen lines
+    // Step 2 — catalogue + chosen lines. Catalogue is the *filtered* view shown in the list;
+    // _allServices keeps the full set so the search can be cleared without a round trip.
     public ObservableCollection<ServiceDto> Catalogue { get; } = new();
+    private List<ServiceDto> _allServices = new();
     public ObservableCollection<LineItemVm> Lines { get; } = new();
     [ObservableProperty] private ServiceDto? _selectedService;
+
+    /// <summary>Filters the services list by name or category as the user types.</summary>
+    [ObservableProperty] private string _serviceSearch = "";
+    partial void OnServiceSearchChanged(string value) => ApplyServiceFilter();
 
     [ObservableProperty] private decimal _discountAmount;
     [ObservableProperty] private string _notes = "";
@@ -53,11 +62,63 @@ public partial class NewJobViewModel(IApiClient api, ShellViewModel shell) : Obs
     {
         try
         {
-            var services = await api.GetServicesAsync() ?? new();
-            Catalogue.Clear();
-            foreach (var s in services) Catalogue.Add(s);
+            _allServices = await api.GetServicesAsync() ?? new();
+            ApplyServiceFilter();
         }
         catch (Exception ex) { Error = ex.Message; }
+    }
+
+    private void ApplyServiceFilter()
+    {
+        var q = ServiceSearch?.Trim() ?? "";
+        var matches = string.IsNullOrEmpty(q)
+            ? _allServices
+            : _allServices.Where(s =>
+                s.Name.Contains(q, StringComparison.OrdinalIgnoreCase) ||
+                (s.Category ?? "").Contains(q, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        Catalogue.Clear();
+        foreach (var s in matches) Catalogue.Add(s);
+    }
+
+    /// <summary>
+    /// Add a service to the catalogue without leaving the billing screen. Creating a service is a
+    /// Manager/Admin action, so the counter (which runs anonymous) gets the same login popup used
+    /// for cancelling a bill.
+    /// </summary>
+    [RelayCommand]
+    private async Task AddNewServiceAsync()
+    {
+        if (api.CurrentUser?.Role is not (UserRole.Admin or UserRole.Manager))
+        {
+            var login = App.Services.GetRequiredService<Views.LoginWindow>();
+            if (Application.Current.MainWindow is { IsVisible: true } owner) login.Owner = owner;
+            login.ShowDialog();
+            shell.RefreshAuthState();
+            if (api.CurrentUser?.Role is not (UserRole.Admin or UserRole.Manager))
+            {
+                Error = "Adding a service needs a Manager or Admin login.";
+                return;
+            }
+        }
+
+        var dialog = new Views.NewServiceDialog();
+        if (Application.Current.MainWindow is { IsVisible: true } main) dialog.Owner = main;
+        if (dialog.ShowDialog() != true) return;
+
+        try
+        {
+            IsBusy = true; Error = "";
+            // Category/HSN/GST take sensible defaults — they can be refined on the Catalogue screen.
+            var created = await api.CreateServiceAsync(new SaveServiceRequest(
+                dialog.ServiceName, "General", dialog.Price, "", 18m, true));
+
+            _allServices = _allServices.Append(created).OrderBy(s => s.Name).ToList();
+            ServiceSearch = "";        // clear the filter so the new service is visible
+            ApplyServiceFilter();      // (also runs via OnServiceSearchChanged when it was non-empty)
+        }
+        catch (Exception ex) { Error = ex.Message; }
+        finally { IsBusy = false; }
     }
 
     [RelayCommand]
