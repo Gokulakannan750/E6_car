@@ -1,7 +1,7 @@
 <Window x:Class="E6CarSpa.Desktop.Views.NewServiceDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="New Service" Height="280" Width="420"
+        Title="New Service" Width="420" SizeToContent="Height"
         WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
         ShowInTaskbar="False" Background="{StaticResource BgBrush}">
     <StackPanel Margin="24">
