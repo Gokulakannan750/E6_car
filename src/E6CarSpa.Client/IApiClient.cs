@@ -45,6 +45,10 @@ public interface IApiClient
     Task<UserDto> CreateUserAsync(CreateUserRequest req);
     Task<UserDto> UpdateUserAsync(Guid id, UpdateUserRequest req);
     Task ChangeMyPasswordAsync(ChangeMyPasswordRequest req);
+    Task<List<StaffAdvanceDto>?> GetStaffAdvancesAsync(string? worker = null);
+    Task<List<StaffAdvanceSummaryDto>?> GetStaffAdvanceSummaryAsync();
+    Task<StaffAdvanceDto> CreateStaffAdvanceAsync(SaveStaffAdvanceRequest req);
+    Task DeleteStaffAdvanceAsync(Guid id);
     Task<CompanySettingsDto?> GetSettingsAsync();
     Task<CompanySettingsDto> UpdateSettingsAsync(SaveCompanySettingsRequest req);
     Task UploadLogoAsync(byte[] imageBytes);

@@ -26,3 +26,11 @@ public record DashboardSummaryDto(
     List<LiveJobDto> ActiveJobs);
 
 public record LiveJobDto(string InvoiceNumber, string VehicleNumber, string VehicleModel, InvoiceStatus Status, decimal Total);
+
+/// <summary>A recorded cash advance given to a worker.</summary>
+public record StaffAdvanceDto(Guid Id, string WorkerName, decimal Amount, DateTime AdvanceDate, string? Note);
+
+public record SaveStaffAdvanceRequest(string WorkerName, decimal Amount, DateTime AdvanceDate, string? Note);
+
+/// <summary>Total advanced per worker, for the summary panel.</summary>
+public record StaffAdvanceSummaryDto(string WorkerName, decimal TotalAdvanced, int Count);

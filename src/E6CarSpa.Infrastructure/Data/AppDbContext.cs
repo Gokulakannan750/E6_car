@@ -20,6 +20,7 @@ public class AppDbContext : DbContext
     public DbSet<CompanySettings> CompanySettings => Set<CompanySettings>();
     public DbSet<NotificationLog> NotificationLogs => Set<NotificationLog>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<StaffAdvance> StaffAdvances => Set<StaffAdvance>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -133,6 +134,14 @@ public class AppDbContext : DbContext
             e.HasIndex(x => x.InvoiceId); // optimize joins in payment aggregation queries
             e.HasOne(x => x.Invoice).WithMany(i => i.Payments)
                 .HasForeignKey(x => x.InvoiceId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        b.Entity<StaffAdvance>(e =>
+        {
+            e.HasIndex(x => x.AdvanceDate);   // listed newest-first / filtered by month
+            e.HasIndex(x => x.WorkerName);    // grouped per worker for the totals
+            e.Property(x => x.WorkerName).HasMaxLength(120).IsRequired();
+            e.Property(x => x.Note).HasMaxLength(300);
         });
 
         b.Entity<NotificationLog>(e =>

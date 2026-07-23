@@ -148,6 +148,25 @@ public class ApiClient(HttpClient http) : IApiClient
     public Task ChangeMyPasswordAsync(ChangeMyPasswordRequest req) =>
         PutAsync<object>("api/auth/users/me/password", req);
 
+    // ---------- Staff advances ----------
+    public Task<List<StaffAdvanceDto>?> GetStaffAdvancesAsync(string? worker = null)
+    {
+        var qs = string.IsNullOrWhiteSpace(worker) ? "" : $"?worker={Uri.EscapeDataString(worker)}";
+        return GetAsync<List<StaffAdvanceDto>>($"api/staffadvances{qs}");
+    }
+
+    public Task<List<StaffAdvanceSummaryDto>?> GetStaffAdvanceSummaryAsync() =>
+        GetAsync<List<StaffAdvanceSummaryDto>>("api/staffadvances/summary");
+
+    public Task<StaffAdvanceDto> CreateStaffAdvanceAsync(SaveStaffAdvanceRequest req) =>
+        PostAsync<StaffAdvanceDto>("api/staffadvances", req);
+
+    public async Task DeleteStaffAdvanceAsync(Guid id)
+    {
+        var resp = await http.DeleteAsync($"api/staffadvances/{id}");
+        await EnsureSuccess(resp);
+    }
+
     // ---------- Company settings ----------
     public Task<CompanySettingsDto?> GetSettingsAsync() => GetAsync<CompanySettingsDto>("api/settings");
 

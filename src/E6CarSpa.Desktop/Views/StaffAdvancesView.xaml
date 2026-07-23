@@ -1,0 +1,132 @@
+<UserControl x:Class="E6CarSpa.Desktop.Views.StaffAdvancesView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Grid Margin="28">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="Staff Advances" Style="{StaticResource H1}" />
+
+        <!-- Record a new advance -->
+        <Border Grid.Row="1" Style="{StaticResource Card}">
+            <StackPanel>
+                <TextBlock Text="Record an advance" Style="{StaticResource H2}" />
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="2*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                        <TextBlock Text="Worker name" />
+                        <!-- Editable: type a new name, or pick one already used. -->
+                        <ComboBox IsEditable="True" ItemsSource="{Binding KnownWorkers}"
+                                  Text="{Binding WorkerName, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1" Margin="0,0,10,0" Width="130">
+                        <TextBlock Text="Amount ₹" />
+                        <TextBox Text="{Binding Amount, UpdateSourceTrigger=PropertyChanged, Delay=200}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2" Margin="0,0,10,0" Width="150">
+                        <TextBlock Text="Date" />
+                        <DatePicker SelectedDate="{Binding AdvanceDate}" Height="38"
+                                    VerticalContentAlignment="Center" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="3" Margin="0,0,10,0">
+                        <TextBlock Text="Note (optional)" />
+                        <TextBox Text="{Binding Note, UpdateSourceTrigger=PropertyChanged}" />
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="4">
+                        <TextBlock Text=" " Opacity="0" />
+                        <Button Content="➕ Record Advance" Width="180"
+                                Command="{Binding RecordAdvanceCommand}"
+                                IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}" />
+                    </StackPanel>
+                </Grid>
+
+                <TextBlock Text="{Binding Info}" Foreground="{StaticResource SuccessBrush}" FontWeight="SemiBold"
+                           Margin="0,6,0,0" Visibility="{Binding Info, Converter={StaticResource StringToVis}}" />
+                <TextBlock Text="{Binding Error}" Foreground="{StaticResource DangerBrush}" TextWrapping="Wrap"
+                           Margin="0,6,0,0" Visibility="{Binding Error, Converter={StaticResource StringToVis}}" />
+            </StackPanel>
+        </Border>
+
+        <!-- Totals per worker + the full list -->
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="330" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Style="{StaticResource Card}" Margin="0,0,14,0">
+                <DockPanel>
+                    <TextBlock DockPanel.Dock="Top" Text="Total per worker" Style="{StaticResource H2}" />
+                    <TextBlock DockPanel.Dock="Bottom" Margin="0,10,0,0" FontSize="15">
+                        <Run Text="All workers: " FontWeight="SemiBold" />
+                        <Run Text="{Binding GrandTotal, StringFormat='₹{0:N2}', Mode=OneWay}"
+                             FontWeight="Bold" Foreground="{StaticResource PrimaryBrush}" />
+                    </TextBlock>
+                    <DataGrid ItemsSource="{Binding Summary}" IsReadOnly="True" BorderThickness="0"
+                              HeadersVisibility="Column" CanUserAddRows="False" AutoGenerateColumns="False">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Worker" Binding="{Binding WorkerName}" Width="*" />
+                            <DataGridTextColumn Header="Times" Binding="{Binding Count}" Width="60" />
+                            <DataGridTextColumn Header="Total ₹" Binding="{Binding TotalAdvanced, StringFormat='{}{0:N2}'}" Width="110" />
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </Border>
+
+            <Border Grid.Column="1" Style="{StaticResource Card}">
+                <DockPanel>
+                    <Grid DockPanel.Dock="Top">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Column="0" Text="All advances" Style="{StaticResource H2}" VerticalAlignment="Center" />
+                        <StackPanel Grid.Column="1" Orientation="Horizontal">
+                            <TextBox Width="200" Margin="0,0,8,0" VerticalContentAlignment="Center"
+                                     Text="{Binding Search, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+                                     ToolTip="Filter by worker name" />
+                            <Button Content="Refresh" Style="{StaticResource SecondaryButton}"
+                                    Command="{Binding LoadCommand}" />
+                        </StackPanel>
+                    </Grid>
+
+                    <DataGrid ItemsSource="{Binding Advances}" IsReadOnly="True" BorderThickness="0"
+                              HeadersVisibility="Column" CanUserAddRows="False" AutoGenerateColumns="False"
+                              Margin="0,8,0,0">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Date" Binding="{Binding AdvanceDate, StringFormat='dd-MM-yyyy'}" Width="110" />
+                            <DataGridTextColumn Header="Worker" Binding="{Binding WorkerName}" Width="*" MinWidth="120" />
+                            <DataGridTextColumn Header="Amount ₹" Binding="{Binding Amount, StringFormat='{}{0:N2}'}" Width="110" />
+                            <DataGridTextColumn Header="Note" Binding="{Binding Note}" Width="*" MinWidth="120" />
+                            <DataGridTemplateColumn Width="90">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <Button Content="✕ Delete" Background="Transparent"
+                                                Foreground="{StaticResource DangerBrush}" Padding="6,2"
+                                                HorizontalAlignment="Left"
+                                                Command="{Binding DataContext.DeleteAdvanceCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                CommandParameter="{Binding}" />
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </DockPanel>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

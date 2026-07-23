@@ -17,6 +17,7 @@
         <DataTemplate DataType="{x:Type vm:CatalogueViewModel}"><views:CatalogueView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:ReportsViewModel}"><views:ReportsView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:SettingsViewModel}"><views:SettingsView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:StaffAdvancesViewModel}"><views:StaffAdvancesView /></DataTemplate>
 
         <!-- Navigation button — bright white text on dark sidebar -->
         <Style x:Key="NavButton" TargetType="Button">
@@ -102,6 +103,7 @@
                          The screen (InventoryView/ViewModel) and API endpoints are still in place;
                          restore this button to bring it back. -->
                     <Button Content="🗂  Catalogue" Style="{StaticResource NavButton}" Command="{Binding ShowCatalogueCommand}" />
+                    <Button Content="💵  Staff Advances" Style="{StaticResource NavButton}" Command="{Binding ShowStaffAdvancesCommand}" />
                     <Button Content="📈  Reports" Style="{StaticResource NavButton}" Command="{Binding ShowReportsCommand}" />
                     <Button Content="⚙  Settings" Style="{StaticResource NavButton}" Command="{Binding ShowSettingsCommand}" />
                 </StackPanel>

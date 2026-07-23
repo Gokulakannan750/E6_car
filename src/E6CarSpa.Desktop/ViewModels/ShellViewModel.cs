@@ -43,6 +43,7 @@ public partial class ShellViewModel(IApiClient api) : ObservableObject
     [RelayCommand] private Task ShowJobs() => NavigateAsync<JobsViewModel>("Jobs");
     [RelayCommand] private Task ShowInventory() => NavigateAsync<InventoryViewModel>("Inventory");
     [RelayCommand] private Task ShowCatalogue() => NavigateAsync<CatalogueViewModel>("Catalogue");
+    [RelayCommand] private Task ShowStaffAdvances() => NavigateAsync<StaffAdvancesViewModel>("StaffAdvances");
     [RelayCommand] private Task ShowReports() => NavigateAsync<ReportsViewModel>("Reports");
     [RelayCommand] private Task ShowSettings() => NavigateAsync<SettingsViewModel>("Settings");
 
