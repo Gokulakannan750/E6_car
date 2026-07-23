@@ -25,6 +25,14 @@ public partial class SettingsViewModel(IApiClient api) : ObservableObject, IAsyn
     [ObservableProperty] private decimal _defaultGstRate;
     [ObservableProperty] private long _lastInvoiceSequence;
     [ObservableProperty] private string _nonGstInvoicePrefix = "";
+
+    /// <summary>
+    /// Live example of the next non-GST number. The prefix field takes ONLY the prefix — the year
+    /// and the 4-digit counter are appended automatically — so this preview makes that obvious
+    /// (typing the whole format in produced numbers like E6/2026/00002026/0001).
+    /// </summary>
+    public string NonGstPreview => $"{NonGstInvoicePrefix}{DateTime.Now.Year}/0001";
+    partial void OnNonGstInvoicePrefixChanged(string value) => OnPropertyChanged(nameof(NonGstPreview));
     [ObservableProperty] private long _lastNonGstSequence;
     [ObservableProperty] private int _lastNonGstYear;
 

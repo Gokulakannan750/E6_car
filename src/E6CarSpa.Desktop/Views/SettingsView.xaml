@@ -66,9 +66,12 @@
                                                  ToolTip="Prefix for GST tax invoices, e.g. E6/" />
                                     </StackPanel>
                                     <StackPanel Margin="0,0,10,0">
-                                        <TextBlock Text="Non-GST Prefix" />
+                                        <TextBlock Text="Non-GST Prefix (e.g. E6/)" />
                                         <TextBox Text="{Binding NonGstInvoicePrefix, UpdateSourceTrigger=PropertyChanged}"
-                                                 ToolTip="Prefix for non-GST bills. Numbered {Prefix}{Year}/0001, e.g. E6/2026/0001" />
+                                                 ToolTip="Enter ONLY the prefix, e.g. E6/ — the year and the 4-digit number are added automatically." />
+                                        <TextBlock Style="{StaticResource Muted}" FontSize="11" TextWrapping="Wrap" Margin="0,2,0,0">
+                                            <Run Text="Next will be: " /><Run Text="{Binding NonGstPreview, Mode=OneWay}" FontWeight="SemiBold" />
+                                        </TextBlock>
                                     </StackPanel>
                                     <StackPanel Margin="0,0,10,0">
                                         <TextBlock Text="Default GST %" />
