@@ -63,12 +63,18 @@
 
             <!-- Add a service -->
             <Label Text="Services" FontSize="16" FontAttributes="Bold" />
-            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+            <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                 <Picker x:Name="ServicePicker" Grid.Column="0" Title="Select a service"
                         TitleColor="#888"
                         ItemDisplayBinding="{Binding Name}" />
                 <Button x:Name="AddButton" Grid.Column="1" Text="Add"
                         Clicked="OnAddServiceClicked" />
+                <!-- Create a service that isn't in the catalogue yet, and bill it straight away. -->
+                <Button x:Name="NewServiceButton" Grid.Column="2" Text="＋ New"
+                        BackgroundColor="Transparent" BorderWidth="1" Padding="10,0"
+                        TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Primary}}"
+                        BorderColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Primary}}"
+                        Clicked="OnNewServiceClicked" />
             </Grid>
 
             <!-- Chosen lines -->

@@ -102,6 +102,9 @@ public partial class NewJobViewModel(IApiClient api, ShellViewModel shell) : Obs
             _allServices = _allServices.Append(created).OrderBy(s => s.Name).ToList();
             ServiceSearch = "";        // clear the filter so the new service is visible
             ApplyServiceFilter();      // (also runs via OnServiceSearchChanged when it was non-empty)
+
+            // Straight onto the bill — you only add a service mid-job because you're billing it.
+            AddServiceLine(created);
         }
         catch (Exception ex) { Error = ex.Message; }
         finally { IsBusy = false; }

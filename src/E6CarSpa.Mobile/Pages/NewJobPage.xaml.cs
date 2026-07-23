@@ -122,6 +122,52 @@ public partial class NewJobPage : ContentPage
         _lines.Add(line);
     }
 
+    /// <summary>
+    /// Add a service that isn't in the catalogue yet (name + price), then put it straight on the
+    /// bill — the same flow as the desktop's "+ New" button.
+    /// </summary>
+    private async void OnNewServiceClicked(object? sender, EventArgs e)
+    {
+        ErrorLabel.IsVisible = false;
+
+        var name = await DisplayPromptAsync("New service", "Service name", "Next", "Cancel", maxLength: 120);
+        if (string.IsNullOrWhiteSpace(name)) return;
+        name = name.Trim();
+
+        var priceText = await DisplayPromptAsync("New service", $"Price for \"{name}\" (₹)", "Add", "Cancel",
+            keyboard: Keyboard.Numeric);
+        if (priceText is null) return;
+        if (!decimal.TryParse(priceText.Trim(), out var price) || price < 0)
+        {
+            ShowError("Enter a valid price.");
+            return;
+        }
+
+        SetBusy(true);
+        try
+        {
+            // Category/HSN/GST take the same defaults as the desktop dialog.
+            var created = await AppServices.Api.CreateServiceAsync(
+                new SaveServiceRequest(name, "General", price, "", 18m, true));
+
+            _catalogue = await AppServices.Api.GetServicesAsync() ?? new();
+            ServicePicker.ItemsSource = _catalogue;
+
+            var line = new LineItemVm
+            {
+                ServiceId = created.Id,
+                Description = created.Name,
+                Quantity = 1m,
+                UnitPrice = created.DefaultPrice,
+                GstRate = created.GstRate
+            };
+            line.Changed += Recalc;
+            _lines.Add(line);
+        }
+        catch (Exception ex) { ShowError(ex is ApiException a ? a.Message : "Could not add the service."); }
+        finally { SetBusy(false); }
+    }
+
     private void OnRemoveLineClicked(object? sender, EventArgs e)
     {
         if (sender is Button { BindingContext: LineItemVm line })
