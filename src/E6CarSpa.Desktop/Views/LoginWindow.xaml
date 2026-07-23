@@ -55,6 +55,9 @@
 
                             <Button Content="Sign In" Click="Login_Click" Height="44" Margin="0,8,0,0"
                                     IsEnabled="{Binding IsBusy, Converter={StaticResource InverseBool}}" />
+
+                            <TextBlock Text="Powered by Trovotech Solutions" Style="{DynamicResource Muted}"
+                                       HorizontalAlignment="Center" FontSize="11" Margin="0,24,0,0" />
                         </StackPanel>
                     </StackPanel>
                 </Grid>

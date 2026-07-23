@@ -44,6 +44,10 @@
                     FontAttributes="Bold"
                     Clicked="OnLogoutClicked" />
 
+            <Label Text="Powered by Trovotech Solutions" FontSize="11" HorizontalTextAlignment="Center"
+                   Margin="0,16,0,0"
+                   TextColor="{AppThemeBinding Light={StaticResource LightTextSecondary}, Dark={StaticResource DarkTextSecondary}}" />
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
