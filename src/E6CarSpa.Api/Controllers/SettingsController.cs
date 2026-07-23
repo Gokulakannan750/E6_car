@@ -19,7 +19,8 @@ public class SettingsController(AppDbContext db, AuditService audit) : ApiContro
         var s = await db.CompanySettings.FirstAsync();
         return new CompanySettingsDto(s.Name, s.AddressLine1, s.AddressLine2, s.City, s.State,
             s.StateCode, s.Pincode, s.Phone, s.Email, s.Gstin, s.InvoicePrefix,
-            s.LastInvoiceSequence, s.DefaultGstRate, s.LogoBytes is { Length: > 0 });
+            s.LastInvoiceSequence, s.NonGstInvoicePrefix, s.LastNonGstSequence, s.LastNonGstYear,
+            s.DefaultGstRate, s.LogoBytes is { Length: > 0 });
     }
 
     /// <summary>Returns the company logo image (or 404 if none set).</summary>
@@ -73,6 +74,7 @@ public class SettingsController(AppDbContext db, AuditService audit) : ApiContro
         s.City = req.City; s.State = req.State; s.StateCode = req.StateCode; s.Pincode = req.Pincode;
         s.Phone = req.Phone; s.Email = req.Email; s.Gstin = req.Gstin;
         s.InvoicePrefix = req.InvoicePrefix; s.DefaultGstRate = req.DefaultGstRate;
+        s.NonGstInvoicePrefix = req.NonGstInvoicePrefix;
         s.UpdatedAt = DateTime.UtcNow;
         await db.SaveChangesAsync();
         await audit.LogAsync("Settings.Update", $"gstin={s.Gstin}; prefix={s.InvoicePrefix}; gst={s.DefaultGstRate}");

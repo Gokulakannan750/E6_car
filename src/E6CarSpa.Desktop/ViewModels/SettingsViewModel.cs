@@ -24,6 +24,9 @@ public partial class SettingsViewModel(IApiClient api) : ObservableObject, IAsyn
     [ObservableProperty] private string _invoicePrefix = "";
     [ObservableProperty] private decimal _defaultGstRate;
     [ObservableProperty] private long _lastInvoiceSequence;
+    [ObservableProperty] private string _nonGstInvoicePrefix = "";
+    [ObservableProperty] private long _lastNonGstSequence;
+    [ObservableProperty] private int _lastNonGstYear;
 
 
 
@@ -55,6 +58,7 @@ public partial class SettingsViewModel(IApiClient api) : ObservableObject, IAsyn
             City = s.City ?? ""; State = s.State ?? ""; StateCode = s.StateCode ?? ""; Pincode = s.Pincode ?? "";
             Phone = s.Phone ?? ""; Email = s.Email ?? ""; Gstin = s.Gstin ?? "";
             InvoicePrefix = s.InvoicePrefix; DefaultGstRate = s.DefaultGstRate; LastInvoiceSequence = s.LastInvoiceSequence;
+            NonGstInvoicePrefix = s.NonGstInvoicePrefix; LastNonGstSequence = s.LastNonGstSequence; LastNonGstYear = s.LastNonGstYear;
             LogoBytes = await api.GetLogoAsync();
         }
         catch (Exception ex) { Error = ex.Message; }
@@ -95,7 +99,7 @@ public partial class SettingsViewModel(IApiClient api) : ObservableObject, IAsyn
         {
             Info = ""; Error = "";
             var req = new SaveCompanySettingsRequest(Name, AddressLine1, AddressLine2, City, State,
-                StateCode, Pincode, Phone, Email, Gstin, InvoicePrefix, DefaultGstRate);
+                StateCode, Pincode, Phone, Email, Gstin, InvoicePrefix, NonGstInvoicePrefix, DefaultGstRate);
             await api.UpdateSettingsAsync(req);
             Info = "Company settings saved.";
         }

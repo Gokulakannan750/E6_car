@@ -105,7 +105,7 @@ namespace E6CarSpa.Tests
                 Items: new List<InvoiceItemInput>(),
                 DiscountAmount: 0m,
                 Notes: "",
-                ApplyGst: false
+                ApplyGst: true
             );
 
             var quotation = await service.CreateQuotationAsync(req, Guid.NewGuid());
@@ -119,6 +119,29 @@ namespace E6CarSpa.Tests
             Assert.NotNull(finalised.InvoiceNumber);
             Assert.StartsWith("TEST/", finalised.InvoiceNumber);
             Assert.Equal(InvoiceStatus.Invoiced, finalised.Status);
+        }
+
+        [Fact]
+        public async Task Finalise_NonGstAndGst_UseSeparateSeries()
+        {
+            using var db = CreateDbContext();
+            var svc = NewService(db);
+
+            // Non-GST bills get their own {Prefix}{Year}/0000 series (default prefix "E6/").
+            var nonGst = await svc.FinaliseAsync(
+                (await svc.CreateQuotationAsync(Quote(phone: "9000000011", car: "TN09 N 1", gst: false), null)).Id, null);
+            Assert.StartsWith("E6/", nonGst!.InvoiceNumber);
+            Assert.EndsWith("/0001", nonGst.InvoiceNumber);
+
+            // A GST bill keeps running on the GST series, unaffected by the non-GST one.
+            var gst = await svc.FinaliseAsync(
+                (await svc.CreateQuotationAsync(Quote(phone: "9000000012", car: "TN09 G 1", gst: true), null)).Id, null);
+            Assert.Equal("TEST/1", gst!.InvoiceNumber);
+
+            // ...and the next non-GST bill continues its own count.
+            var nonGst2 = await svc.FinaliseAsync(
+                (await svc.CreateQuotationAsync(Quote(phone: "9000000013", car: "TN09 N 2", gst: false), null)).Id, null);
+            Assert.EndsWith("/0002", nonGst2!.InvoiceNumber);
         }
 
         // ---------- helpers ----------

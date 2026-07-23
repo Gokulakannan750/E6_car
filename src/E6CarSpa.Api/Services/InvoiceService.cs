@@ -91,10 +91,30 @@ public class InvoiceService(AppDbContext db, WhatsAppService whatsApp)
                 .FromSqlRaw("""SELECT * FROM "CompanySettings" FOR UPDATE""")
                 .FirstAsync()
             : await db.CompanySettings.FirstAsync();
-        var next = settings.LastInvoiceSequence + 1;
-        settings.LastInvoiceSequence = next;
+        // GST bills and non-GST bills run as SEPARATE serial series (a tax invoice and a bill of
+        // supply are different documents under GST).
+        long next;
+        if (invoice.IsGstApplicable)
+        {
+            next = settings.LastInvoiceSequence + 1;
+            settings.LastInvoiceSequence = next;
+            invoice.InvoiceNumber = $"{settings.InvoicePrefix}{next}";
+        }
+        else
+        {
+            // Non-GST: {Prefix}{Year}/{0000}, e.g. E6/2026/0001. The counter restarts each
+            // calendar year; the 4 digits are a minimum, so 10000 simply prints as-is.
+            var year = IndianTime.ToIstDate(DateTime.UtcNow).Year;
+            if (settings.LastNonGstYear != year)
+            {
+                settings.LastNonGstYear = year;
+                settings.LastNonGstSequence = 0;
+            }
+            next = settings.LastNonGstSequence + 1;
+            settings.LastNonGstSequence = next;
+            invoice.InvoiceNumber = $"{settings.NonGstInvoicePrefix}{year}/{next:0000}";
+        }
         invoice.SequenceNumber = next;
-        invoice.InvoiceNumber = $"{settings.InvoicePrefix}{next}";
         invoice.Status = InvoiceStatus.Invoiced;
 
         // await ConsumeInventoryAsync(invoice, userId); // Disabled per user request

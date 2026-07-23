@@ -324,7 +324,7 @@ public class ApiIntegrationTests
         var client = factory.CreateClient();
 
         var settings = await client.PutAsJsonAsync("/api/settings",
-            new SaveCompanySettingsRequest("X", null, null, null, null, null, null, null, null, null, "X/", 18m));
+            new SaveCompanySettingsRequest("X", null, null, null, null, null, null, null, null, null, "X/", "NX/", 18m));
         Assert.Equal(HttpStatusCode.Unauthorized, settings.StatusCode);
     }
 
