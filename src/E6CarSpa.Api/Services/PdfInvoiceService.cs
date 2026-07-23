@@ -302,13 +302,13 @@ public class PdfInvoiceService(AppDbContext db)
                 row.RelativeItem().Column(c =>
                 {
                     c.Item().LineHorizontal(0.75f);
-                    c.Item().PaddingTop(2).Text("Worker signature").FontSize(9).FontColor(Colors.Grey.Darken1);
+                    c.Item().PaddingTop(2).Text("Customer signature").FontSize(9).FontColor(Colors.Grey.Darken1);
                 });
                 row.ConstantItem(50);
                 row.RelativeItem().Column(c =>
                 {
                     c.Item().LineHorizontal(0.75f);
-                    c.Item().PaddingTop(2).Text("Checked by").FontSize(9).FontColor(Colors.Grey.Darken1);
+                    c.Item().PaddingTop(2).Text("Authorised signature").FontSize(9).FontColor(Colors.Grey.Darken1);
                 });
             });
         });
