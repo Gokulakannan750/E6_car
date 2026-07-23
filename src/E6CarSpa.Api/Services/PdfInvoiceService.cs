@@ -254,8 +254,6 @@ public class PdfInvoiceService(AppDbContext db)
                 Label("Phone");       Value(inv.Customer?.Phone ?? "");
                 Label("Vehicle No");  Value(inv.Vehicle?.CarNumber ?? "", big: true);
                 Label("Model");       Value(inv.Vehicle?.CarModel ?? "");
-                Label("Time In");     Value("");     // filled in by the workshop
-                Label("Time Out");    Value("");
             });
 
             // ── Jobs to be done (checklist — no prices) ──
