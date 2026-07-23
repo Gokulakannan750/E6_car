@@ -8,25 +8,70 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="Jobs &amp; Invoices" Style="{StaticResource H1}" />
+        <TextBlock Grid.Row="0" Text="Quotations &amp; Invoices" Style="{StaticResource H1}" />
 
         <Border Grid.Row="1" Style="{StaticResource Card}">
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0" Margin="0,0,12,0">
-                    <TextBlock Text="Search (name / phone / car / invoice no.)" />
-                    <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" KeyDown="Search_KeyDown" />
-                </StackPanel>
-                <StackPanel Grid.Column="1" Margin="0,0,12,0" Width="150">
-                    <TextBlock Text="Status" />
-                    <ComboBox ItemsSource="{Binding StatusOptions}" SelectedItem="{Binding SelectedStatus}" />
-                </StackPanel>
-                <Button Grid.Column="2" Content="Refresh" VerticalAlignment="Bottom" Margin="0,0,0,16"
-                        Style="{StaticResource SecondaryButton}" Command="{Binding RefreshCommand}" />
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                        <TextBlock Text="Search (name / phone / car / invoice no.)" />
+                        <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" KeyDown="Search_KeyDown" />
+                    </StackPanel>
+                    <Button Grid.Column="1" Content="Refresh" VerticalAlignment="Bottom" Margin="0,0,0,16"
+                            Style="{StaticResource SecondaryButton}" Command="{Binding RefreshCommand}" />
+                </Grid>
+
+                <!-- Status filter as tabs: the selected one is highlighted and filters the list
+                     (same binding the dropdown used, so the behaviour is unchanged). -->
+                <ListBox Grid.Row="1" ItemsSource="{Binding StatusOptions}" SelectedItem="{Binding SelectedStatus}"
+                         Background="Transparent" BorderThickness="0" Padding="0" Margin="0,4,0,0"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemContainerStyle>
+                        <Style TargetType="ListBoxItem">
+                            <Setter Property="Cursor" Value="Hand" />
+                            <Setter Property="Template">
+                                <Setter.Value>
+                                    <ControlTemplate TargetType="ListBoxItem">
+                                        <Border x:Name="tab" Background="Transparent" CornerRadius="6"
+                                                BorderBrush="{StaticResource OutlineBrush}" BorderThickness="1"
+                                                Padding="18,8" Margin="0,4,8,0">
+                                            <TextBlock x:Name="txt" Text="{TemplateBinding Content}"
+                                                       FontSize="14" FontWeight="SemiBold" />
+                                        </Border>
+                                        <ControlTemplate.Triggers>
+                                            <Trigger Property="IsSelected" Value="True">
+                                                <Setter TargetName="tab" Property="Background" Value="{StaticResource PrimaryBrush}" />
+                                                <Setter TargetName="tab" Property="BorderBrush" Value="{StaticResource PrimaryBrush}" />
+                                                <Setter TargetName="txt" Property="Foreground" Value="White" />
+                                            </Trigger>
+                                            <MultiTrigger>
+                                                <MultiTrigger.Conditions>
+                                                    <Condition Property="IsMouseOver" Value="True" />
+                                                    <Condition Property="IsSelected" Value="False" />
+                                                </MultiTrigger.Conditions>
+                                                <Setter TargetName="tab" Property="Background" Value="#F1F5F9" />
+                                            </MultiTrigger>
+                                        </ControlTemplate.Triggers>
+                                    </ControlTemplate>
+                                </Setter.Value>
+                            </Setter>
+                        </Style>
+                    </ListBox.ItemContainerStyle>
+                </ListBox>
             </Grid>
         </Border>
 

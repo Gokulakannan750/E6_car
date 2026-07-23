@@ -93,7 +93,7 @@
                     <Button Content="📊  Dashboard" Style="{StaticResource NavButton}" Command="{Binding ShowDashboardCommand}" />
                     <Button Content="👥  Customers" Style="{StaticResource NavButton}" Command="{Binding ShowCustomersCommand}" />
                     <Button Content="➕  New Job" Style="{StaticResource NavButton}" Command="{Binding ShowNewJobCommand}" />
-                    <Button Content="🧾  Jobs &amp; Invoices" Style="{StaticResource NavButton}" Command="{Binding ShowJobsCommand}" />
+                    <Button Content="🧾  Quotations &amp; Invoices" Style="{StaticResource NavButton}" Command="{Binding ShowJobsCommand}" />
                     <!-- Inventory is under construction — nav hidden until the client wants it.
                          The screen (InventoryView/ViewModel) and API endpoints are still in place;
                          restore this button to bring it back. -->
