@@ -75,8 +75,9 @@
                     <Border Height="1" Background="#333333" Margin="20,18,20,0" />
                 </StackPanel>
 
-                <!-- User card + Logout at bottom -->
-                <StackPanel DockPanel.Dock="Bottom" Margin="16,16">
+                <!-- User card + Logout at bottom. Extra bottom margin keeps the card and the
+                     credit line clear of the window edge instead of hard against it. -->
+                <StackPanel DockPanel.Dock="Bottom" Margin="16,16,16,24">
                     <Border Background="#222222" CornerRadius="10" Padding="14">
                         <StackPanel>
                             <TextBlock Text="{Binding UserName}" Foreground="White" FontWeight="SemiBold" FontSize="14" />
@@ -86,8 +87,9 @@
                     <Button Content="🚪  Log out" Click="Logout_Click" Style="{StaticResource NavButton}"
                             Margin="0,6,0,0" Foreground="#E0E8F0"
                             Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVis}}" />
-                    <TextBlock Text="Powered by Trovotech Solutions" Foreground="#7A7A7A" FontSize="11"
-                               HorizontalAlignment="Center" Margin="0,12,0,0" />
+                    <TextBlock Text="Powered by Trovotech Solutions" Foreground="#9A9A9A" FontSize="11"
+                               HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"
+                               Margin="0,14,0,0" />
                 </StackPanel>
 
                 <!-- Navigation links -->
