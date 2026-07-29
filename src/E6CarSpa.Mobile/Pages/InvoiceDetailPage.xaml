@@ -68,7 +68,7 @@
                     HeightRequest="60" />
             <Grid x:Name="GstRow" ColumnDefinitions="*,Auto" VerticalOptions="Center">
                 <Label Grid.Column="0" Text="Apply GST (tax)" VerticalOptions="Center" />
-                <Switch x:Name="GstSwitch" Grid.Column="1" IsToggled="True" OnColor="#B71C1C" Toggled="OnGstToggled" />
+                <Switch x:Name="GstSwitch" Grid.Column="1" IsToggled="True" OnColor="{StaticResource Primary}" Toggled="OnGstToggled" />
             </Grid>
 
             <!-- Totals -->

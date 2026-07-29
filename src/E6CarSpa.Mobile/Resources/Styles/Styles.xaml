@@ -14,7 +14,7 @@
 
     <Style TargetType="Border">
         <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}" />
-        <Setter Property="StrokeShape" Value="RoundRectangle 12"/>
+        <Setter Property="StrokeShape" Value="RoundRectangle 14"/>
         <Setter Property="StrokeThickness" Value="1"/>
     </Style>
 
@@ -22,7 +22,7 @@
     <Style TargetType="Border" x:Key="CardBorder">
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightSurface}, Dark={StaticResource DarkSurface}}" />
         <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}" />
-        <Setter Property="StrokeShape" Value="RoundRectangle 12"/>
+        <Setter Property="StrokeShape" Value="RoundRectangle 14"/>
         <Setter Property="StrokeThickness" Value="1"/>
     </Style>
 
@@ -36,7 +36,7 @@
         <Setter Property="FontFamily" Value="OpenSansRegular"/>
         <Setter Property="FontSize" Value="14"/>
         <Setter Property="BorderWidth" Value="0"/>
-        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="CornerRadius" Value="10"/>
         <Setter Property="Padding" Value="14,10"/>
         <Setter Property="MinimumHeightRequest" Value="44"/>
         <Setter Property="MinimumWidthRequest" Value="44"/>
@@ -116,24 +116,27 @@
         <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}" />
     </Style>
 
+    <!-- Light = Refined red: crimson bar, white text/icons.
+         Dark  = Clean neutral: charcoal bar, red is only the SELECTED-tab accent. -->
     <Style TargetType="Shell" ApplyToDerivedTypes="True">
-        <Setter Property="Shell.BackgroundColor" Value="{AppThemeBinding Light=#FF3B30, Dark=#D32F2F}" />
-        <Setter Property="Shell.ForegroundColor" Value="White" />
-        <Setter Property="Shell.TitleColor" Value="White" />
+        <Setter Property="Shell.BackgroundColor" Value="{AppThemeBinding Light={StaticResource NavLight}, Dark={StaticResource NavDark}}" />
+        <Setter Property="Shell.ForegroundColor" Value="{AppThemeBinding Light=White, Dark={StaticResource DarkText}}" />
+        <Setter Property="Shell.TitleColor" Value="{AppThemeBinding Light=White, Dark={StaticResource DarkText}}" />
         <Setter Property="Shell.DisabledColor" Value="{AppThemeBinding Light={StaticResource LightTextSecondary}, Dark={StaticResource DarkTextSecondary}}" />
-        <Setter Property="Shell.UnselectedColor" Value="{AppThemeBinding Light={StaticResource LightTextSecondary}, Dark={StaticResource DarkTextSecondary}}" />
+        <Setter Property="Shell.UnselectedColor" Value="{AppThemeBinding Light=#FCA5A5, Dark={StaticResource DarkTextSecondary}}" />
         <Setter Property="Shell.NavBarHasShadow" Value="True" />
-        <Setter Property="Shell.TabBarBackgroundColor" Value="{AppThemeBinding Light=#FF3B30, Dark=#D32F2F}" />
-        
-        <!-- Text Colors for TabBar -->
-        <Setter Property="Shell.TabBarTitleColor" Value="White" />
-        <Setter Property="Shell.TabBarUnselectedColor" Value="#FCA5A5" />
+        <Setter Property="Shell.TabBarBackgroundColor" Value="{AppThemeBinding Light={StaticResource NavLight}, Dark={StaticResource NavDark}}" />
+
+        <!-- Selected tab: white on the red bar (light); red accent on the charcoal bar (dark). -->
+        <Setter Property="Shell.TabBarTitleColor" Value="{AppThemeBinding Light=White, Dark={StaticResource TabActiveDark}}" />
+        <Setter Property="Shell.TabBarUnselectedColor" Value="{AppThemeBinding Light=#FCA5A5, Dark={StaticResource DarkTextSecondary}}" />
+        <Setter Property="Shell.TabBarForegroundColor" Value="{AppThemeBinding Light=White, Dark={StaticResource TabActiveDark}}" />
     </Style>
 
     <Style TargetType="NavigationPage">
-        <Setter Property="BarBackgroundColor" Value="{AppThemeBinding Light=#FF3B30, Dark=#D32F2F}" />
-        <Setter Property="BarTextColor" Value="White" />
-        <Setter Property="IconColor" Value="White" />
+        <Setter Property="BarBackgroundColor" Value="{AppThemeBinding Light={StaticResource NavLight}, Dark={StaticResource NavDark}}" />
+        <Setter Property="BarTextColor" Value="{AppThemeBinding Light=White, Dark={StaticResource DarkText}}" />
+        <Setter Property="IconColor" Value="{AppThemeBinding Light=White, Dark={StaticResource DarkText}}" />
     </Style>
 
 </ResourceDictionary>

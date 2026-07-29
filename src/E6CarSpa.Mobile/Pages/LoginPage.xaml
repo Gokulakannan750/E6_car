@@ -7,68 +7,78 @@
     Shell.NavBarIsVisible="False">
 
     <ScrollView>
-        <VerticalStackLayout Padding="28" Spacing="16" VerticalOptions="Center">
+        <VerticalStackLayout Padding="24" Spacing="18" VerticalOptions="Center">
 
-            <Label Text="E6 CAR SPA"
-                   FontSize="34" FontAttributes="Bold"
-                   HorizontalOptions="Center" />
+            <!-- Brand logo. It's artwork on a black band, so it sits in a black rounded plate
+                 (logo_badge.png is logo.png cropped to just the artwork). -->
+            <Border BackgroundColor="#000000" StrokeThickness="0" StrokeShape="RoundRectangle 14"
+                    Padding="18,14" HorizontalOptions="Center" Margin="0,0,0,2">
+                <Image Source="logo_badge.png" Aspect="AspectFit"
+                       WidthRequest="240" HeightRequest="52" />
+            </Border>
             <Label Text="Billing Terminal"
-                   FontSize="16"
-                   HorizontalOptions="Center" Margin="0,0,0,12" />
+                   FontSize="15"
+                   TextColor="{AppThemeBinding Light={StaticResource LightTextSecondary}, Dark={StaticResource DarkTextSecondary}}"
+                   HorizontalOptions="Center" Margin="0,0,0,6" />
 
-            <Entry x:Name="UsernameEntry"
-                   Placeholder="Username"
-                  
-                   ReturnType="Next" />
+            <!-- The sign-in form sits in a card so the screen reads as designed, not bare. -->
+            <Border Style="{StaticResource CardBorder}" Padding="20" StrokeShape="RoundRectangle 16">
+                <VerticalStackLayout Spacing="16">
 
-            <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,0">
-                <Entry x:Name="PasswordEntry"
-                       Placeholder="Password"
-                       Grid.Column="0" Grid.ColumnSpan="2"
-                       IsPassword="True" ReturnType="Go"
-                       Completed="OnLoginClicked" />
-                
-                <ImageButton x:Name="TogglePasswordBtn"
-                             Grid.Column="1"
-                             Source="icon_eye.png"
-                             BackgroundColor="Transparent"
-                             WidthRequest="24" HeightRequest="24"
-                             Margin="0,0,12,0"
-                             Clicked="OnTogglePasswordClicked"
-                             VerticalOptions="Center" />
-            </Grid>
+                    <Entry x:Name="UsernameEntry"
+                           Placeholder="Username"
+                           ReturnType="Next" />
 
-            <Label Text="Server address" FontSize="12" Margin="2,8,0,0" />
-            <Entry x:Name="ServerEntry"
-                   Placeholder="https://api.yourshop.com"
-                  
-                   Keyboard="Url" />
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Entry x:Name="PasswordEntry"
+                               Placeholder="Password"
+                               Grid.Column="0" Grid.ColumnSpan="2"
+                               IsPassword="True" ReturnType="Go"
+                               Completed="OnLoginClicked" />
 
-            <Label x:Name="ErrorLabel"
-                   TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource Error}}" IsVisible="False"
-                   FontSize="13" Margin="2,4,0,0" />
+                        <ImageButton x:Name="TogglePasswordBtn"
+                                     Grid.Column="1"
+                                     Source="icon_eye.png"
+                                     BackgroundColor="Transparent"
+                                     WidthRequest="24" HeightRequest="24"
+                                     Margin="0,0,4,0"
+                                     Clicked="OnTogglePasswordClicked"
+                                     VerticalOptions="Center" />
+                    </Grid>
 
-            <Grid ColumnDefinitions="*,Auto" Margin="0,12,0,0" ColumnSpacing="12">
-                <Button x:Name="LoginButton"
-                        Text="Sign In"
-                        Grid.Column="0"
-                        FontAttributes="Bold" HeightRequest="50"
-                        Clicked="OnLoginClicked" />
-                
-                <ImageButton x:Name="BiometricButton"
-                             Grid.Column="1"
-                             Source="icon_fingerprint.png"
-                             BackgroundColor="{StaticResource Primary}"
-                             CornerRadius="8"
-                             Padding="12"
-                             WidthRequest="50" HeightRequest="50"
-                             Clicked="OnBiometricClicked"
-                             IsVisible="False" />
-            </Grid>
+                    <Label Text="Server address" FontSize="12" Margin="2,6,0,0"
+                           TextColor="{AppThemeBinding Light={StaticResource LightTextSecondary}, Dark={StaticResource DarkTextSecondary}}" />
+                    <Entry x:Name="ServerEntry"
+                           Placeholder="https://api.yourshop.com"
+                           Keyboard="Url" />
 
-            <ActivityIndicator x:Name="Busy"
-                               IsRunning="False" IsVisible="False"
-                               />
+                    <Label x:Name="ErrorLabel"
+                           TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource Error}}" IsVisible="False"
+                           FontSize="13" Margin="2,0,0,0" />
+
+                    <Grid ColumnDefinitions="*,Auto" Margin="0,4,0,0" ColumnSpacing="12">
+                        <Button x:Name="LoginButton"
+                                Text="Sign In"
+                                Grid.Column="0"
+                                FontAttributes="Bold" HeightRequest="50"
+                                Clicked="OnLoginClicked" />
+
+                        <ImageButton x:Name="BiometricButton"
+                                     Grid.Column="1"
+                                     Source="icon_fingerprint.png"
+                                     BackgroundColor="{StaticResource Primary}"
+                                     CornerRadius="10"
+                                     Padding="12"
+                                     WidthRequest="50" HeightRequest="50"
+                                     Clicked="OnBiometricClicked"
+                                     IsVisible="False" />
+                    </Grid>
+
+                    <ActivityIndicator x:Name="Busy"
+                                       IsRunning="False" IsVisible="False" />
+
+                </VerticalStackLayout>
+            </Border>
 
         </VerticalStackLayout>
     </ScrollView>

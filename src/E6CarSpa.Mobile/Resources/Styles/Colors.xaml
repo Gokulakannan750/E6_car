@@ -4,28 +4,36 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
     <!-- Semantic Brand Colors -->
-    <Color x:Key="Primary">#FF3B30</Color>
-    <Color x:Key="PrimaryDark">#D32F2F</Color>
+    <!-- Crimson accent, legible on BOTH the white cards (light) and charcoal cards (dark), since
+         it's referenced the same in both themes by many controls. -->
+    <Color x:Key="Primary">#D6303B</Color>
+    <Color x:Key="PrimaryDark">#B3121F</Color>
     <Color x:Key="PrimaryText">#FFFFFF</Color>
 
+    <!-- The top/tab bar: deep crimson in light (Refined red), neutral charcoal in dark
+         (Clean neutral — no red bar, red is only an accent). -->
+    <Color x:Key="NavLight">#B3121F</Color>
+    <Color x:Key="NavDark">#171B21</Color>
+    <!-- Selected tab accent in dark mode — a brighter red so it reads on the charcoal bar. -->
+    <Color x:Key="TabActiveDark">#F0555E</Color>
+
     <!-- Backgrounds -->
-    <Color x:Key="LightBackground">#F9FAFB</Color>
-    <!-- Softer black for dark mode -->
-    <Color x:Key="DarkBackground">#121212</Color>
-    
+    <Color x:Key="LightBackground">#F5F4F2</Color>
+    <Color x:Key="DarkBackground">#0F1216</Color>
+
     <!-- Surfaces (Cards, Dialogs) -->
     <Color x:Key="LightSurface">#FFFFFF</Color>
-    <Color x:Key="DarkSurface">#1E1E1E</Color>
+    <Color x:Key="DarkSurface">#171B21</Color>
 
     <!-- Text -->
-    <Color x:Key="LightText">#111827</Color>
-    <Color x:Key="DarkText">#F9FAFB</Color>
+    <Color x:Key="LightText">#171717</Color>
+    <Color x:Key="DarkText">#F3F4F6</Color>
     <Color x:Key="LightTextSecondary">#6B7280</Color>
     <Color x:Key="DarkTextSecondary">#9CA3AF</Color>
 
     <!-- Borders -->
-    <Color x:Key="LightBorder">#E5E7EB</Color>
-    <Color x:Key="DarkBorder">#374151</Color>
+    <Color x:Key="LightBorder">#ECEBE8</Color>
+    <Color x:Key="DarkBorder">#262B33</Color>
 
     <!-- Status Colors -->
     <Color x:Key="Success">#10B981</Color>

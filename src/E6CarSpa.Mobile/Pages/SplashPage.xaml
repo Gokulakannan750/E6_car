@@ -2,7 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="E6CarSpa.Mobile.Pages.SplashPage"
-             BackgroundColor="#0F0F0F">
+             BackgroundColor="#0F1216">
 
     <Grid>
         <!-- Subtle brand-red glow behind the logo for a punchier, on-brand feel -->
@@ -10,8 +10,8 @@
                  HorizontalOptions="Center" VerticalOptions="Center">
             <Ellipse.Fill>
                 <RadialGradientBrush>
-                    <GradientStop Offset="0.0" Color="#B71C1C" />
-                    <GradientStop Offset="1.0" Color="#0F0F0F" />
+                    <GradientStop Offset="0.0" Color="#B3121F" />
+                    <GradientStop Offset="1.0" Color="#0F1216" />
                 </RadialGradientBrush>
             </Ellipse.Fill>
         </Ellipse>
@@ -42,7 +42,7 @@
             </Image.Clip>
         </Image>
 
-        <ActivityIndicator IsRunning="True" Color="#B71C1C"
+        <ActivityIndicator IsRunning="True" Color="#D6303B"
                             HorizontalOptions="Center" VerticalOptions="End" Margin="0,0,0,60" />
     </Grid>
 </ContentPage>
