@@ -10,6 +10,7 @@ public partial class AppShell : Shell
 		// Pages reached by navigation rather than via a tab.
 		Routing.RegisterRoute("invoice", typeof(InvoiceDetailPage));
 		Routing.RegisterRoute("lowstock", typeof(LowStockPage));
-		Routing.RegisterRoute("advances", typeof(AdvancesPage));
+		// Settings is reached from a gear toolbar item on each tab, not from the tab bar.
+		Routing.RegisterRoute("settings", typeof(SettingsPage));
 	}
 }

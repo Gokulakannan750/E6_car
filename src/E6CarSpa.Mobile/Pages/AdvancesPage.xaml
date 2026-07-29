@@ -6,6 +6,10 @@
     Title="Staff Advances"
    >
 
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Settings" IconImageSource="icon_settings.png" Clicked="OnSettingsClicked" />
+    </ContentPage.ToolbarItems>
+
     <RefreshView x:Name="Refresh" Refreshing="OnRefreshing">
         <ScrollView>
             <VerticalStackLayout Padding="16" Spacing="12">
@@ -59,56 +63,72 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <!-- Total per worker -->
-                <Label Text="Total per worker" FontSize="18" FontAttributes="Bold" Margin="2,8,0,0" />
-                <Label x:Name="NoWorkersLabel" Text="No advances recorded yet." FontSize="14" IsVisible="False" />
+                <!-- Segmented switch: flip between the two views instead of scrolling past both. -->
+                <Border StrokeThickness="1" Padding="3" StrokeShape="RoundRectangle 9"
+                        Stroke="{AppThemeBinding Light={StaticResource LightBorder}, Dark={StaticResource DarkBorder}}"
+                        BackgroundColor="{AppThemeBinding Light={StaticResource LightBackground}, Dark={StaticResource DarkBackground}}">
+                    <Grid ColumnDefinitions="*,*" ColumnSpacing="3">
+                        <Button x:Name="SegPerWorker" Grid.Column="0" Text="Per worker"
+                                FontSize="14" HeightRequest="42" CornerRadius="7" Padding="0"
+                                Clicked="OnShowPerWorker" />
+                        <Button x:Name="SegAllAdvances" Grid.Column="1" Text="All advances"
+                                FontSize="14" HeightRequest="42" CornerRadius="7" Padding="0"
+                                Clicked="OnShowAllAdvances" />
+                    </Grid>
+                </Border>
 
-                <CollectionView x:Name="SummaryList">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <Border Style="{StaticResource CardBorder}" StrokeThickness="0" Padding="14"
-                                    Margin="0,0,0,8" StrokeShape="RoundRectangle 10">
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <VerticalStackLayout Grid.Column="0" Spacing="2">
-                                        <Label Text="{Binding WorkerName}" FontSize="16" FontAttributes="Bold" />
-                                        <Label Text="{Binding Count, StringFormat='{0} advance(s)'}" FontSize="13" />
-                                    </VerticalStackLayout>
-                                    <Label Grid.Column="1" Text="{Binding TotalAdvanced, StringFormat='₹{0:N2}'}"
-                                           FontSize="16" FontAttributes="Bold" VerticalOptions="Center"
-                                           TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Primary}}" />
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+                <!-- View 1: total per worker -->
+                <VerticalStackLayout x:Name="PerWorkerSection" Spacing="12">
+                    <Label x:Name="NoWorkersLabel" Text="No advances recorded yet." FontSize="14" IsVisible="False" />
 
-                <!-- Every advance -->
-                <Label Text="All advances" FontSize="18" FontAttributes="Bold" Margin="2,8,0,0" />
-                <Entry x:Name="SearchEntry" Placeholder="Filter by worker name" TextChanged="OnSearchChanged" />
-                <Label x:Name="NoAdvancesLabel" Text="Nothing to show." FontSize="14" IsVisible="False" />
+                    <CollectionView x:Name="SummaryList">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource CardBorder}" StrokeThickness="0" Padding="14"
+                                        Margin="0,0,0,8" StrokeShape="RoundRectangle 10">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                            <Label Text="{Binding WorkerName}" FontSize="16" FontAttributes="Bold" />
+                                            <Label Text="{Binding Count, StringFormat='{0} advance(s)'}" FontSize="13" />
+                                        </VerticalStackLayout>
+                                        <Label Grid.Column="1" Text="{Binding TotalAdvanced, StringFormat='₹{0:N2}'}"
+                                               FontSize="16" FontAttributes="Bold" VerticalOptions="Center"
+                                               TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Primary}}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
 
-                <CollectionView x:Name="AdvancesList">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate>
-                            <Border Style="{StaticResource CardBorder}" StrokeThickness="0" Padding="14"
-                                    Margin="0,0,0,8" StrokeShape="RoundRectangle 10">
-                                <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-                                    <VerticalStackLayout Grid.Column="0" Spacing="2">
-                                        <Label Text="{Binding WorkerName}" FontSize="16" FontAttributes="Bold" />
-                                        <Label Text="{Binding AdvanceDate, StringFormat='{0:dd-MM-yyyy}'}" FontSize="13" />
-                                        <Label Text="{Binding Note}" FontSize="12" />
-                                    </VerticalStackLayout>
-                                    <Label Grid.Column="1" Text="{Binding Amount, StringFormat='₹{0:N2}'}"
-                                           FontSize="16" FontAttributes="Bold" VerticalOptions="Center" />
-                                    <Button Grid.Column="2" Text="✕" Clicked="OnDeleteClicked"
-                                            BackgroundColor="Transparent" Padding="0" WidthRequest="36"
-                                            VerticalOptions="Center"
-                                            TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource Error}}" />
-                                </Grid>
-                            </Border>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
+                <!-- View 2: every advance -->
+                <VerticalStackLayout x:Name="AllAdvancesSection" Spacing="12" IsVisible="False">
+                    <Entry x:Name="SearchEntry" Placeholder="Filter by worker name" TextChanged="OnSearchChanged" />
+                    <Label x:Name="NoAdvancesLabel" Text="Nothing to show." FontSize="14" IsVisible="False" />
+
+                    <CollectionView x:Name="AdvancesList">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource CardBorder}" StrokeThickness="0" Padding="14"
+                                        Margin="0,0,0,8" StrokeShape="RoundRectangle 10">
+                                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                            <Label Text="{Binding WorkerName}" FontSize="16" FontAttributes="Bold" />
+                                            <Label Text="{Binding AdvanceDate, StringFormat='{0:dd-MM-yyyy}'}" FontSize="13" />
+                                            <Label Text="{Binding Note}" FontSize="12" />
+                                        </VerticalStackLayout>
+                                        <Label Grid.Column="1" Text="{Binding Amount, StringFormat='₹{0:N2}'}"
+                                               FontSize="16" FontAttributes="Bold" VerticalOptions="Center" />
+                                        <Button Grid.Column="2" Text="✕" Clicked="OnDeleteClicked"
+                                                BackgroundColor="Transparent" Padding="0" WidthRequest="36"
+                                                VerticalOptions="Center"
+                                                TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource Error}}" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
 
             </VerticalStackLayout>
         </ScrollView>

@@ -37,8 +37,8 @@ public partial class DashboardPage : ContentPage
     private async void OnLowStockTapped(object? sender, TappedEventArgs e) =>
         await Shell.Current.GoToAsync("lowstock");
 
-    private async void OnAdvancesTapped(object? sender, TappedEventArgs e) =>
-        await Shell.Current.GoToAsync("advances");
+    private async void OnSettingsClicked(object? sender, EventArgs e) =>
+        await Shell.Current.GoToAsync("settings");
 
     private async Task LoadAsync()
     {

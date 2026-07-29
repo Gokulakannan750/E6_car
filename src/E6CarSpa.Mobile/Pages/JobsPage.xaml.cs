@@ -64,4 +64,7 @@ public partial class JobsPage : ContentPage
         List.SelectedItem = null; // clear highlight so re-tapping the same row works
         await Shell.Current.GoToAsync($"invoice?id={item.Id}");
     }
+
+    private async void OnSettingsClicked(object? sender, EventArgs e) =>
+        await Shell.Current.GoToAsync("settings");
 }

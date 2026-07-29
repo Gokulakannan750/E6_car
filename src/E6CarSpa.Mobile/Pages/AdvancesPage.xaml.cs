@@ -22,6 +22,25 @@ public partial class AdvancesPage : ContentPage
     {
         InitializeComponent();
         AdvanceDatePicker.Date = DateTime.Today;
+        SelectSegment(perWorker: true);   // default to the totals view
+    }
+
+    private void OnShowPerWorker(object? sender, EventArgs e) => SelectSegment(perWorker: true);
+    private void OnShowAllAdvances(object? sender, EventArgs e) => SelectSegment(perWorker: false);
+
+    /// <summary>Flip between the "Per worker" and "All advances" views and paint the segment buttons.</summary>
+    private void SelectSegment(bool perWorker)
+    {
+        PerWorkerSection.IsVisible = perWorker;
+        AllAdvancesSection.IsVisible = !perWorker;
+
+        var accent = Application.Current?.Resources.TryGetValue("Primary", out var c) == true && c is Color col
+            ? col : Color.FromArgb("#FF3B30");
+
+        SegPerWorker.BackgroundColor = perWorker ? accent : Colors.Transparent;
+        SegPerWorker.TextColor = perWorker ? Colors.White : accent;
+        SegAllAdvances.BackgroundColor = perWorker ? Colors.Transparent : accent;
+        SegAllAdvances.TextColor = perWorker ? accent : Colors.White;
     }
 
     protected override async void OnAppearing()
@@ -63,6 +82,9 @@ public partial class AdvancesPage : ContentPage
         if (sender is Button { BindingContext: string name })
             WorkerEntry.Text = name;
     }
+
+    private async void OnSettingsClicked(object? sender, EventArgs e) =>
+        await Shell.Current.GoToAsync("settings");
 
     private async Task LoadAsync()
     {

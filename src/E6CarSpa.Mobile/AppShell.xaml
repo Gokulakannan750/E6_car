@@ -16,8 +16,11 @@
                       ContentTemplate="{DataTemplate pages:JobsPage}" Route="jobs" />
         <ShellContent Title="Reports" Icon="icon_reports.png"
                       ContentTemplate="{DataTemplate pages:ReportsPage}" Route="reports" />
-        <ShellContent Title="Settings" Icon="icon_settings.png"
-                      ContentTemplate="{DataTemplate pages:SettingsPage}" Route="settings" />
+        <ShellContent Title="Advances" Icon="icon_advances.png"
+                      ContentTemplate="{DataTemplate pages:AdvancesPage}" Route="advances" />
+        <!-- Settings is NOT a tab: Android's bottom bar shows only 5 slots, so a 6th tab would
+             overflow into a "More" menu. It lives as a gear in each page's top-right toolbar
+             instead (registered as the "settings" route in AppShell.xaml.cs). -->
     </TabBar>
 
 </Shell>

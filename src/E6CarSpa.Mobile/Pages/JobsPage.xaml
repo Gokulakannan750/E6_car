@@ -8,6 +8,10 @@
     Title="Jobs"
    >
 
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Settings" IconImageSource="icon_settings.png" Clicked="OnSettingsClicked" />
+    </ContentPage.ToolbarItems>
+
     <ContentPage.Resources>
         <conv:StatusToColorConverter x:Key="StatusColor" />
     </ContentPage.Resources>

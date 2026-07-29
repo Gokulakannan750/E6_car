@@ -7,6 +7,10 @@
     Title="Reports"
    >
 
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Settings" IconImageSource="icon_settings.png" Clicked="OnSettingsClicked" />
+    </ContentPage.ToolbarItems>
+
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="14">
 

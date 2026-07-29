@@ -143,6 +143,9 @@ public partial class ReportsPage : ContentPage
         ErrorLabel.IsVisible = true;
     }
 
+    private async void OnSettingsClicked(object? sender, EventArgs e) =>
+        await Shell.Current.GoToAsync("settings");
+
     private void SetBusy(bool busy)
     {
         Busy.IsRunning = busy;

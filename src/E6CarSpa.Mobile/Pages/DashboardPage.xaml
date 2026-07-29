@@ -6,6 +6,10 @@
     Title="Dashboard"
    >
 
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Settings" IconImageSource="icon_settings.png" Clicked="OnSettingsClicked" />
+    </ContentPage.ToolbarItems>
+
     <RefreshView x:Name="Refresh" Refreshing="OnRefreshing">
         <ScrollView>
             <VerticalStackLayout Padding="16" Spacing="14">
@@ -61,21 +65,6 @@
                         </VerticalStackLayout>
                     </Border>
                 </Grid>
-
-                <!-- Staff advances live on their own page (no counts on the dashboard payload). -->
-                <Border Style="{StaticResource CardBorder}" StrokeThickness="0" Padding="16"
-                        StrokeShape="RoundRectangle 12">
-                    <Border.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnAdvancesTapped" />
-                    </Border.GestureRecognizers>
-                    <Grid ColumnDefinitions="*,Auto">
-                        <VerticalStackLayout Grid.Column="0" Spacing="2">
-                            <Label Text="Staff Advances" FontSize="16" FontAttributes="Bold" />
-                            <Label Text="Cash given to workers" FontSize="13" />
-                        </VerticalStackLayout>
-                        <Label Grid.Column="1" Text="›" FontSize="22" VerticalOptions="Center" />
-                    </Grid>
-                </Border>
 
                 <!-- Active jobs -->
                 <Label Text="Active jobs" FontSize="18" FontAttributes="Bold" Margin="2,8,0,0" />

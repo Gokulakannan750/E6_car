@@ -180,6 +180,9 @@ public partial class NewJobPage : ContentPage
     private void OnTotalsInputChanged(object? sender, TextChangedEventArgs e) => Recalc();
     private void OnGstToggled(object? sender, ToggledEventArgs e) => Recalc();
 
+    private async void OnSettingsClicked(object? sender, EventArgs e) =>
+        await Shell.Current.GoToAsync("settings");
+
     private void Recalc()
     {
         var subTotal = _lines.Sum(l => l.Quantity * l.UnitPrice);
