@@ -105,10 +105,9 @@ builder.Services
             }
         };
     });
-// Secure-by-default: every endpoint requires an authenticated user UNLESS it opts out with
-// [AllowAnonymous]. The shop-floor billing endpoints (dashboard, customer lookup, quotations,
-// invoicing, payments) opt out deliberately — the desktop app runs without a login at the
-// counter — but anything added in future is closed until explicitly opened.
+// Secure-by-default: EVERY endpoint requires an authenticated user. Only /api/auth/login opts
+// out with [AllowAnonymous]. The counter previously ran anonymously over the LAN; that surface
+// was closed when the API became internet-reachable, so both clients now sign in first.
 builder.Services.AddAuthorization(options =>
 {
     options.FallbackPolicy = new AuthorizationPolicyBuilder()

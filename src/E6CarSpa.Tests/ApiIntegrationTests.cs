@@ -128,15 +128,15 @@ public class ApiIntegrationTests
     }
 
     [Fact]
-    public async Task Products_WithoutToken_AreOpenToTheCounter()
+    public async Task Products_WithoutToken_AreRejected()
     {
-        // The Catalogue screen is used without a login, so the product list is open.
+        // The Catalogue screen requires a signed-in user like every other screen.
         using var factory = new ApiFactory();
         var client = factory.CreateClient();
 
         var resp = await client.GetAsync("/api/products");
 
-        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, resp.StatusCode);
     }
 
     [Fact]
@@ -328,44 +328,56 @@ public class ApiIntegrationTests
         Assert.Equal(HttpStatusCode.Unauthorized, settings.StatusCode);
     }
 
+    // The counter used to run anonymously over the LAN. That surface was CLOSED when the API
+    // became internet-reachable: every endpoint except /api/auth/login now requires a token,
+    // and both clients sign in before showing any screen. These tests pin the closed posture.
+
     [Theory]
-    [InlineData("/api/services")]                    // New Job screen loads the catalogue
-    [InlineData("/api/dashboard")]                   // no-login landing screen
+    [InlineData("/api/services")]                    // catalogue
+    [InlineData("/api/dashboard")]                   // landing screen
     [InlineData("/api/customers/by-phone/9000000000")]
     [InlineData("/api/invoices")]                    // Jobs list
-    [InlineData("/api/products")]                    // Catalogue screen (no login)
-    public async Task ShopFloorGets_WithoutToken_RemainOpen(string url)
+    [InlineData("/api/products")]                    // inventory
+    [InlineData("/api/staffadvances")]               // wage data
+    [InlineData("/api/reports/customer?phone=9555555555")]
+    public async Task ShopFloorGets_WithoutToken_AreRejected(string url)
     {
-        // The desktop app deliberately runs without a login at the counter; these endpoints
-        // opt out of the fallback policy. If one starts returning 401, the shop can't bill.
         using var factory = new ApiFactory();
         var resp = await factory.CreateClient().GetAsync(url);
-        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, resp.StatusCode);
     }
 
     [Fact]
-    public async Task CustomerHistory_WithoutToken_IsOpen()
+    public async Task ShopFloorGets_WithToken_Succeed()
     {
-        // The no-login Customers screen loads a customer's visit history on row select;
-        // this endpoint opting out of the fallback policy is what keeps that popup-free.
+        // The flip side: a signed-in user must still be able to run the counter.
         using var factory = new ApiFactory();
         var client = factory.CreateClient();
+        Authorize(client, await LoginAsync(client, "admin", "admin@123"));
 
-        (await client.PostAsJsonAsync("/api/invoices/quotation",
-            new CreateQuotationRequest("History Cust", "9555555555", "TN12 D 1200", "Car",
-                0m, null, [new InvoiceItemInput(null, null, "Wash", 1, 500m, 0m)])))
-            .EnsureSuccessStatusCode();
-
-        var resp = await client.GetAsync("/api/reports/customer?phone=9555555555");
-
-        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        foreach (var url in new[] { "/api/services", "/api/dashboard", "/api/invoices", "/api/products" })
+            Assert.Equal(HttpStatusCode.OK, (await client.GetAsync(url)).StatusCode);
     }
 
     [Fact]
-    public async Task Quotation_WithoutToken_CanBeCreated()
+    public async Task Quotation_WithoutToken_IsRejected()
     {
         using var factory = new ApiFactory();
         var client = factory.CreateClient();
+
+        var resp = await client.PostAsJsonAsync("/api/invoices/quotation",
+            new CreateQuotationRequest("Walk In", "9123456789", "TN33 Z 9999", "Swift",
+                0m, null, [new InvoiceItemInput(null, null, "Foam Wash", 1, 400m, 0m)]));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, resp.StatusCode);
+    }
+
+    [Fact]
+    public async Task Quotation_WithToken_CanBeCreated()
+    {
+        using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+        Authorize(client, await LoginAsync(client, "admin", "admin@123"));
 
         var resp = await client.PostAsJsonAsync("/api/invoices/quotation",
             new CreateQuotationRequest("Walk In", "9123456789", "TN33 Z 9999", "Swift",
@@ -383,6 +395,7 @@ public class ApiIntegrationTests
     {
         using var factory = new ApiFactory();
         var client = factory.CreateClient();
+        Authorize(client, await LoginAsync(client, "admin", "admin@123"));
 
         var quote = await client.PostAsJsonAsync("/api/invoices/quotation",
             new CreateQuotationRequest("Cust", "9333333333", "TN10 B 1000", "Car",

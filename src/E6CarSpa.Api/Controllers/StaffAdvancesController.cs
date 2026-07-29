@@ -8,10 +8,9 @@ using Microsoft.EntityFrameworkCore;
 namespace E6CarSpa.Api.Controllers;
 
 /// <summary>
-/// Record of cash advances given to workers. Anonymous like the rest of the counter screens —
-/// gate this behind a login later if the owner wants advances kept private.
+/// Record of cash advances given to workers. Requires a signed-in user (wage data), like every
+/// endpoint except login — see the fallback policy in Program.cs.
 /// </summary>
-[AllowAnonymous]
 public class StaffAdvancesController(AppDbContext db) : ApiControllerBase
 {
     [HttpGet]

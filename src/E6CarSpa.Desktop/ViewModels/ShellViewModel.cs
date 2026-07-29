@@ -21,8 +21,10 @@ public partial class ShellViewModel(IApiClient api) : ObservableObject
         try { LogoBytes = await api.GetLogoAsync(); } catch { /* watermark is optional */ }
     }
 
-    public string UserName => api.CurrentUser?.FullName ?? "Shop Floor";
-    public string RoleName => api.CurrentUser?.Role.ToString() ?? "Basic Access";
+    // The app is login-first, so a session always has a user; the fallbacks only ever show
+    // during the brief moment between logout and the login window taking over.
+    public string UserName => api.CurrentUser?.FullName ?? "Signed out";
+    public string RoleName => api.CurrentUser?.Role.ToString() ?? "";
     public bool IsLoggedIn => api.IsLoggedIn;
     public bool IsManagerOrAdmin =>
         api.CurrentUser?.Role is Domain.Enums.UserRole.Admin or Domain.Enums.UserRole.Manager;
@@ -49,19 +51,10 @@ public partial class ShellViewModel(IApiClient api) : ObservableObject
 
     public async Task NavigateAsync<TViewModel>(string navKey) where TViewModel : class
     {
-        // Catalogue is open to the counter (no login) — services/prices are edited on the floor.
-        if ((navKey == "Reports" || navKey == "Inventory" || navKey == "Settings") && !IsLoggedIn)
-        {
-            // Trigger the login popup
-            var shell = App.Services.GetService<Views.ShellWindow>();
-            var login = App.Services.GetRequiredService<Views.LoginWindow>();
-            if (shell != null && shell.IsVisible) login.Owner = shell;
-            login.ShowDialog();
-            
-            RefreshAuthState();
-            if (!IsLoggedIn) return; // Login was cancelled or failed
-        }
-
+        // No per-screen login prompt: the app is login-first, so every session is already
+        // authenticated by the time any page is reachable. Role-based visibility (IsAdmin /
+        // IsManagerOrAdmin) still governs WHICH pages a signed-in user may open, and the API
+        // re-checks the role on every call.
         ActiveNav = navKey;
         var vm = App.Services.GetRequiredService<TViewModel>();
         if (vm is IAsyncInitialize init) await init.InitializeAsync();

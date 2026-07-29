@@ -14,7 +14,6 @@ public class ServicesController(AppDbContext db, AuditService audit) : ApiContro
 {
     // Anonymous: the no-login New Job screen needs the service catalogue to build a quotation.
     [HttpGet]
-    [AllowAnonymous]
     public async Task<ActionResult<List<ServiceDto>>> GetAll([FromQuery] bool includeInactive = false)
     {
         var q = db.Services.AsNoTracking().AsQueryable();
@@ -24,7 +23,6 @@ public class ServicesController(AppDbContext db, AuditService audit) : ApiContro
 
     // Catalogue is open to the counter (no login) by request.
     [HttpPost]
-    [AllowAnonymous]
     public async Task<ActionResult<ServiceDto>> Create(SaveServiceRequest req)
     {
         var s = new Service
@@ -39,7 +37,6 @@ public class ServicesController(AppDbContext db, AuditService audit) : ApiContro
     }
 
     [HttpPut("{id:guid}")]
-    [AllowAnonymous]
     public async Task<ActionResult<ServiceDto>> Update(Guid id, SaveServiceRequest req)
     {
         var s = await db.Services.FindAsync(id);
@@ -54,7 +51,6 @@ public class ServicesController(AppDbContext db, AuditService audit) : ApiContro
 
     /// <summary>The products (and quantities) a service consumes when performed.</summary>
     [HttpGet("{id:guid}/bom")]
-    [AllowAnonymous]
     public async Task<ActionResult<List<BomItemDto>>> GetBom(Guid id) =>
         await db.ServiceProducts.AsNoTracking()
             .Where(sp => sp.ServiceId == id)
@@ -65,7 +61,6 @@ public class ServicesController(AppDbContext db, AuditService audit) : ApiContro
 
     /// <summary>Replace the whole bill-of-materials for a service.</summary>
     [HttpPut("{id:guid}/bom")]
-    [AllowAnonymous]
     public async Task<ActionResult<List<BomItemDto>>> SaveBom(Guid id, SaveBomRequest req)
     {
         if (!await db.Services.AnyAsync(s => s.Id == id)) return NotFound();

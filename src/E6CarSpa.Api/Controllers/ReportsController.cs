@@ -19,7 +19,6 @@ public class ReportsController(ReportsService reports) : ApiControllerBase
     // Anonymous: the no-login Customers screen shows a customer's visit history when a row
     // is selected — without this, selecting a customer popped the login window.
     [HttpGet("customer")]
-    [AllowAnonymous]
     public async Task<ActionResult<CustomerHistoryDto>> Customer([FromQuery] string phone)
     {
         var result = await reports.CustomerAsync(phone);

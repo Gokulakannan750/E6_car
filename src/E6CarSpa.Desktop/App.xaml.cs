@@ -48,25 +48,34 @@ public partial class App : Application
         Services = services.BuildServiceProvider();
 
         var api = Services.GetRequiredService<IApiClient>();
+        // The token expired or was revoked server-side (deactivated user / rotated security
+        // stamp). Re-authenticate in place; if the user declines, close the app rather than
+        // leaving a signed-out shell on screen.
         api.OnUnauthorized += () =>
         {
             Dispatcher.Invoke(() =>
             {
                 var shell = Services.GetService<ShellWindow>();
-                var login = Services.GetRequiredService<LoginWindow>();
-                if (shell != null && shell.IsVisible)
-                {
-                    login.Owner = shell;
-                    login.ShowDialog();
-                }
-                else
-                {
-                    login.Show();
-                }
+                if (shell is null || !shell.IsVisible) return;   // startup gate handles its own login
+
+                var relogin = Services.GetRequiredService<LoginWindow>();
+                relogin.Owner = shell;
+                if (relogin.ShowDialog() != true)
+                    Shutdown();
             });
         };
 
         CleanupOldPdfs();
+
+        // Login-first: the app is not usable until a real user authenticates. (Previously the
+        // shell opened straight into an anonymous counter session and only prompted on 401.)
+        // Closing the login window without signing in exits the app rather than revealing the shell.
+        var login = Services.GetRequiredService<LoginWindow>();
+        if (login.ShowDialog() != true)
+        {
+            Shutdown();
+            return;
+        }
 
         var shellWindow = Services.GetRequiredService<ShellWindow>();
         shellWindow.Show();

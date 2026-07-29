@@ -26,7 +26,6 @@ public class SettingsController(AppDbContext db, AuditService audit) : ApiContro
     /// <summary>Returns the company logo image (or 404 if none set).</summary>
     // Anonymous: the desktop shell loads its watermark logo before anyone logs in.
     [HttpGet("logo")]
-    [AllowAnonymous]
     public async Task<IActionResult> GetLogo()
     {
         var s = await db.CompanySettings.FirstAsync();
@@ -83,7 +82,6 @@ public class SettingsController(AppDbContext db, AuditService audit) : ApiContro
 
     // Anonymous: the desktop Dashboard is the no-login landing screen.
     [HttpGet("/api/dashboard")]
-    [AllowAnonymous]
     public async Task<ActionResult<DashboardSummaryDto>> Dashboard()
     {
         var (start, end) = Services.IndianTime.TodayUtc();

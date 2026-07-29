@@ -32,11 +32,7 @@ public partial class ShellWindow : Window
         _inactivityTimer.Tick += (_, _) =>
         {
             var api = App.Services.GetRequiredService<E6CarSpa.Client.IApiClient>();
-            if (api.IsLoggedIn)
-            {
-                api.Logout();
-                _ = _vm.NavigateAsync<DashboardViewModel>("Dashboard");
-            }
+            if (api.IsLoggedIn) SignOutAndReauthenticate("locked after 5 minutes of inactivity");
         };
 
         // Reset timer on any mouse or keyboard input
@@ -57,10 +53,34 @@ public partial class ShellWindow : Window
         };
     }
 
-    private void Logout_Click(object sender, RoutedEventArgs e)
+    private void Logout_Click(object sender, RoutedEventArgs e) => SignOutAndReauthenticate(null);
+
+    /// <summary>
+    /// Clear the session and demand a fresh login. The app is login-first, so signing out must
+    /// NOT leave the shell on screen — it hides, shows the login window, and either resumes with
+    /// the new session or closes the app if the user declines.
+    /// </summary>
+    private void SignOutAndReauthenticate(string? reason)
     {
+        _inactivityTimer.Stop();
+
         var api = App.Services.GetRequiredService<E6CarSpa.Client.IApiClient>();
         api.Logout();
+        _vm.RefreshAuthState();
+
+        Hide();
+        var login = App.Services.GetRequiredService<LoginWindow>();
+        if (reason is not null) login.Title = $"E6 Car Spa — {reason}";
+
+        if (login.ShowDialog() != true)
+        {
+            Application.Current.Shutdown();
+            return;
+        }
+
+        _vm.RefreshAuthState();
+        Show();
+        _inactivityTimer.Start();
         _ = _vm.NavigateAsync<DashboardViewModel>("Dashboard");
     }
 }

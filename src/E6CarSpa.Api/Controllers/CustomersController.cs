@@ -8,10 +8,9 @@ using Microsoft.EntityFrameworkCore;
 namespace E6CarSpa.Api.Controllers;
 
 /// <summary>
-/// Customer/vehicle lookups for intake and the Customers screen. Anonymous by design:
-/// the desktop app uses these without a login at the counter.
+/// Customer/vehicle lookups for intake and the Customers screen. Requires a signed-in user —
+/// this is customer PII, and the clients now authenticate before reaching any screen.
 /// </summary>
-[AllowAnonymous]
 public class CustomersController(AppDbContext db) : ApiControllerBase
 {
     /// <summary>Intake lookup: find an existing customer by phone so details auto-fill.</summary>
