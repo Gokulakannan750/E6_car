@@ -13,6 +13,7 @@
         <ToolbarItem Text="Settings" IconImageSource="icon_settings.png" Clicked="OnSettingsClicked" />
     </ContentPage.ToolbarItems>
 
+    <Grid>
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="12">
 
@@ -124,7 +125,7 @@
             <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
                 <Label Grid.Column="0" Text="Apply GST (tax)" VerticalOptions="Center" />
                 <Switch x:Name="GstSwitch" Grid.Column="1" IsToggled="True"
-                        OnColor="#B71C1C" Toggled="OnGstToggled" />
+                        OnColor="{StaticResource Primary}" Toggled="OnGstToggled" />
             </Grid>
 
             <!-- Totals -->
@@ -162,4 +163,27 @@
 
         </VerticalStackLayout>
     </ScrollView>
+
+    <!-- Add-service dialog: ONE card capturing both the service name and its price, shown
+         over the form. Replaces the two back-to-back prompts. -->
+    <Grid x:Name="NewServiceOverlay" IsVisible="False" BackgroundColor="#99000000">
+        <Border Style="{StaticResource CardBorder}" Padding="20" WidthRequest="300"
+                VerticalOptions="Center" HorizontalOptions="Center" StrokeShape="RoundRectangle 16">
+            <VerticalStackLayout Spacing="14">
+                <Label Text="New service" FontSize="18" FontAttributes="Bold" />
+                <Entry x:Name="NewServiceNameEntry" Placeholder="Service name" />
+                <Entry x:Name="NewServicePriceEntry" Placeholder="Price ₹" Keyboard="Numeric" />
+                <Label x:Name="NewServiceError" FontSize="13" IsVisible="False"
+                       TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource Error}}" />
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+                    <Button Grid.Column="0" Text="Cancel" Clicked="OnCancelNewService"
+                            BackgroundColor="Transparent" BorderWidth="1"
+                            TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Primary}}"
+                            BorderColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Primary}}" />
+                    <Button Grid.Column="1" Text="Add" Clicked="OnConfirmNewService" />
+                </Grid>
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+    </Grid>
 </ContentPage>

@@ -122,24 +122,29 @@ public partial class NewJobPage : ContentPage
         _lines.Add(line);
     }
 
-    /// <summary>
-    /// Add a service that isn't in the catalogue yet (name + price), then put it straight on the
-    /// bill — the same flow as the desktop's "+ New" button.
-    /// </summary>
-    private async void OnNewServiceClicked(object? sender, EventArgs e)
+    // Add a service that isn't in the catalogue yet. Opens one dialog capturing BOTH the name
+    // and the price (see NewServiceOverlay in the XAML), then bills it straight away — the same
+    // flow as the desktop's "+ New" button.
+    private void OnNewServiceClicked(object? sender, EventArgs e)
     {
-        ErrorLabel.IsVisible = false;
+        NewServiceNameEntry.Text = "";
+        NewServicePriceEntry.Text = "";
+        NewServiceError.IsVisible = false;
+        NewServiceOverlay.IsVisible = true;
+        NewServiceNameEntry.Focus();
+    }
 
-        var name = await DisplayPromptAsync("New service", "Service name", "Next", "Cancel", maxLength: 120);
-        if (string.IsNullOrWhiteSpace(name)) return;
-        name = name.Trim();
+    private void OnCancelNewService(object? sender, EventArgs e) => NewServiceOverlay.IsVisible = false;
 
-        var priceText = await DisplayPromptAsync("New service", $"Price for \"{name}\" (₹)", "Add", "Cancel",
-            keyboard: Keyboard.Numeric);
-        if (priceText is null) return;
-        if (!decimal.TryParse(priceText.Trim(), out var price) || price < 0)
+    private async void OnConfirmNewService(object? sender, EventArgs e)
+    {
+        NewServiceError.IsVisible = false;
+
+        var name = NewServiceNameEntry.Text?.Trim() ?? "";
+        if (name.Length == 0) { ShowNewServiceError("Enter a service name."); return; }
+        if (!decimal.TryParse(NewServicePriceEntry.Text?.Trim(), out var price) || price < 0)
         {
-            ShowError("Enter a valid price.");
+            ShowNewServiceError("Enter a valid price.");
             return;
         }
 
@@ -163,9 +168,16 @@ public partial class NewJobPage : ContentPage
             };
             line.Changed += Recalc;
             _lines.Add(line);
+            NewServiceOverlay.IsVisible = false;
         }
-        catch (Exception ex) { ShowError(ex is ApiException a ? a.Message : "Could not add the service."); }
+        catch (Exception ex) { ShowNewServiceError(ex is ApiException a ? a.Message : "Could not add the service."); }
         finally { SetBusy(false); }
+    }
+
+    private void ShowNewServiceError(string message)
+    {
+        NewServiceError.Text = message;
+        NewServiceError.IsVisible = true;
     }
 
     private void OnRemoveLineClicked(object? sender, EventArgs e)
