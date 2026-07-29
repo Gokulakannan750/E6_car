@@ -4,9 +4,25 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     x:Class="E6CarSpa.Mobile.Pages.SettingsPage"
     Title="Settings"
+    Shell.PresentationMode="ModalAnimated"
+    Shell.NavBarIsVisible="False"
    >
 
-    <ScrollView>
+    <!-- Presented as a MODAL over the whole app (not pushed onto a tab's stack), so opening it
+         from any tab's gear returns you to that same tab on close — and never leaves Settings
+         sitting on a tab. A modal has no automatic back arrow, so the Shell nav bar is hidden
+         and replaced by the custom header below with an always-visible Back control (hardware
+         and gesture back dismiss it too). -->
+    <Grid RowDefinitions="Auto,*">
+        <Grid Grid.Row="0" ColumnDefinitions="Auto,*" Padding="4,6"
+              BackgroundColor="{AppThemeBinding Light={StaticResource NavLight}, Dark={StaticResource NavDark}}">
+            <Button Grid.Column="0" Text="← Back" Clicked="OnCloseClicked"
+                    BackgroundColor="Transparent" TextColor="White" FontSize="15" Padding="12,6" />
+            <Label Grid.Column="1" Text="Settings" TextColor="White" FontSize="18" FontAttributes="Bold"
+                   VerticalOptions="Center" Margin="4,0,0,0" />
+        </Grid>
+
+        <ScrollView Grid.Row="1">
         <VerticalStackLayout Padding="16" Spacing="14">
 
             <Border Style="{StaticResource CardBorder}" StrokeThickness="0" Padding="16" StrokeShape="RoundRectangle 12">
@@ -50,4 +66,5 @@
 
         </VerticalStackLayout>
     </ScrollView>
+    </Grid>
 </ContentPage>

@@ -34,6 +34,9 @@ public partial class SettingsPage : ContentPage
         SavedLabel.IsVisible = true;
     }
 
+    private async void OnCloseClicked(object? sender, EventArgs e) =>
+        await Shell.Current.GoToAsync("..");
+
     private async void OnLogoutClicked(object? sender, EventArgs e)
     {
         bool ok = await DisplayAlertAsync("Log out", "Sign out of the monitor?", "Log out", "Cancel");
