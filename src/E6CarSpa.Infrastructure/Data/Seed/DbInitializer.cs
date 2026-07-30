@@ -29,6 +29,17 @@ public static class DbInitializer
             await db.SaveChangesAsync();
         }
 
+        // Backfill: Permissions arrives as 0 (None) on existing rows, which would lock everyone
+        // out. Give each account the preset for the role it already has.
+        var unpermissioned = await db.Users.Where(u => u.Permissions == Permission.None).ToListAsync();
+        if (unpermissioned.Count > 0)
+        {
+            foreach (var u in unpermissioned) u.Permissions = PermissionPresets.For(u.Role);
+            await db.SaveChangesAsync();
+            logger?.LogInformation("Backfilled permissions for {Count} existing user(s) from their role.",
+                unpermissioned.Count);
+        }
+
         if (!await db.CompanySettings.AnyAsync())
         {
             db.CompanySettings.Add(new CompanySettings
@@ -58,6 +69,7 @@ public static class DbInitializer
                 Username = "admin",
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(generated),
                 Role = UserRole.Admin,
+                Permissions = Permission.All,
                 IsActive = true,
                 MustChangePassword = true
             });

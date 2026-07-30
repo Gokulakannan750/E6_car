@@ -39,6 +39,19 @@ public partial class SettingsView : UserControl
         if (Vm is not null) Vm.NewUserPassword = NewUserPasswordBox.Password;
     }
 
+    private async void EditPermissions_Click(object sender, RoutedEventArgs e)
+    {
+        if (Vm is null || (sender as FrameworkElement)?.DataContext is not UserDto user) return;
+
+        var dialog = new PermissionsWindow(user.Username, user.Permissions)
+        {
+            Owner = Window.GetWindow(this)
+        };
+        if (dialog.ShowDialog() != true) return;
+
+        await Vm.SaveUserPermissionsAsync(user, dialog.Result);
+    }
+
     private async void ResetUserPassword_Click(object sender, RoutedEventArgs e)
     {
         if (Vm is null || (sender as FrameworkElement)?.DataContext is not UserDto user) return;

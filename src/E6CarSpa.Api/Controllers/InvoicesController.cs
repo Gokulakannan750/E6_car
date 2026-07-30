@@ -1,5 +1,6 @@
 using E6CarSpa.Api.Mapping;
 using E6CarSpa.Api.Services;
+using E6CarSpa.Api.Auth;
 using E6CarSpa.Contracts;
 using E6CarSpa.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -11,6 +12,7 @@ namespace E6CarSpa.Api.Controllers;
 /// The billing workflow. Anonymous by design (except Cancel): the desktop app is used at the
 /// counter without a login, so the deny-by-default fallback policy is opted out per action here.
 /// </summary>
+[RequirePermission(Permission.Billing)]
 public class InvoicesController(InvoiceService invoices, PdfInvoiceService pdf) : ApiControllerBase
 {
     /// <summary>Steps 1-3: create a quotation from customer + car + chosen services.</summary>
@@ -61,7 +63,6 @@ public class InvoicesController(InvoiceService invoices, PdfInvoiceService pdf) 
     }
 
     [HttpPost("{id:guid}/cancel")]
-    [Authorize(Roles = "Admin,Manager")]
     public async Task<ActionResult<InvoiceDto>> Cancel(Guid id)
     {
         var inv = await invoices.CancelAsync(id);

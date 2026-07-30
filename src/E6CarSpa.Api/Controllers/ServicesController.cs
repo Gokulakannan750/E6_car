@@ -1,5 +1,7 @@
 using E6CarSpa.Api.Mapping;
 using E6CarSpa.Api.Services;
+using E6CarSpa.Api.Auth;
+using E6CarSpa.Domain.Enums;
 using E6CarSpa.Contracts;
 using E6CarSpa.Domain.Entities;
 using E6CarSpa.Infrastructure.Data;
@@ -10,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 namespace E6CarSpa.Api.Controllers;
 
 
+[RequirePermission(Permission.Catalogue)]
 public class ServicesController(AppDbContext db, AuditService audit) : ApiControllerBase
 {
     // Anonymous: the no-login New Job screen needs the service catalogue to build a quotation.

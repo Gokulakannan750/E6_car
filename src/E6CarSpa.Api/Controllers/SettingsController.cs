@@ -1,4 +1,5 @@
 using E6CarSpa.Api.Services;
+using E6CarSpa.Api.Auth;
 using E6CarSpa.Contracts;
 using E6CarSpa.Domain.Enums;
 using E6CarSpa.Infrastructure.Data;
@@ -9,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace E6CarSpa.Api.Controllers;
 
 
+[RequirePermission(Permission.Settings)]
 public class SettingsController(AppDbContext db, AuditService audit) : ApiControllerBase
 {
 
@@ -34,7 +36,6 @@ public class SettingsController(AppDbContext db, AuditService audit) : ApiContro
 
     /// <summary>Uploads/replaces the company logo (base64-encoded PNG or JPG).</summary>
     [HttpPut("logo")]
-    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> SetLogo(UploadLogoRequest req)
     {
         byte[] bytes;
@@ -53,7 +54,6 @@ public class SettingsController(AppDbContext db, AuditService audit) : ApiContro
 
     /// <summary>Removes the company logo.</summary>
     [HttpDelete("logo")]
-    [Authorize(Roles = "Admin")]
     public async Task<IActionResult> DeleteLogo()
     {
         var s = await db.CompanySettings.FirstAsync();
@@ -65,7 +65,6 @@ public class SettingsController(AppDbContext db, AuditService audit) : ApiContro
     }
 
     [HttpPut]
-    [Authorize(Roles = "Admin")]
     public async Task<ActionResult<CompanySettingsDto>> Update(SaveCompanySettingsRequest req)
     {
         var s = await db.CompanySettings.FirstAsync();

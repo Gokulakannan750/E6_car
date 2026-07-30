@@ -193,6 +193,24 @@
                                             Margin="0,0,0,16" Command="{Binding CreateUserCommand}" />
                                 </Grid>
 
+                                <!-- Role only pre-ticks these; the ticks are what gets saved. -->
+                                <TextBlock Text="Permissions" FontWeight="SemiBold" Margin="0,14,0,2" />
+                                <TextBlock Style="{StaticResource Muted}" Margin="0,0,0,6"
+                                           Text="Choosing a role ticks its usual set — adjust it for this person if you like." />
+                                <ItemsControl ItemsSource="{Binding NewUserPermissions}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <UniformGrid Columns="4" />
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <CheckBox IsChecked="{Binding IsGranted}" Content="{Binding Label}"
+                                                      ToolTip="{Binding Description}" Margin="0,4,12,4" />
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+
                                 <TextBlock Text="{Binding UserInfo}" Foreground="{StaticResource SuccessBrush}"
                                            FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,6,0,0"
                                            Visibility="{Binding UserInfo, Converter={StaticResource StringToVis}}" />
@@ -218,6 +236,17 @@
                                         <DataGridTextColumn Header="Username" Binding="{Binding Username}" Width="160" />
                                         <DataGridTextColumn Header="Role" Binding="{Binding Role}" Width="110" />
                                         <DataGridTextColumn Header="Active" Binding="{Binding IsActive}" Width="70" />
+                                        <DataGridTextColumn Header="Permissions" Binding="{Binding Permissions}"
+                                                            Width="*" MinWidth="180" />
+                                        <DataGridTemplateColumn Width="140">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Button Content="Permissions" Style="{StaticResource SecondaryButton}"
+                                                            Padding="10,4" FontSize="12" Margin="0,4"
+                                                            HorizontalAlignment="Left" Click="EditPermissions_Click" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
                                         <DataGridTemplateColumn Width="160">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>

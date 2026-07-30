@@ -7,16 +7,17 @@
     Title="E6 Car Spa"
     FlyoutBehavior="Disabled">
 
+    <!-- Tabs the signed-in user has no permission for are removed in AppShell.xaml.cs. -->
     <TabBar>
         <ShellContent Title="Dashboard" Icon="icon_dashboard.png"
                       ContentTemplate="{DataTemplate pages:DashboardPage}" Route="dashboard" />
-        <ShellContent Title="New Job" Icon="icon_newjob.png"
+        <ShellContent x:Name="NewJobTab" Title="New Job" Icon="icon_newjob.png"
                       ContentTemplate="{DataTemplate pages:NewJobPage}" Route="newjob" />
-        <ShellContent Title="Jobs" Icon="icon_jobs.png"
+        <ShellContent x:Name="JobsTab" Title="Jobs" Icon="icon_jobs.png"
                       ContentTemplate="{DataTemplate pages:JobsPage}" Route="jobs" />
-        <ShellContent Title="Reports" Icon="icon_reports.png"
+        <ShellContent x:Name="ReportsTab" Title="Reports" Icon="icon_reports.png"
                       ContentTemplate="{DataTemplate pages:ReportsPage}" Route="reports" />
-        <ShellContent Title="Advances" Icon="icon_advances.png"
+        <ShellContent x:Name="AdvancesTab" Title="Advances" Icon="icon_advances.png"
                       ContentTemplate="{DataTemplate pages:AdvancesPage}" Route="advances" />
         <!-- Settings is NOT a tab: Android's bottom bar shows only 5 slots, so a 6th tab would
              overflow into a "More" menu. It lives as a gear in each page's top-right toolbar

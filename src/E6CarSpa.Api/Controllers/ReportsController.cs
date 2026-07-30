@@ -1,4 +1,6 @@
 using E6CarSpa.Api.Services;
+using E6CarSpa.Api.Auth;
+using E6CarSpa.Domain.Enums;
 using E6CarSpa.Contracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -6,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace E6CarSpa.Api.Controllers;
 
 [Authorize]
+[RequirePermission(Permission.Reports)]
 public class ReportsController(ReportsService reports) : ApiControllerBase
 {
     [HttpGet("sales")]

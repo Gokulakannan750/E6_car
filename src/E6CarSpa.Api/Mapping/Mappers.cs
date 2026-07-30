@@ -6,7 +6,8 @@ namespace E6CarSpa.Api.Mapping;
 /// <summary>Hand-written entity → DTO projections. Kept explicit for clarity over a mapper library.</summary>
 public static class Mappers
 {
-    public static UserDto ToDto(this User u) => new(u.Id, u.FullName, u.Username, u.Role, u.IsActive);
+    public static UserDto ToDto(this User u) =>
+        new(u.Id, u.FullName, u.Username, u.Role, u.IsActive, u.Permissions);
 
     public static VehicleDto ToDto(this Vehicle v) => new(v.Id, v.CarNumber, v.CarModel);
 

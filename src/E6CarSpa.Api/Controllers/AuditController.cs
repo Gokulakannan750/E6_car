@@ -1,3 +1,5 @@
+using E6CarSpa.Api.Auth;
+using E6CarSpa.Domain.Enums;
 using E6CarSpa.Contracts;
 using E6CarSpa.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
@@ -7,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 namespace E6CarSpa.Api.Controllers;
 
 /// <summary>Read-only access to the audit trail. Admin only.</summary>
-[Authorize(Roles = "Admin")]
+[RequirePermission(Permission.ManageUsers)]
 public class AuditController(AppDbContext db) : ApiControllerBase
 {
     /// <summary>Most recent audit entries, newest first. Optionally filter by action prefix.</summary>

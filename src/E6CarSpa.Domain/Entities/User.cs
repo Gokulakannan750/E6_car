@@ -9,6 +9,13 @@ public class User : BaseEntity
     public string Username { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
     public UserRole Role { get; set; } = UserRole.Worker;
+
+    /// <summary>
+    /// What this user may reach. Seeded from the role preset when the account is created, then
+    /// adjustable per person — this, not the role, is what the API enforces.
+    /// </summary>
+    public Permission Permissions { get; set; } = PermissionPresets.For(UserRole.Worker);
+
     public bool IsActive { get; set; } = true;
     public DateTime? LastLoginAt { get; set; }
 

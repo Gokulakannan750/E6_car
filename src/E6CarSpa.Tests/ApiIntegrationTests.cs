@@ -198,22 +198,33 @@ public class ApiIntegrationTests
     }
 
     [Fact]
-    public async Task Reports_AsWorker_ReturnsOk_AfterRoleRestrictionRemoved()
+    public async Task Reports_FollowThePermission_NotTheRole()
     {
         using var factory = new ApiFactory();
         var client = factory.CreateClient();
         Authorize(client, await LoginAsync(client, "admin", ApiFactory.AdminPassword));
-        var create = await client.PostAsJsonAsync("/api/auth/users",
-            new CreateUserRequest("Floor Worker", "worker2", "worker@123", UserRole.Worker));
-        create.EnsureSuccessStatusCode();
+
+        // A worker on the default preset (Billing + Customers) has no Reports permission.
+        var created = await (await client.PostAsJsonAsync("/api/auth/users",
+            new CreateUserRequest("Floor Worker", "worker2", "worker@123", UserRole.Worker)))
+            .Content.ReadFromJsonAsync<UserDto>();
 
         var workerClient = factory.CreateClient();
         Authorize(workerClient, await LoginAsync(workerClient, "worker2", "worker@123"));
+        Assert.Equal(HttpStatusCode.Forbidden,
+            (await workerClient.GetAsync("/api/reports/sales?from=2026-01-01&to=2026-12-31")).StatusCode);
 
-        var resp = await workerClient.GetAsync("/api/reports/sales?from=2026-01-01&to=2026-12-31");
+        // Grant Reports to this one worker — still a Worker by role.
+        var granted = await client.PutAsJsonAsync($"/api/auth/users/{created!.Id}",
+            new UpdateUserRequest(created.FullName, created.Role, true, null,
+                created.Permissions | Permission.Reports));
+        granted.EnsureSuccessStatusCode();
 
-        // Reports now open to all authenticated users (removed Roles="Admin,Manager" restriction)
-        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+        // The permission change rotated their security stamp, so they sign in again and are let in.
+        var reauthed = factory.CreateClient();
+        Authorize(reauthed, await LoginAsync(reauthed, "worker2", "worker@123"));
+        Assert.Equal(HttpStatusCode.OK,
+            (await reauthed.GetAsync("/api/reports/sales?from=2026-01-01&to=2026-12-31")).StatusCode);
     }
 
     [Fact]
@@ -361,7 +372,8 @@ public class ApiIntegrationTests
 
         var workerClient = factory.CreateClient();
         Authorize(workerClient, await LoginAsync(workerClient, "worker9", "worker@123"));
-        Assert.Equal(HttpStatusCode.OK, (await workerClient.GetAsync("/api/settings")).StatusCode);
+        // Probe an endpoint the Worker preset actually grants (Settings is not one of them).
+        Assert.Equal(HttpStatusCode.OK, (await workerClient.GetAsync("/api/customers")).StatusCode);
 
         // Admin deactivates the worker.
         var deactivate = await admin.PutAsJsonAsync($"/api/auth/users/{worker.Id}",
@@ -369,7 +381,7 @@ public class ApiIntegrationTests
         deactivate.EnsureSuccessStatusCode();
 
         // The worker's existing token stops working immediately.
-        Assert.Equal(HttpStatusCode.Unauthorized, (await workerClient.GetAsync("/api/settings")).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await workerClient.GetAsync("/api/customers")).StatusCode);
     }
 
     // ---------- audit log ----------

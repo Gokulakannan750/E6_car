@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    x:Class="E6CarSpa.Mobile.Pages.UsersPage"
+    Title="Staff Logins"
+   >
+
+    <RefreshView x:Name="Refresh" Refreshing="OnRefreshing">
+        <ScrollView>
+            <VerticalStackLayout Padding="16" Spacing="12">
+
+                <!-- Add a user -->
+                <Border Style="{StaticResource CardBorder}" StrokeThickness="0" Padding="14"
+                        StrokeShape="RoundRectangle 12">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Add a user" FontSize="16" FontAttributes="Bold" />
+                        <Label Text="Give them the password directly — it is never shown again."
+                               FontSize="12"
+                               TextColor="{AppThemeBinding Light={StaticResource LightTextSecondary}, Dark={StaticResource DarkTextSecondary}}" />
+
+                        <Entry x:Name="FullNameEntry" Placeholder="Full name" />
+                        <Entry x:Name="UsernameEntry" Placeholder="Username" />
+                        <Entry x:Name="PasswordEntry" Placeholder="Password (min 8)" IsPassword="True" />
+
+                        <Label Text="Role" FontSize="13" />
+                        <Picker x:Name="RolePicker" Title="Select a role" SelectedIndexChanged="OnRoleChanged" />
+
+                        <Label Text="Permissions" FontSize="14" FontAttributes="Bold" Margin="0,6,0,0" />
+                        <Label Text="Choosing a role ticks its usual set — adjust it for this person."
+                               FontSize="12"
+                               TextColor="{AppThemeBinding Light={StaticResource LightTextSecondary}, Dark={StaticResource DarkTextSecondary}}" />
+
+                        <VerticalStackLayout x:Name="PermissionsHost" Spacing="2">
+                            <BindableLayout.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" Padding="0,4">
+                                        <CheckBox Grid.Column="0" IsChecked="{Binding IsGranted, Mode=TwoWay}"
+                                                  Color="{StaticResource Primary}" VerticalOptions="Center" />
+                                        <VerticalStackLayout Grid.Column="1" Spacing="0" VerticalOptions="Center">
+                                            <Label Text="{Binding Label}" FontSize="14" />
+                                            <Label Text="{Binding Description}" FontSize="11"
+                                                   TextColor="{AppThemeBinding Light={StaticResource LightTextSecondary}, Dark={StaticResource DarkTextSecondary}}" />
+                                        </VerticalStackLayout>
+                                    </Grid>
+                                </DataTemplate>
+                            </BindableLayout.ItemTemplate>
+                        </VerticalStackLayout>
+
+                        <Label x:Name="InfoLabel" FontSize="13" IsVisible="False"
+                               TextColor="{AppThemeBinding Light={StaticResource Success}, Dark={StaticResource Success}}" />
+                        <Label x:Name="ErrorLabel" FontSize="13" IsVisible="False"
+                               TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource Error}}" />
+
+                        <Button x:Name="AddButton" Text="➕ Add User" FontAttributes="Bold"
+                                HeightRequest="50" Clicked="OnAddUserClicked" />
+                        <ActivityIndicator x:Name="Busy" IsRunning="False" IsVisible="False" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Existing logins -->
+                <Label Text="Staff logins" FontSize="18" FontAttributes="Bold" Margin="2,8,0,0" />
+                <CollectionView x:Name="UsersList" SelectionMode="Single" SelectionChanged="OnUserSelected">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border Style="{StaticResource CardBorder}" StrokeThickness="0" Padding="14"
+                                    Margin="0,0,0,8" StrokeShape="RoundRectangle 10">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                        <Label Text="{Binding FullName}" FontSize="16" FontAttributes="Bold" />
+                                        <Label Text="{Binding Username}" FontSize="13" />
+                                        <Label Text="{Binding Permissions}" FontSize="11"
+                                               TextColor="{AppThemeBinding Light={StaticResource LightTextSecondary}, Dark={StaticResource DarkTextSecondary}}" />
+                                    </VerticalStackLayout>
+                                    <VerticalStackLayout Grid.Column="1" Spacing="2" HorizontalOptions="End">
+                                        <Label Text="{Binding Role}" FontSize="14" FontAttributes="Bold"
+                                               HorizontalOptions="End"
+                                               TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Primary}}" />
+                                        <Label Text="{Binding IsActive, StringFormat='Active: {0}'}" FontSize="11"
+                                               HorizontalOptions="End" />
+                                    </VerticalStackLayout>
+                                </Grid>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+
+            </VerticalStackLayout>
+        </ScrollView>
+    </RefreshView>
+</ContentPage>

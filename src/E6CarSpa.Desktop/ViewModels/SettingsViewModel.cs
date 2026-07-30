@@ -72,6 +72,19 @@ public partial class SettingsViewModel(IApiClient api) : ObservableObject, IAsyn
     [ObservableProperty] private string _userInfo = "";
     [ObservableProperty] private string _userError = "";
 
+    /// <summary>
+    /// The permission tick-list for the user being added. Choosing a role pre-ticks its preset,
+    /// which the admin can then adjust — the ticks are what actually gets saved.
+    /// </summary>
+    public ObservableCollection<PermissionOption> NewUserPermissions { get; } =
+        new(PermissionOption.BuildList(PermissionPresets.For(UserRole.Worker)));
+
+    partial void OnNewUserRoleChanged(UserRole value)
+    {
+        var preset = PermissionPresets.For(value);
+        foreach (var option in NewUserPermissions) option.IsGranted = preset.HasFlag(option.Value);
+    }
+
     public async Task InitializeAsync()
     {
         await LoadSettingsAsync();
@@ -103,8 +116,15 @@ public partial class SettingsViewModel(IApiClient api) : ObservableObject, IAsyn
 
         try
         {
+            var permissions = PermissionOption.Combine(NewUserPermissions);
+            if (permissions == Permission.None)
+            {
+                UserError = "Tick at least one permission, or the account will not be able to open anything.";
+                return;
+            }
+
             var created = await api.CreateUserAsync(new CreateUserRequest(
-                NewUserFullName.Trim(), NewUserUsername.Trim(), NewUserPassword, NewUserRole));
+                NewUserFullName.Trim(), NewUserUsername.Trim(), NewUserPassword, NewUserRole, permissions));
 
             Users.Add(created);
             UserInfo = $"Created '{created.Username}' ({created.Role}). Tell them their password — it is not shown again.";
@@ -131,6 +151,27 @@ public partial class SettingsViewModel(IApiClient api) : ObservableObject, IAsyn
             await api.UpdateUserAsync(user.Id,
                 new UpdateUserRequest(user.FullName, user.Role, !user.IsActive, null));
             UserInfo = user.IsActive ? $"'{user.Username}' deactivated." : $"'{user.Username}' reactivated.";
+            await LoadUsersAsync();
+        }
+        catch (Exception ex) { UserError = ex.Message; }
+    }
+
+    /// <summary>Save an edited permission tick-list. Signs the user out of any open session so the
+    /// change takes effect immediately rather than at token expiry.</summary>
+    public async Task SaveUserPermissionsAsync(UserDto user, Permission permissions)
+    {
+        UserInfo = ""; UserError = "";
+        if (permissions == Permission.None)
+        {
+            UserError = "Tick at least one permission, or the account will not be able to open anything.";
+            return;
+        }
+
+        try
+        {
+            await api.UpdateUserAsync(user.Id,
+                new UpdateUserRequest(user.FullName, user.Role, user.IsActive, null, permissions));
+            UserInfo = $"Permissions updated for '{user.Username}'. They will need to sign in again.";
             await LoadUsersAsync();
         }
         catch (Exception ex) { UserError = ex.Message; }

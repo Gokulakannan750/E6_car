@@ -1,4 +1,6 @@
 using E6CarSpa.Api.Mapping;
+using E6CarSpa.Api.Auth;
+using E6CarSpa.Domain.Enums;
 using E6CarSpa.Contracts;
 using E6CarSpa.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
@@ -11,6 +13,7 @@ namespace E6CarSpa.Api.Controllers;
 /// Customer/vehicle lookups for intake and the Customers screen. Requires a signed-in user —
 /// this is customer PII, and the clients now authenticate before reaching any screen.
 /// </summary>
+[RequirePermission(Permission.Customers)]
 public class CustomersController(AppDbContext db) : ApiControllerBase
 {
     /// <summary>Intake lookup: find an existing customer by phone so details auto-fill.</summary>

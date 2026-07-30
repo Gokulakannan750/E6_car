@@ -24,6 +24,8 @@ public class JwtTokenService(IOptions<JwtOptions> options)
             new Claim("fullName", user.FullName),
             new Claim(ClaimTypes.Role, user.Role.ToString()),
             new Claim("role", user.Role.ToString()), // Explicit lower-case role for safe mapping
+            // What this user may reach, as the Permission bit field. Read by RequirePermission.
+            new Claim(RequirePermissionAttribute.ClaimType, ((int)user.Permissions).ToString()),
             // Revocation marker — validated on every request; rotating it kills existing tokens.
             new Claim("sstamp", user.SecurityStamp),
         };

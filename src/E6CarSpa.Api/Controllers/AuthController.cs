@@ -1,4 +1,5 @@
 using E6CarSpa.Api.Auth;
+using E6CarSpa.Domain.Enums;
 using E6CarSpa.Api.Mapping;
 using E6CarSpa.Api.Services;
 using E6CarSpa.Contracts;
@@ -78,12 +79,12 @@ public class AuthController(AppDbContext db, JwtTokenService jwt, AuditService a
     }
 
     [HttpGet("users")]
-    [Authorize(Roles = "Admin")]
+    [RequirePermission(Permission.ManageUsers)]
     public async Task<ActionResult<List<UserDto>>> GetUsers() =>
         await db.Users.OrderBy(u => u.FullName).Select(u => u.ToDto()).ToListAsync();
 
     [HttpPost("users")]
-    [Authorize(Roles = "Admin")]
+    [RequirePermission(Permission.ManageUsers)]
     public async Task<ActionResult<UserDto>> CreateUser(CreateUserRequest req)
     {
         if (string.IsNullOrWhiteSpace(req.Password) || req.Password.Length < 8)
@@ -99,16 +100,19 @@ public class AuthController(AppDbContext db, JwtTokenService jwt, AuditService a
             FullName = req.FullName,
             Username = req.Username,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.Password),
-            Role = req.Role
+            Role = req.Role,
+            // Explicit ticks win; otherwise start from the role's preset.
+            Permissions = req.Permissions ?? PermissionPresets.For(req.Role)
         };
         db.Users.Add(user);
         await db.SaveChangesAsync();
-        await audit.LogAsync("User.Create", $"username={user.Username}; role={user.Role}");
+        await audit.LogAsync("User.Create",
+            $"username={user.Username}; role={user.Role}; permissions={user.Permissions}");
         return user.ToDto();
     }
 
     [HttpPut("users/{id:guid}")]
-    [Authorize(Roles = "Admin")]
+    [RequirePermission(Permission.ManageUsers)]
     public async Task<ActionResult<UserDto>> UpdateUser(Guid id, UpdateUserRequest req)
     {
         var user = await db.Users.FindAsync(id);
@@ -116,10 +120,14 @@ public class AuthController(AppDbContext db, JwtTokenService jwt, AuditService a
 
         var wasActive = user.IsActive;
         var oldRole = user.Role;
+        var oldPermissions = user.Permissions;
 
         user.FullName = req.FullName;
         user.Role = req.Role;
         user.IsActive = req.IsActive;
+        // Null means "leave permissions alone" — so callers that only toggle Active or reset a
+        // password (which send no ticks) can't silently wipe someone's access.
+        if (req.Permissions is { } perms) user.Permissions = perms;
 
         var passwordChanged = !string.IsNullOrWhiteSpace(req.NewPassword);
         if (passwordChanged)
@@ -135,7 +143,10 @@ public class AuthController(AppDbContext db, JwtTokenService jwt, AuditService a
         // password, role, or active status changes — resetting a compromised account, demoting
         // someone, or deactivating them takes effect immediately instead of at token expiry.
         // A password reset also clears any lockout so the admin's reset unblocks the account.
-        if (passwordChanged || oldRole != req.Role || wasActive != req.IsActive)
+        // Permissions travel inside the token, so a change must also rotate the stamp — otherwise
+        // the user would keep their old access until the token expired.
+        if (passwordChanged || oldRole != req.Role || wasActive != req.IsActive ||
+            oldPermissions != user.Permissions)
             user.SecurityStamp = Guid.NewGuid().ToString("N");
         if (passwordChanged)
         {
@@ -145,7 +156,8 @@ public class AuthController(AppDbContext db, JwtTokenService jwt, AuditService a
 
         await db.SaveChangesAsync();
         await audit.LogAsync("User.Update",
-            $"username={user.Username}; role={user.Role}; active={user.IsActive}; passwordReset={passwordChanged}");
+            $"username={user.Username}; role={user.Role}; active={user.IsActive}; " +
+            $"passwordReset={passwordChanged}; permissions={user.Permissions}");
         return user.ToDto();
     }
 

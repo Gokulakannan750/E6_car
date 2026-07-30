@@ -1,4 +1,6 @@
 using E6CarSpa.Api.Services;
+using E6CarSpa.Api.Auth;
+using E6CarSpa.Domain.Enums;
 using E6CarSpa.Contracts;
 using E6CarSpa.Domain.Entities;
 using E6CarSpa.Infrastructure.Data;
@@ -12,6 +14,7 @@ namespace E6CarSpa.Api.Controllers;
 /// Record of cash advances given to workers. Requires a signed-in user (wage data), like every
 /// endpoint except login — see the fallback policy in Program.cs.
 /// </summary>
+[RequirePermission(Permission.StaffAdvances)]
 public class StaffAdvancesController(AppDbContext db, AuditService audit) : ApiControllerBase
 {
     /// <param name="includeDeleted">

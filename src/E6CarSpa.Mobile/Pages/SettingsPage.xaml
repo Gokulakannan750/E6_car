@@ -54,6 +54,21 @@
                     Clicked="OnSaveClicked" />
             <Label x:Name="SavedLabel" Text="Saved." TextColor="{AppThemeBinding Light={StaticResource Success}, Dark={StaticResource Success}}" FontSize="13" IsVisible="False" />
 
+            <!-- Only shown to accounts holding the ManageUsers permission. -->
+            <Border x:Name="ManageUsersCard" Style="{StaticResource CardBorder}" StrokeThickness="0"
+                    Padding="16" StrokeShape="RoundRectangle 12" IsVisible="False">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnManageUsersTapped" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="*,Auto">
+                    <VerticalStackLayout Grid.Column="0" Spacing="2">
+                        <Label Text="Staff Logins" FontSize="16" FontAttributes="Bold" />
+                        <Label Text="Add users and set what each may open" FontSize="13" />
+                    </VerticalStackLayout>
+                    <Label Grid.Column="1" Text="›" FontSize="22" VerticalOptions="Center" />
+                </Grid>
+            </Border>
+
             <BoxView HeightRequest="1" Margin="0,8" />
 
             <Button x:Name="LogoutButton" Text="Log out"

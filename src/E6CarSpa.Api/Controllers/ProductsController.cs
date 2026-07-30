@@ -1,5 +1,7 @@
 using E6CarSpa.Api.Mapping;
 using E6CarSpa.Api.Services;
+using E6CarSpa.Api.Auth;
+using E6CarSpa.Domain.Enums;
 using E6CarSpa.Contracts;
 using E6CarSpa.Domain.Entities;
 using E6CarSpa.Infrastructure.Data;
@@ -9,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace E6CarSpa.Api.Controllers;
 
 [Authorize]
+[RequirePermission(Permission.Inventory)]
 public class ProductsController(AppDbContext db, InventoryService inventory, AuditService audit) : ApiControllerBase
 {
     [HttpGet]
@@ -48,7 +51,6 @@ public class ProductsController(AppDbContext db, InventoryService inventory, Aud
     }
 
     [HttpPost("purchase")]
-    [Authorize(Roles = "Admin,Manager")]
     public async Task<ActionResult<ProductDto>> Purchase(StockPurchaseRequest req)
     {
         var p = await inventory.ReceivePurchaseAsync(req, CurrentUserId);
@@ -56,7 +58,6 @@ public class ProductsController(AppDbContext db, InventoryService inventory, Aud
     }
 
     [HttpPost("adjust")]
-    [Authorize(Roles = "Admin,Manager")]
     public async Task<ActionResult<ProductDto>> Adjust(StockAdjustmentRequest req)
     {
         var p = await inventory.AdjustAsync(req, CurrentUserId);

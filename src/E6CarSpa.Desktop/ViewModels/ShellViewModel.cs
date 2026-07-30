@@ -30,6 +30,20 @@ public partial class ShellViewModel(IApiClient api) : ObservableObject
         api.CurrentUser?.Role is Domain.Enums.UserRole.Admin or Domain.Enums.UserRole.Manager;
     public bool IsAdmin => api.CurrentUser?.Role is Domain.Enums.UserRole.Admin;
 
+    // Nav visibility follows the user's permissions, so people only see what they can actually
+    // open. The server enforces the same set — hiding a button is convenience, not the boundary.
+    private bool Can(Domain.Enums.Permission p) => api.CurrentUser?.Can(p) == true;
+
+    public bool CanBilling => Can(Domain.Enums.Permission.Billing);
+    public bool CanCustomers => Can(Domain.Enums.Permission.Customers);
+    public bool CanCatalogue => Can(Domain.Enums.Permission.Catalogue);
+    public bool CanStaffAdvances => Can(Domain.Enums.Permission.StaffAdvances);
+    public bool CanReports => Can(Domain.Enums.Permission.Reports);
+    public bool CanInventory => Can(Domain.Enums.Permission.Inventory);
+    /// <summary>Settings holds Company Profile, and the Users tab needs ManageUsers on top.</summary>
+    public bool CanSettings => Can(Domain.Enums.Permission.Settings) ||
+                               Can(Domain.Enums.Permission.ManageUsers);
+
     public void RefreshAuthState()
     {
         OnPropertyChanged(nameof(UserName));
@@ -37,6 +51,13 @@ public partial class ShellViewModel(IApiClient api) : ObservableObject
         OnPropertyChanged(nameof(IsLoggedIn));
         OnPropertyChanged(nameof(IsManagerOrAdmin));
         OnPropertyChanged(nameof(IsAdmin));
+        OnPropertyChanged(nameof(CanBilling));
+        OnPropertyChanged(nameof(CanCustomers));
+        OnPropertyChanged(nameof(CanCatalogue));
+        OnPropertyChanged(nameof(CanStaffAdvances));
+        OnPropertyChanged(nameof(CanReports));
+        OnPropertyChanged(nameof(CanInventory));
+        OnPropertyChanged(nameof(CanSettings));
     }
 
     [RelayCommand] private Task ShowDashboard() => NavigateAsync<DashboardViewModel>("Dashboard");

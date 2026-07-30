@@ -14,7 +14,13 @@ public partial class SettingsPage : ContentPage
 
         // Initialise the toggle to match the current theme
         ThemeSwitch.IsToggled = Application.Current?.UserAppTheme == AppTheme.Dark;
+
+        // Managing staff logins is itself a permission.
+        ManageUsersCard.IsVisible = user?.Can(Domain.Enums.Permission.ManageUsers) == true;
     }
+
+    private async void OnManageUsersTapped(object? sender, TappedEventArgs e) =>
+        await Shell.Current.GoToAsync("users");
 
     private void OnThemeToggled(object? sender, ToggledEventArgs e)
     {

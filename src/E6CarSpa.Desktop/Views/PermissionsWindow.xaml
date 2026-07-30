@@ -1,0 +1,39 @@
+<Window x:Class="E6CarSpa.Desktop.Views.PermissionsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Permissions" Height="560" Width="520"
+        WindowStartupLocation="CenterOwner" ResizeMode="NoResize"
+        WindowStyle="SingleBorderWindow">
+    <Border Padding="24" Background="{StaticResource SurfaceBrush}">
+        <DockPanel>
+            <StackPanel DockPanel.Dock="Top">
+                <TextBlock x:Name="TitleText" Style="{StaticResource H2}" />
+                <TextBlock Style="{StaticResource Muted}" TextWrapping="Wrap"
+                           Text="Tick what this person may open. Screens they cannot use are hidden in both the desktop app and the phone app, and the server refuses the requests either way." />
+            </StackPanel>
+
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Right"
+                        Margin="0,16,0,0">
+                <Button Content="Cancel" Style="{StaticResource SecondaryButton}" Width="110"
+                        Margin="0,0,10,0" Click="Cancel_Click" />
+                <Button Content="Save permissions" Width="160" Click="Save_Click" />
+            </StackPanel>
+
+            <ItemsControl x:Name="PermissionList" Margin="0,14,0,0">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Background="Transparent" Padding="4,8">
+                            <CheckBox IsChecked="{Binding IsGranted}" VerticalContentAlignment="Center">
+                                <StackPanel Margin="6,0,0,0">
+                                    <TextBlock Text="{Binding Label}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding Description}" Style="{StaticResource Muted}"
+                                               TextWrapping="Wrap" />
+                                </StackPanel>
+                            </CheckBox>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </DockPanel>
+    </Border>
+</Window>
