@@ -48,9 +48,40 @@ seed data (admin login, service catalogue) are created automatically on first st
 
 ## Step 4 — Verify
 
+Every endpoint except login now requires a token, so an unauthenticated call **should** be refused —
+a 401 here means the API is up and correctly closed:
+
 ```bash
-curl https://api.yourdomain.com/api/services      # -> JSON list of services
-journalctl -u e6carspa-api -n 30                  # API logs (look for the admin-password warning)
+curl -o /dev/null -w '%{http_code}\n' https://api.yourdomain.com/api/services   # -> 401 (expected)
+journalctl -u e6carspa-api -n 30                                                # look for the generated admin password
+```
+
+## Step 4b — Retrieve the admin password (required, once)
+
+No admin password ships with the app. On first start the API generates a random one; upgrading from a
+build that used the old `admin@123` default rotates that away automatically. Until someone sets a real
+password the account can do **nothing except change its own password** — and nobody can bill, because
+both clients are login-first. So do this before handing the system over.
+
+```bash
+sudo cat /opt/e6carspa/state/FIRST-RUN-ADMIN-PASSWORD.txt
+# or, if the file is missing:
+journalctl -u e6carspa-api | grep -i 'password for'
+```
+
+Sign in from the desktop or Android app as `admin`, set your own password when prompted, then delete
+the file:
+
+```bash
+sudo rm -f /opt/e6carspa/state/FIRST-RUN-ADMIN-PASSWORD.txt
+```
+
+End-to-end check once you have the password:
+
+```bash
+curl -sS -X POST https://api.yourdomain.com/api/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"admin","password":"<the password>"}'    # -> token + "mustChangePassword": true
 ```
 
 ## Step 5 — Point the clients at the VPS
@@ -91,24 +122,25 @@ secrets. (Remember: everyone must log in again after upgrades that change auth i
 Nightly encrypted off-site backups to Google Drive: follow `README.md` in this folder
 (`e6-backup.sh` + cron). Client billing data with no off-site backup is a business risk.
 
-## Security options for the anonymous billing surface
+## Securing the billing surface — status
 
-The desktop deliberately works **without a login** at the counter, so the billing endpoints
-(quotations, invoices, payments, customer lookup, dashboard) accept anonymous requests. On a
-public VPS that means anyone who discovers the domain (TLS certificates are public record)
-could read customer names/phones and create junk invoices. Ordered by strength:
+**Resolved 2026-07-29/30.** This section previously described a deliberately anonymous counter
+surface and ways to shield it. That surface no longer exists:
 
-1. **Do nothing extra** — HTTPS + rate limiting (300 req/min/IP) + account lockout are active.
-   Fine for a soft launch; weakest against a targeted person.
-2. **Caddy allowlist** — uncomment the `@anonSurface` block in `/etc/caddy/Caddyfile` and set
-   the shop's public IP. Stops scanners/casual abuse; a determined attacker can bypass the
-   header check, and a shop IP change (common on Indian broadband) needs a Caddyfile edit.
-3. **Shop key (recommended, needs an app change)** — the API requires a shared secret header
-   on anonymous endpoints; desktop reads it from an env var, phone stores it once in Settings.
-   Invisible to staff after setup. Not built yet — ask for it when you're ready (also needs a
-   new desktop installer + APK).
-4. **Require login on the desktop too** — strongest, but changes the counter workflow the
-   shop chose. A future toggle if the client ever wants it.
+- **Every endpoint except `/api/auth/login` requires a token.** The desktop app is login-first, as
+  the Android app already was. Option 4 below ("require login on the desktop too") is what was done.
+- **No default credential.** See Step 4b — the admin password is generated, and a machine-generated
+  password can do nothing but replace itself.
+
+Still worth layering on for a public VPS:
+
+1. **Caddy allowlist (defence in depth)** — uncomment `@anonSurface` in `/etc/caddy/Caddyfile` and
+   set the shop's public IP. No longer the only control, so an IP change on Indian broadband is now
+   an inconvenience rather than an outage risk. Recommended if the shop has a static IP.
+2. **Private networking (strongest)** — put the API behind WireGuard/Tailscale and don't expose it
+   publicly at all. Clients dial in; nothing is internet-reachable to attack.
+3. **Still open (see `docs/PRODUCTION-READINESS-AUDIT.md`)** — Android permits cleartext HTTP (H1)
+   and neither client pins the TLS certificate (H3). Close H1 before a public APK.
 
 ## Troubleshooting
 

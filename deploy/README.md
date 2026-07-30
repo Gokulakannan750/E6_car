@@ -80,6 +80,39 @@ Put `install-service.ps1`, `uninstall-service.ps1` next to the `api\` publish fo
 - **Desktop-only fix:** copy the new `E6CarSpa.Desktop.exe` over `C:\Program Files\E6 Car Spa\Desktop\`. Nothing else.
 - **API-only fix:** `Stop-Service E6CarSpaApi` → replace `Api\E6CarSpa.Api.exe` → `Start-Service E6CarSpaApi`.
 
+## ⚠️ Admin password: first install AND the upgrade past 2026-07-30
+
+The app no longer ships a known admin password. Nobody can sign in — and since both apps are
+login-first, **nobody can bill** — until someone completes this once. Do it *before* the shop opens,
+not during trade.
+
+**What happens.** On startup the API either creates the admin with a random password (first install)
+or, if the account is still on the old shipped default `admin@123`, rotates it to a random one. Either
+way the password is written to:
+
+```
+C:\Program Files\E6 Car Spa\Api\FIRST-RUN-ADMIN-PASSWORD.txt
+```
+
+(also in the service log — `Get-EventLog` / the API's `run.log`).
+
+**Steps on the shop PC:**
+
+1. Open that file and copy the password.
+2. Sign in to the desktop app as `admin` with it.
+3. It will immediately demand a new password — set your own (min 8 characters).
+4. Sign in again with the new password. Normal use resumes.
+5. **Delete `FIRST-RUN-ADMIN-PASSWORD.txt`.**
+
+**Why it works this way.** The temporary password can do exactly one thing — set a new password.
+Every other API call is refused while it is in force, so even if the file leaked, nobody could read
+customer data with it, and nobody can take the account over (changing the password requires the old
+one). If you skip step 3, the account stays inert.
+
+If the file is missing (e.g. the install directory was read-only), get the password from the service
+log instead. If both are gone, reset it directly in the database (`UPDATE "Users" SET ...` with a
+BCrypt hash) — there is deliberately no back door.
+
 ### Delivering remotely
 For the first few updates, remote in with **AnyDesk/TeamViewer** and run the installer yourself so you can confirm `Get-Service E6CarSpaApi` shows **Running** afterwards.
 

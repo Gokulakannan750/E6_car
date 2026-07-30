@@ -41,6 +41,7 @@ Scores are judgement calls explained in each section. They assume **internet exp
 | M3 | 🟡 Medium | `ForwardedHeaders` has no pinned `KnownProxies` → per-IP limits/audit trust XFF loosely | API |
 | M4 | 🟡 Medium | APK: no obfuscation, root/emulator/tamper detection, or Play Integrity | Mobile |
 | M5 | 🟡 Medium | Auto-migrate + auto-seed on every startup (no gated prod migration) | Deployment / DB |
+| M6 | 🟡 Medium | Android stores the **login password** (not a token) in `SecureStorage` for biometric sign-in | Mobile |
 | L1–L8 | ⚪ Low | `AllowedHosts:"*"`, no API versioning, no HTTPS-redirect middleware, no CSP, generic template uses `postgres` superuser, no automated dependency scanning, weak default-password strength policy, no account-level audit UI. | Various |
 
 ---
@@ -178,6 +179,7 @@ handler.ServerCertificateCustomValidationCallback = (msg, cert, chain, errors) =
 | **M3** | `ForwardedHeaders` sets no `KnownProxies`/`KnownNetworks`. Default trusts loopback only, so it's OK **iff** Caddy is same-host; misdeploy could let a client spoof `X-Forwarded-For` and evade per-IP rate limits / poison audit IPs. | Pin `KnownProxies` to Caddy's loopback address explicitly and `ForwardLimit = 1`. | 30 min |
 | **M4** | APK has no obfuscation, root/emulator/tamper detection, or Play Integrity. Business logic and the API contract are readable by decompiling. | Enable R8/AOT trimming, add Play Integrity attestation on sensitive calls, and basic root/tamper checks. Note: client checks are defense-in-depth, not a substitute for server auth (C1). | 2–3 days |
 | **M5** | `MigrateAsync()` + seed run on **every** startup. A bad migration auto-applies in prod; startup does schema changes with the app's DB role. | Gate prod migrations behind an explicit deploy step (`dotnet ef database update` in the upgrade script), and run the app with a role that can't DDL. | Half day |
+| **M6** | `LoginPage.xaml.cs` saves the user's **password** to `SecureStorage` (key `saved_password`) so biometric unlock can replay a login. The storage is sound — Keystore-backed, hardware-backed on modern devices — but a *reusable password* is a higher-value secret than a session token: it survives token expiry, works from any device, and can't be revoked server-side without changing the password. On a rooted device it is the whole account. Found while implementing C2 (not in the original pass). | Store a **revocable refresh token** instead and have biometrics unlock that — pairs naturally with M1. Note there is no useful interim: the credential must outlive logout for biometric sign-in to work at all, so clearing it early would just delete the feature. C2 clears it on a forced password change (where it is certainly stale); the real fix is the refresh token. | 1 day (with M1) |
 
 ---
 

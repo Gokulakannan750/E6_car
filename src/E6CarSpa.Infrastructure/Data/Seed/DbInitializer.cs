@@ -140,7 +140,12 @@ public static class DbInitializer
 
         try
         {
-            var path = Path.Combine(AppContext.BaseDirectory, "FIRST-RUN-ADMIN-PASSWORD.txt");
+            // The Linux unit runs with ProtectSystem=strict, so the install directory is read-only
+            // there; E6_STATE_DIR points at the one writable path. Falls back to the app directory,
+            // which is what the Windows service (LocalSystem) uses.
+            var dir = Environment.GetEnvironmentVariable("E6_STATE_DIR");
+            if (string.IsNullOrWhiteSpace(dir)) dir = AppContext.BaseDirectory;
+            var path = Path.Combine(dir, "FIRST-RUN-ADMIN-PASSWORD.txt");
             File.WriteAllText(path,
                 $"""
                 E6 Car Spa — temporary credential

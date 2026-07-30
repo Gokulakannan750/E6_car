@@ -17,13 +17,16 @@ EnvironmentFile=/etc/e6carspa/api.env
 Environment=ASPNETCORE_ENVIRONMENT=Production
 # Single-file .NET apps extract native libs here on first run.
 Environment=DOTNET_BUNDLE_EXTRACT_BASE_DIR=/opt/e6carspa/extract
+# Where the app may write operational files (the one-time generated admin password). The install
+# directory is read-only under ProtectSystem=strict, so it cannot be used for this.
+Environment=E6_STATE_DIR=/opt/e6carspa/state
 
 # Hardening: the API only needs its own folder and a TCP socket to Postgres/Kestrel.
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/opt/e6carspa/extract
+ReadWritePaths=/opt/e6carspa/extract /opt/e6carspa/state
 
 [Install]
 WantedBy=multi-user.target

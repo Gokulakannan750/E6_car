@@ -65,7 +65,9 @@ sudo -u postgres psql -tAc "SELECT 1 FROM pg_database WHERE datname='$DB_NAME'" 
 
 echo "== [3/8] System user + directories =="
 id -u e6api &>/dev/null || useradd --system --home /opt/e6carspa --shell /usr/sbin/nologin e6api
-mkdir -p "$APP_DIR" /opt/e6carspa/extract /etc/e6carspa
+# 'state' is the only place the API may write at runtime (ProtectSystem=strict makes the install
+# directory read-only) — it holds the one-time generated admin password.
+mkdir -p "$APP_DIR" /opt/e6carspa/extract /opt/e6carspa/state /etc/e6carspa
 
 echo "== [4/8] Unpacking the API =="
 systemctl stop e6carspa-api 2>/dev/null || true
