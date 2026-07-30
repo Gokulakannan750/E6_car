@@ -8,6 +8,12 @@ public partial class ShellWindow : Window
 {
     private readonly ShellViewModel _vm;
 
+    /// <summary>
+    /// Idle period after which the session is dropped and a fresh login demanded. Long enough not
+    /// to interrupt a counter operator mid-job, short enough that an unattended till isn't left open.
+    /// </summary>
+    private static readonly TimeSpan InactivityTimeout = TimeSpan.FromMinutes(30);
+
     private readonly System.Windows.Threading.DispatcherTimer _inactivityTimer;
 
     public ShellWindow(ShellViewModel vm)
@@ -27,12 +33,13 @@ public partial class ShellWindow : Window
 
         _inactivityTimer = new System.Windows.Threading.DispatcherTimer
         {
-            Interval = TimeSpan.FromMinutes(5)
+            Interval = InactivityTimeout
         };
         _inactivityTimer.Tick += (_, _) =>
         {
             var api = App.Services.GetRequiredService<E6CarSpa.Client.IApiClient>();
-            if (api.IsLoggedIn) SignOutAndReauthenticate("locked after 5 minutes of inactivity");
+            if (api.IsLoggedIn)
+                SignOutAndReauthenticate($"locked after {InactivityTimeout.TotalMinutes:0} minutes of inactivity");
         };
 
         // Reset timer on any mouse or keyboard input
