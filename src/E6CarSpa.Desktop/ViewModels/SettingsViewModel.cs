@@ -51,9 +51,104 @@ public partial class SettingsViewModel(IApiClient api) : ObservableObject, IAsyn
 
     public string MyUsername => api.CurrentUser?.Username ?? "";
 
+    /// <summary>Only an Admin may manage staff logins; the Users tab is hidden for everyone else.
+    /// The API enforces this too — this just avoids showing a tab that would only return 403.</summary>
+    public bool IsAdmin => api.CurrentUser?.Role is UserRole.Admin;
+
+    /// <summary>
+    /// Raised after the signed-in user changes their own password. The server rotates the security
+    /// stamp, so the current token is dead — the view uses this to send the user back to a login.
+    /// </summary>
+    public event Action? OwnPasswordChanged;
+
+    // ----- Staff users (Admin only) -----
+    public ObservableCollection<UserDto> Users { get; } = new();
+    public IReadOnlyList<UserRole> Roles { get; } = Enum.GetValues<UserRole>();
+
+    [ObservableProperty] private string _newUserFullName = "";
+    [ObservableProperty] private string _newUserUsername = "";
+    [ObservableProperty] private string _newUserPassword = "";
+    [ObservableProperty] private UserRole _newUserRole = UserRole.Worker;
+    [ObservableProperty] private string _userInfo = "";
+    [ObservableProperty] private string _userError = "";
+
     public async Task InitializeAsync()
     {
         await LoadSettingsAsync();
+        if (IsAdmin) await LoadUsersAsync();
+    }
+
+    [RelayCommand]
+    private async Task LoadUsersAsync()
+    {
+        if (!IsAdmin) return;
+        try
+        {
+            UserError = "";
+            var list = await api.GetUsersAsync() ?? new();
+            Users.Clear();
+            foreach (var u in list) Users.Add(u);
+        }
+        catch (Exception ex) { UserError = ex.Message; }
+    }
+
+    [RelayCommand]
+    private async Task CreateUserAsync()
+    {
+        UserInfo = ""; UserError = "";
+
+        if (string.IsNullOrWhiteSpace(NewUserFullName)) { UserError = "Enter the person's full name."; return; }
+        if (string.IsNullOrWhiteSpace(NewUserUsername)) { UserError = "Enter a username to sign in with."; return; }
+        if (NewUserPassword.Length < 8) { UserError = "Password must be at least 8 characters."; return; }
+
+        try
+        {
+            var created = await api.CreateUserAsync(new CreateUserRequest(
+                NewUserFullName.Trim(), NewUserUsername.Trim(), NewUserPassword, NewUserRole));
+
+            Users.Add(created);
+            UserInfo = $"Created '{created.Username}' ({created.Role}). Tell them their password — it is not shown again.";
+            NewUserFullName = ""; NewUserUsername = ""; NewUserPassword = ""; NewUserRole = UserRole.Worker;
+        }
+        catch (Exception ex) { UserError = ex.Message; }
+    }
+
+    /// <summary>Enable/disable a login. Deactivating revokes their token immediately (security stamp).</summary>
+    [RelayCommand]
+    private async Task ToggleUserActiveAsync(UserDto? user)
+    {
+        if (user is null) return;
+        UserInfo = ""; UserError = "";
+
+        if (user.Id == api.CurrentUser?.Id)
+        {
+            UserError = "You cannot deactivate the account you are signed in with.";
+            return;
+        }
+
+        try
+        {
+            await api.UpdateUserAsync(user.Id,
+                new UpdateUserRequest(user.FullName, user.Role, !user.IsActive, null));
+            UserInfo = user.IsActive ? $"'{user.Username}' deactivated." : $"'{user.Username}' reactivated.";
+            await LoadUsersAsync();
+        }
+        catch (Exception ex) { UserError = ex.Message; }
+    }
+
+    /// <summary>Set a new password for someone who has forgotten theirs. Also clears their lockout.</summary>
+    public async Task ResetUserPasswordAsync(UserDto user, string newPassword)
+    {
+        UserInfo = ""; UserError = "";
+        if (newPassword.Length < 8) { UserError = "Password must be at least 8 characters."; return; }
+
+        try
+        {
+            await api.UpdateUserAsync(user.Id,
+                new UpdateUserRequest(user.FullName, user.Role, user.IsActive, newPassword));
+            UserInfo = $"Password reset for '{user.Username}'. They are signed out of any open session.";
+        }
+        catch (Exception ex) { UserError = ex.Message; }
     }
 
     private async Task LoadSettingsAsync()
@@ -131,6 +226,9 @@ public partial class SettingsViewModel(IApiClient api) : ObservableObject, IAsyn
             MyOldPassword = "";
             MyNewPassword = "";
             Info = "Your password has been changed.";
+            // The server revoked this session's token, so the shell must send us back to a login
+            // rather than sit there signed out with every later call failing.
+            OwnPasswordChanged?.Invoke();
         }
         catch (Exception ex) { Error = ex.Message; }
     }

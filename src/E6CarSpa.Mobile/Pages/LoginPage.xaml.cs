@@ -101,6 +101,9 @@ public partial class LoginPage : ContentPage
         try
         {
             await AppServices.Api.ChangeMyPasswordAsync(new ChangeMyPasswordRequest(currentPassword, next));
+            // The change revoked the token we authenticated with, so end the session explicitly
+            // and make the user sign in with the password they just chose.
+            AppServices.Api.Logout();
             SecureStorage.Remove("saved_password");
             PasswordEntry.Text = "";
             await DisplayAlertAsync("Password updated",

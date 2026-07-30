@@ -85,9 +85,10 @@
                             <TextBlock Text="{Binding RoleName}" Foreground="#D32F2F" FontSize="12" Margin="0,2,0,0" />
                         </StackPanel>
                     </Border>
+                    <!-- Always visible. It used to be bound to IsLoggedIn, which meant any path that
+                         dropped the session hid the only way back to a login. -->
                     <Button Content="🚪  Log out" Click="Logout_Click" Style="{StaticResource NavButton}"
-                            Margin="0,6,0,0" Foreground="#E0E8F0"
-                            Visibility="{Binding IsLoggedIn, Converter={StaticResource BoolToVis}}" />
+                            Margin="0,6,0,0" Foreground="#E0E8F0" />
                     <TextBlock Text="Powered by Trovotech Solutions" Foreground="#9A9A9A" FontSize="11"
                                HorizontalAlignment="Center" TextWrapping="Wrap" TextAlignment="Center"
                                Margin="0,14,0,0" />

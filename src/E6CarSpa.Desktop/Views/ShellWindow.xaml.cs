@@ -67,7 +67,8 @@ public partial class ShellWindow : Window
     /// NOT leave the shell on screen — it hides, shows the login window, and either resumes with
     /// the new session or closes the app if the user declines.
     /// </summary>
-    private void SignOutAndReauthenticate(string? reason)
+    /// <param name="reason">Shown in the login window title, e.g. why the session ended.</param>
+    public void SignOutAndReauthenticate(string? reason)
     {
         _inactivityTimer.Stop();
 

@@ -154,6 +154,96 @@
                 </ScrollViewer>
             </TabItem>
 
+            <!-- Staff logins. Admin-only: the tab is hidden for other roles, and the API refuses
+                 these calls anyway, so this is convenience rather than the security boundary. -->
+            <TabItem Header="Users" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVis}}">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Margin="0,16,0,0">
+                    <StackPanel>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="Add a User" Style="{StaticResource H2}" />
+                                <TextBlock Style="{StaticResource Muted}"
+                                           Text="Create a login for a staff member. Give them the password directly — it is never shown again." />
+                                <Grid Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="150" />
+                                        <ColumnDefinition Width="Auto" />
+                                    </Grid.ColumnDefinitions>
+
+                                    <StackPanel Grid.Column="0" Margin="0,0,12,0">
+                                        <TextBlock Text="Full name" />
+                                        <TextBox Text="{Binding NewUserFullName, UpdateSourceTrigger=PropertyChanged}" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="0,0,12,0">
+                                        <TextBlock Text="Username" />
+                                        <TextBox Text="{Binding NewUserUsername, UpdateSourceTrigger=PropertyChanged}" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Margin="0,0,12,0">
+                                        <TextBlock Text="Password (min 8)" />
+                                        <PasswordBox x:Name="NewUserPasswordBox" PasswordChanged="NewUserPassword_Changed" />
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="3" Margin="0,0,12,0">
+                                        <TextBlock Text="Role" />
+                                        <ComboBox ItemsSource="{Binding Roles}" SelectedItem="{Binding NewUserRole}" />
+                                    </StackPanel>
+                                    <Button Grid.Column="4" Content="➕ Add User" VerticalAlignment="Bottom"
+                                            Margin="0,0,0,16" Command="{Binding CreateUserCommand}" />
+                                </Grid>
+
+                                <TextBlock Text="{Binding UserInfo}" Foreground="{StaticResource SuccessBrush}"
+                                           FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,6,0,0"
+                                           Visibility="{Binding UserInfo, Converter={StaticResource StringToVis}}" />
+                                <TextBlock Text="{Binding UserError}" Foreground="{StaticResource DangerBrush}"
+                                           TextWrapping="Wrap" Margin="0,6,0,0"
+                                           Visibility="{Binding UserError, Converter={StaticResource StringToVis}}" />
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource Card}">
+                            <DockPanel>
+                                <Grid DockPanel.Dock="Top">
+                                    <TextBlock Text="Staff Logins" Style="{StaticResource H2}" />
+                                    <Button Content="Refresh" Style="{StaticResource SecondaryButton}"
+                                            HorizontalAlignment="Right" VerticalAlignment="Top"
+                                            Command="{Binding LoadUsersCommand}" />
+                                </Grid>
+                                <DataGrid ItemsSource="{Binding Users}" IsReadOnly="True" BorderThickness="0"
+                                          HeadersVisibility="Column" CanUserAddRows="False" AutoGenerateColumns="False"
+                                          MinHeight="220" Margin="0,8,0,0">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Name" Binding="{Binding FullName}" Width="*" MinWidth="140" />
+                                        <DataGridTextColumn Header="Username" Binding="{Binding Username}" Width="160" />
+                                        <DataGridTextColumn Header="Role" Binding="{Binding Role}" Width="110" />
+                                        <DataGridTextColumn Header="Active" Binding="{Binding IsActive}" Width="70" />
+                                        <DataGridTemplateColumn Width="130">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Button Content="Reset password" Background="Transparent" Padding="6,2"
+                                                            HorizontalAlignment="Left" Click="ResetUserPassword_Click" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                        <DataGridTemplateColumn Width="110">
+                                            <DataGridTemplateColumn.CellTemplate>
+                                                <DataTemplate>
+                                                    <Button Content="Enable / Disable" Background="Transparent" Padding="6,2"
+                                                            HorizontalAlignment="Left"
+                                                            Command="{Binding DataContext.ToggleUserActiveCommand,
+                                                                       RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                            CommandParameter="{Binding}" />
+                                                </DataTemplate>
+                                            </DataGridTemplateColumn.CellTemplate>
+                                        </DataGridTemplateColumn>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </DockPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
 
         </TabControl>
 

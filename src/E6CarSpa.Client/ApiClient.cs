@@ -154,14 +154,14 @@ public class ApiClient(HttpClient http) : IApiClient
     public Task<UserDto> UpdateUserAsync(Guid id, UpdateUserRequest req) =>
         PutAsync<UserDto>($"api/auth/users/{id}", req);
 
-    public async Task ChangeMyPasswordAsync(ChangeMyPasswordRequest req)
-    {
-        await PutAsync<object>("api/auth/users/me/password", req);
-        // The server rotates the security stamp on a password change, which revokes the token we
-        // are holding — so the caller must sign in again. Clearing the session here keeps this
-        // client honest rather than leaving it with a token every later call would reject.
-        Logout();
-    }
+    /// <remarks>
+    /// The server rotates the security stamp on success, which revokes the token this client is
+    /// holding — every later call will 401. The caller is responsible for signing the user back in;
+    /// it is not done here, because silently dropping the session leaves whatever UI is on screen
+    /// showing a signed-out shell.
+    /// </remarks>
+    public Task ChangeMyPasswordAsync(ChangeMyPasswordRequest req) =>
+        PutAsync<object>("api/auth/users/me/password", req);
 
     // ---------- Staff advances ----------
     public Task<List<StaffAdvanceDto>?> GetStaffAdvancesAsync(string? worker = null)
