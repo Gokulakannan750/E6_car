@@ -17,8 +17,8 @@
 
 | Dimension | Score | One-line basis |
 |---|---|---|
-| **Production readiness** | **62 → 72 / 100** | Installer + VPS runbook + backups exist; C1 closed 2026-07-29. Still blocked by default admin (C2) and mobile cleartext (H1). |
-| **Security** | **68 → 78 / 100** | Strong auth internals; C1 closed. Remaining drag: default admin, cleartext HTTP, no pinning. |
+| **Production readiness** | **62 → 78 / 100** | Installer + VPS runbook + backups exist; C1 closed 2026-07-29, C2 closed 2026-07-30. Remaining launch blocker: mobile cleartext (H1). |
+| **Security** | **68 → 85 / 100** | Strong auth internals; both criticals closed. Remaining drag: cleartext HTTP, no cert pinning, no MFA/refresh tokens. |
 | **Scalability** | **55 / 100** | Fine for one shop; single API instance, direct `DbContext`, no cache/queue, not horizontally scalable yet. |
 | **Maintainability** | **80 / 100** | Clean layering, DI, DTOs, generous comments, 75 passing tests. |
 | **Overall enterprise readiness** | **63 / 100** | A strong small-business build; needs the exposure hardening + a few enterprise gaps closed. |
@@ -32,7 +32,7 @@ Scores are judgement calls explained in each section. They assume **internet exp
 | # | Severity | Finding | Area |
 |---|---|---|---|
 | C1 | ✅ **FIXED 2026-07-29** | ~~Anonymous billing surface exposed to the Internet~~ — every endpoint except `/api/auth/login` now requires a token; desktop is login-first; 78 tests pin the closed posture. | API / AuthZ |
-| C2 | 🔴 Critical | Seeded default admin `admin` / `admin@123`, warned but not enforced | Auth |
+| C2 | ✅ **FIXED 2026-07-30** | ~~Seeded default admin `admin` / `admin@123`~~ — no known password ships; first run generates a random one, old installs are auto-rotated off the default, and the account can do nothing but set a new password. 81 tests green. | Auth |
 | H1 | 🟠 High | Android allows cleartext HTTP (`usesCleartextTraffic=true`) and defaults to `http://` | Mobile / Network |
 | H2 | 🟠 High | Real DB password committed in `appsettings.Development.json` | Secrets |
 | H3 | 🟠 High | No certificate pinning (desktop or mobile) → MITM via installed/rogue root CA | Network |
@@ -69,7 +69,7 @@ These are real strengths verified in code — keep them:
 ### C1 — Anonymous billing surface exposed to the Internet — ✅ FIXED (2026-07-29)
 > **Resolution:** `[AllowAnonymous]` was removed from every controller except the login endpoint,
 > so the global fallback policy now closes the whole API. The desktop app was made **login-first**
-> (login window gates startup; logout and the 5-minute inactivity timeout return to it rather than
+> (login window gates startup; logout and the inactivity timeout — 30 minutes — return to it rather than
 > leaving a signed-out shell). Android was already login-first (Splash → Login → Shell). The six
 > tests that pinned the anonymous contract were inverted to pin the closed posture; suite is green
 > at **78 passing**. The Caddy IP-allowlist is now defence-in-depth rather than the only control.
@@ -97,7 +97,26 @@ builder.Services.AddAuthentication().AddScheme<AuthenticationSchemeOptions, Devi
 **Best practice:** OWASP API1:2023 (Broken Object Level Auth) + API5 (Broken Function Level Auth). Never expose mutating endpoints anonymously on the Internet.
 **Priority:** P0 — **blocks internet launch.** **Effort:** allowlist ~1h; proper auth ~1–2 days.
 
-### C2 — Default admin `admin` / `admin@123`, warned but not enforced 🔴
+### C2 — Default admin `admin` / `admin@123` — ✅ FIXED (2026-07-30)
+> **Resolution — no known password is shipped at all:**
+> 1. **Fresh installs** generate a 20-char cryptographically random admin password (`RandomNumberGenerator`),
+>    surfaced once to the operator in the log *and* in `FIRST-RUN-ADMIN-PASSWORD.txt` beside the app.
+> 2. **Existing installs self-heal on upgrade:** startup verifies every active account against the
+>    retired default list (`admin@123`); any match is rotated onto a fresh random password, flagged
+>    for change, and its security stamp rotated so tokens minted under the old password die.
+> 3. **The temporary password grants nothing.** A new `User.MustChangePassword` flag is enforced
+>    centrally in `OnTokenValidated`: such an account authenticates, but every request except
+>    `PUT /api/auth/users/me/password` is refused — so an attacker who somehow learns it cannot read
+>    or change data, and cannot lock the owner out by setting their own password without the old one.
+> 4. Both clients force the prompt: desktop shows `ForcePasswordChangeWindow` straight after sign-in,
+>    Android prompts on `LoginPage`. Changing the password clears the flag and requires a fresh sign-in.
+>
+> Chose auto-rotation over the hard-fail-at-startup originally recommended: refusing to boot would
+> have taken the shop's billing offline on upgrade. Rotation closes the hole without an outage, and
+> the operator retrieves the new password locally. 3 new tests pin the behaviour (81 passing).
+>
+> Original finding below, for the record.
+
 **Where:** `DbInitializer.SeedAsync` seeds `admin` / `admin@123` on first run and logs a warning each startup if unchanged.
 **Explanation:** A known default credential on an internet-facing app is trivially exploitable; the log warning is invisible to an operator who never reads journald.
 **Business impact:** Full administrative takeover — user management, settings, reports, price lists.
@@ -215,7 +234,7 @@ Runbook references nightly encrypted off-site backups (`e6-backup.sh` + cron to 
 |---|---|
 | SQL injection | Not found — EF/LINQ; single constant `FromSqlRaw`. ✔ |
 | Broken access control | **C1** — anonymous mutating endpoints. 🔴 |
-| Auth bypass / default creds | **C2** — default admin. 🔴 |
+| Auth bypass / default creds | **C2 fixed** — no shipped default; temporary passwords are single-purpose. ✔ |
 | IDOR | Mitigated by GUIDv4 keys, but anonymous access makes any known ID usable (see C1). |
 | Mass assignment | Low — binds to explicit `*Request` DTOs, not entities. ✔ |
 | RCE / command injection | None found — no shell-out with user input in the API. ✔ |
@@ -236,9 +255,9 @@ Bearer JWT in header; token in memory only; WhatsApp send time-boxed. **Gaps:** 
 - **Android:** prefer Play Store (handles integrity/rollout). For sideloaded APKs, host over HTTPS, verify the signing cert, and gate sensitive server calls behind **Play Integrity** attestation. Enforce a minimum-version check server-side so old clients can be cut off.
 
 ### 13. Compliance readiness
-- **OWASP API Top 10:** main gaps are API1/API5 (C1) and API2 (default creds/no MFA). Others largely addressed.
+- **OWASP API Top 10:** API1/API5 (C1) and the default-credential half of API2 are closed; API2 still lacks MFA/refresh tokens (M1). Others largely addressed.
 - **OWASP Mobile Top 10:** M1 cleartext (H1), no pinning (H3), no anti-tamper (M4); secure-storage of token is fine (in-memory).
-- **OWASP Web Top 10:** A01 (C1), A05 misconfig (defaults), A07 (C2) — rest reasonable.
+- **OWASP Web Top 10:** A01 (C1) and A07 (C2) now closed; A05 misconfig partly remains (see L1/L5). Rest reasonable.
 - **CIS/GDPR-style:** you store customer PII (name/phone/vehicle). For data-protection readiness: encrypt backups (done), define retention, support "delete this customer's data," restrict PII in logs, and document a processing basis. Audit trail exists via `AuditService`.
 
 ---
@@ -246,7 +265,7 @@ Bearer JWT in header; token in memory only; WhatsApp send time-boxed. **Gaps:** 
 ## Prioritized remediation roadmap
 
 **P0 — before any internet exposure**
-1. C2: kill the default admin (hard-fail in prod or forced first-run reset).
+1. ~~C2: kill the default admin.~~ ✅ Done 2026-07-30 — random first-run password + auto-rotation off retired defaults + forced change.
 2. C1: gate the anonymous surface — Caddy IP-allowlist immediately, then real device auth.
 3. Verify on the box: `.env` is `600`/root-owned, `e6api` has no DDL/superuser, SSH is key-only + `PermitRootLogin no`, Fail2Ban + unattended-upgrades on, `ufw` limited to 22/80/443.
 

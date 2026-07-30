@@ -1,4 +1,5 @@
 using E6CarSpa.Client;
+using E6CarSpa.Contracts;
 using E6CarSpa.Mobile.Services;
 using Plugin.Fingerprint;
 using Plugin.Fingerprint.Abstractions;
@@ -33,9 +34,18 @@ public partial class LoginPage : ContentPage
         try
         {
             await AppServices.Api.LoginAsync(username, password);
+
+            // Temporary machine-generated password: the API refuses everything except setting a
+            // new one, so handle it here rather than opening a shell where nothing works.
+            if (AppServices.Api.MustChangePassword)
+            {
+                await ForcePasswordChangeAsync(password);
+                return;
+            }
+
             Settings.LastUsername = username;
             await SecureStorage.SetAsync("saved_password", password);
-            
+
             // Swap to the tabbed monitor shell.
             if (Application.Current?.Windows.Count > 0)
                 Application.Current.Windows[0].Page = new AppShell();
@@ -51,6 +61,55 @@ public partial class LoginPage : ContentPage
         finally
         {
             SetBusy(false);
+        }
+    }
+
+    /// <summary>
+    /// Walk the user through replacing a temporary password. On success the server revokes the
+    /// token we just got (the security stamp rotates), so the user signs in again with the new
+    /// password — which is also why the biometric copy is cleared.
+    /// </summary>
+    private async Task ForcePasswordChangeAsync(string currentPassword)
+    {
+        var next = await DisplayPromptAsync(
+            "Set a new password",
+            "This account uses a temporary password that was generated automatically. Choose your own password to continue.",
+            "Save", "Cancel", placeholder: "New password (min 8 characters)", maxLength: 200);
+
+        if (string.IsNullOrEmpty(next))
+        {
+            AppServices.Api.Logout();
+            ShowError("You must set a new password before using this account.");
+            return;
+        }
+        if (next.Length < 8)
+        {
+            AppServices.Api.Logout();
+            ShowError("Password must be at least 8 characters. Please sign in and try again.");
+            return;
+        }
+
+        var confirm = await DisplayPromptAsync("Confirm password", "Enter the new password again.",
+            "Save", "Cancel", placeholder: "Confirm new password", maxLength: 200);
+        if (confirm != next)
+        {
+            AppServices.Api.Logout();
+            ShowError("The passwords did not match. Please sign in and try again.");
+            return;
+        }
+
+        try
+        {
+            await AppServices.Api.ChangeMyPasswordAsync(new ChangeMyPasswordRequest(currentPassword, next));
+            SecureStorage.Remove("saved_password");
+            PasswordEntry.Text = "";
+            await DisplayAlertAsync("Password updated",
+                "Your password has been changed. Please sign in with your new password.", "OK");
+        }
+        catch (Exception ex)
+        {
+            AppServices.Api.Logout();
+            ShowError(ex is ApiException a ? a.Message : "Could not change the password. Please try again.");
         }
     }
 

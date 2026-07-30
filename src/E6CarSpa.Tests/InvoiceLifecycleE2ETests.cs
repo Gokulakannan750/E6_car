@@ -30,7 +30,7 @@ public class InvoiceLifecycleE2ETests
     {
         var factory = new ApiFactory();
         var client  = factory.CreateClient();
-        Auth(client, await LoginAsync(client, "admin", "admin@123"));
+        Auth(client, await LoginAsync(client, "admin", ApiFactory.AdminPassword));
         return (factory, client);
     }
 
@@ -218,7 +218,7 @@ public class InvoiceLifecycleE2ETests
     {
         using var factory = new ApiFactory();
         var adminClient = factory.CreateClient();
-        Auth(adminClient, await LoginAsync(adminClient, "admin", "admin@123"));
+        Auth(adminClient, await LoginAsync(adminClient, "admin", ApiFactory.AdminPassword));
 
         (await adminClient.PostAsJsonAsync("/api/auth/users",
             new CreateUserRequest("Store Manager", "mgr1e2e", "mgr@1234", UserRole.Manager)))

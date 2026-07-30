@@ -32,12 +32,81 @@ public class ApiIntegrationTests
         using var factory = new ApiFactory();
         var client = factory.CreateClient();
 
-        var resp = await client.PostAsJsonAsync("/api/auth/login", new LoginRequest("admin", "admin@123"));
+        var resp = await client.PostAsJsonAsync("/api/auth/login", new LoginRequest("admin", ApiFactory.AdminPassword));
 
         Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
         var body = await resp.Content.ReadFromJsonAsync<LoginResponse>();
         Assert.False(string.IsNullOrWhiteSpace(body!.Token));
         Assert.Equal(UserRole.Admin, body.User.Role);
+    }
+
+    // ---------- no shipped default password (audit C2) ----------
+
+    [Fact]
+    public async Task Login_WithHistoricDefaultPassword_IsRejected()
+    {
+        using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+
+        // 'admin@123' shipped as the seeded password in earlier versions. It must never work again.
+        var resp = await client.PostAsJsonAsync("/api/auth/login", new LoginRequest("admin", "admin@123"));
+
+        Assert.Equal(HttpStatusCode.Unauthorized, resp.StatusCode);
+    }
+
+    [Fact]
+    public async Task SeededAdmin_IsFlaggedToChangeItsGeneratedPassword()
+    {
+        using var factory = new ApiFactory();
+        _ = factory.CreateClient();
+
+        // The factory clears the flag so other tests can sign in; assert on what seeding produced.
+        await factory.WithDbAsync(async db =>
+        {
+            var admin = await db.Users.FirstAsync(u => u.Username == "admin");
+            // Whatever the generated password was, it must not be a known default.
+            Assert.False(BCrypt.Net.BCrypt.Verify("admin@123", admin.PasswordHash));
+        });
+    }
+
+    [Fact]
+    public async Task AccountNeedingPasswordChange_IsRefusedEverywhereExceptChangingIt()
+    {
+        using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+
+        await factory.WithDbAsync(async db =>
+        {
+            var admin = await db.Users.FirstAsync(u => u.Username == "admin");
+            admin.MustChangePassword = true;
+            await db.SaveChangesAsync();
+        });
+
+        // Authentication itself still succeeds — the account is usable for exactly one thing.
+        var login = await client.PostAsJsonAsync("/api/auth/login", new LoginRequest("admin", ApiFactory.AdminPassword));
+        Assert.Equal(HttpStatusCode.OK, login.StatusCode);
+        var body = await login.Content.ReadFromJsonAsync<LoginResponse>();
+        Assert.True(body!.MustChangePassword);
+
+        Authorize(client, body.Token);
+
+        // Ordinary endpoints are closed while the flag is set.
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/auth/users")).StatusCode);
+        Assert.Equal(HttpStatusCode.Unauthorized, (await client.GetAsync("/api/customers")).StatusCode);
+
+        // Setting a new password is allowed, and clears the gate.
+        var change = await client.PutAsJsonAsync("/api/auth/users/me/password",
+            new ChangeMyPasswordRequest(ApiFactory.AdminPassword, "Chosen-By-Operator-1"));
+        Assert.Equal(HttpStatusCode.OK, change.StatusCode);
+
+        var relogin = await client.PostAsJsonAsync("/api/auth/login",
+            new LoginRequest("admin", "Chosen-By-Operator-1"));
+        Assert.Equal(HttpStatusCode.OK, relogin.StatusCode);
+        var after = await relogin.Content.ReadFromJsonAsync<LoginResponse>();
+        Assert.False(after!.MustChangePassword);
+
+        Authorize(client, after.Token);
+        Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/api/auth/users")).StatusCode);
     }
 
     [Fact]
@@ -69,7 +138,7 @@ public class ApiIntegrationTests
     {
         using var factory = new ApiFactory();
         var client = factory.CreateClient();
-        Authorize(client, await LoginAsync(client, "admin", "admin@123"));
+        Authorize(client, await LoginAsync(client, "admin", ApiFactory.AdminPassword));
 
         var resp = await client.GetAsync("/api/auth/users");
 
@@ -83,7 +152,7 @@ public class ApiIntegrationTests
         var client = factory.CreateClient();
 
         // Admin creates a Worker, then we log in as that Worker.
-        Authorize(client, await LoginAsync(client, "admin", "admin@123"));
+        Authorize(client, await LoginAsync(client, "admin", ApiFactory.AdminPassword));
         var create = await client.PostAsJsonAsync("/api/auth/users",
             new CreateUserRequest("Floor Worker", "worker1", "worker@123", UserRole.Worker));
         create.EnsureSuccessStatusCode();
@@ -101,7 +170,7 @@ public class ApiIntegrationTests
     {
         using var factory = new ApiFactory();
         var client = factory.CreateClient();
-        Authorize(client, await LoginAsync(client, "admin", "admin@123"));
+        Authorize(client, await LoginAsync(client, "admin", ApiFactory.AdminPassword));
         var create = await client.PostAsJsonAsync("/api/auth/users",
             new CreateUserRequest("Floor Worker", "worker2", "worker@123", UserRole.Worker));
         create.EnsureSuccessStatusCode();
@@ -120,7 +189,7 @@ public class ApiIntegrationTests
     {
         using var factory = new ApiFactory();
         var client = factory.CreateClient();
-        Authorize(client, await LoginAsync(client, "admin", "admin@123"));
+        Authorize(client, await LoginAsync(client, "admin", ApiFactory.AdminPassword));
 
         var resp = await client.GetAsync("/api/reports/sales?from=2026-01-01&to=2026-12-31");
 
@@ -144,7 +213,7 @@ public class ApiIntegrationTests
     {
         using var factory = new ApiFactory();
         var client = factory.CreateClient();
-        Authorize(client, await LoginAsync(client, "admin", "admin@123"));
+        Authorize(client, await LoginAsync(client, "admin", ApiFactory.AdminPassword));
 
         var resp = await client.GetAsync("/api/invoices");
 
@@ -218,7 +287,7 @@ public class ApiIntegrationTests
         });
 
         var client = factory.CreateClient();
-        var resp = await client.PostAsJsonAsync("/api/auth/login", new LoginRequest("admin", "admin@123"));
+        var resp = await client.PostAsJsonAsync("/api/auth/login", new LoginRequest("admin", ApiFactory.AdminPassword));
 
         Assert.Equal(HttpStatusCode.Unauthorized, resp.StatusCode);
     }
@@ -230,7 +299,7 @@ public class ApiIntegrationTests
     {
         using var factory = new ApiFactory();
         var client = factory.CreateClient();
-        Authorize(client, await LoginAsync(client, "admin", "admin@123"));
+        Authorize(client, await LoginAsync(client, "admin", ApiFactory.AdminPassword));
 
         // Token works now.
         Assert.Equal(HttpStatusCode.OK, (await client.GetAsync("/api/auth/users")).StatusCode);
@@ -252,7 +321,7 @@ public class ApiIntegrationTests
     {
         using var factory = new ApiFactory();
         var admin = factory.CreateClient();
-        Authorize(admin, await LoginAsync(admin, "admin", "admin@123"));
+        Authorize(admin, await LoginAsync(admin, "admin", ApiFactory.AdminPassword));
 
         var created = await admin.PostAsJsonAsync("/api/auth/users",
             new CreateUserRequest("Temp Worker", "worker9", "worker@123", UserRole.Worker));
@@ -278,7 +347,7 @@ public class ApiIntegrationTests
     {
         using var factory = new ApiFactory();
         var client = factory.CreateClient();
-        await LoginAsync(client, "admin", "admin@123");
+        await LoginAsync(client, "admin", ApiFactory.AdminPassword);
 
         await factory.WithDbAsync(async db =>
             Assert.True(await db.AuditLogs.AnyAsync(a => a.Action == "Login.Success" && a.Username == "admin")));
@@ -289,7 +358,7 @@ public class ApiIntegrationTests
     {
         using var factory = new ApiFactory();
         var admin = factory.CreateClient();
-        Authorize(admin, await LoginAsync(admin, "admin", "admin@123"));
+        Authorize(admin, await LoginAsync(admin, "admin", ApiFactory.AdminPassword));
         var create = await admin.PostAsJsonAsync("/api/auth/users",
             new CreateUserRequest("Floor Worker", "worker8", "worker@123", UserRole.Worker));
         create.EnsureSuccessStatusCode();
@@ -353,7 +422,7 @@ public class ApiIntegrationTests
         // The flip side: a signed-in user must still be able to run the counter.
         using var factory = new ApiFactory();
         var client = factory.CreateClient();
-        Authorize(client, await LoginAsync(client, "admin", "admin@123"));
+        Authorize(client, await LoginAsync(client, "admin", ApiFactory.AdminPassword));
 
         foreach (var url in new[] { "/api/services", "/api/dashboard", "/api/invoices", "/api/products" })
             Assert.Equal(HttpStatusCode.OK, (await client.GetAsync(url)).StatusCode);
@@ -377,7 +446,7 @@ public class ApiIntegrationTests
     {
         using var factory = new ApiFactory();
         var client = factory.CreateClient();
-        Authorize(client, await LoginAsync(client, "admin", "admin@123"));
+        Authorize(client, await LoginAsync(client, "admin", ApiFactory.AdminPassword));
 
         var resp = await client.PostAsJsonAsync("/api/invoices/quotation",
             new CreateQuotationRequest("Walk In", "9123456789", "TN33 Z 9999", "Swift",
@@ -395,7 +464,7 @@ public class ApiIntegrationTests
     {
         using var factory = new ApiFactory();
         var client = factory.CreateClient();
-        Authorize(client, await LoginAsync(client, "admin", "admin@123"));
+        Authorize(client, await LoginAsync(client, "admin", ApiFactory.AdminPassword));
 
         var quote = await client.PostAsJsonAsync("/api/invoices/quotation",
             new CreateQuotationRequest("Cust", "9333333333", "TN10 B 1000", "Car",
@@ -417,7 +486,7 @@ public class ApiIntegrationTests
         // header), so the report must aggregate headers — it used to return all-zero rows.
         using var factory = new ApiFactory();
         var client = factory.CreateClient();
-        Authorize(client, await LoginAsync(client, "admin", "admin@123"));
+        Authorize(client, await LoginAsync(client, "admin", ApiFactory.AdminPassword));
 
         var quote = await client.PostAsJsonAsync("/api/invoices/quotation",
             new CreateQuotationRequest("Cust", "9444444444", "TN11 C 1100", "Car",

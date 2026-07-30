@@ -24,4 +24,13 @@ public class User : BaseEntity
     /// or deactivation) instantly invalidates all previously issued tokens for this user.
     /// </summary>
     public string SecurityStamp { get; set; } = Guid.NewGuid().ToString("N");
+
+    // ----- Forced password reset -----
+    /// <summary>
+    /// When true the account may authenticate but do nothing except change its own password —
+    /// every other endpoint is refused. Set on machine-generated credentials (the first-run admin,
+    /// or an account whose password was auto-rotated off a known default) so a password the
+    /// operator did not choose can never quietly become the permanent one.
+    /// </summary>
+    public bool MustChangePassword { get; set; }
 }

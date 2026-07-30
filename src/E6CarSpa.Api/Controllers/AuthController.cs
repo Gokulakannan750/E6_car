@@ -74,7 +74,7 @@ public class AuthController(AppDbContext db, JwtTokenService jwt, AuditService a
         await audit.LogAsync("Login.Success", null, user.Id, user.Username);
 
         var (token, expires) = jwt.CreateToken(user);
-        return new LoginResponse(token, expires, user.ToDto());
+        return new LoginResponse(token, expires, user.ToDto(), user.MustChangePassword);
     }
 
     [HttpGet("users")]
@@ -168,7 +168,13 @@ public class AuthController(AppDbContext db, JwtTokenService jwt, AuditService a
         if (req.NewPassword.Length > 200)
             return BadRequest(new { message = "New password must not exceed 200 characters." });
 
+        // Reject reusing the password we just forced them off.
+        if (BCrypt.Net.BCrypt.Verify(req.NewPassword, user.PasswordHash))
+            return BadRequest(new { message = "The new password must be different from the current one." });
+
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.NewPassword);
+        // The password is now operator-chosen, so the forced-change gate is satisfied.
+        user.MustChangePassword = false;
         // Changing your own password invalidates any other sessions holding the old token.
         user.SecurityStamp = Guid.NewGuid().ToString("N");
         await db.SaveChangesAsync();

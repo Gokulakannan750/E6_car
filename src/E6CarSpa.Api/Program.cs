@@ -63,6 +63,8 @@ if (!builder.Environment.IsDevelopment() &&
 builder.Services.AddDbContext<AppDbContext>(opt => opt.UseNpgsql(rawConn));
 
 // ----- Auth -----
+// The one endpoint an account with MustChangePassword set is still allowed to call.
+const string ChangeOwnPasswordPath = "/api/auth/users/me/password";
 builder.Services.AddSingleton<JwtTokenService>();
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -101,7 +103,20 @@ builder.Services
 
                 var stamp = principal.FindFirst("sstamp")?.Value;
                 if (user is null || !user.IsActive || user.SecurityStamp != stamp)
+                {
                     context.Fail("Token has been revoked.");
+                    return;
+                }
+
+                // An account on a machine-generated password (first-run admin, or one rotated off a
+                // known default) is allowed exactly one action: setting its own password. Enforced
+                // here so no endpoint can forget the check.
+                if (user.MustChangePassword &&
+                    !context.HttpContext.Request.Path.StartsWithSegments(ChangeOwnPasswordPath,
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Fail("Password change required before this account can be used.");
+                }
             }
         };
     });

@@ -48,6 +48,36 @@ public class ApiFactory : WebApplicationFactory<Program>
         });
     }
 
+    /// <summary>
+    /// Password the seeded admin is given for tests. The application deliberately no longer ships a
+    /// known admin password — first run generates a random one and demands it be changed — so tests
+    /// provision their own known credential rather than depend on a default that must not exist.
+    /// </summary>
+    public const string AdminPassword = "Test-Admin-Pw-1";
+
+    /// <summary>
+    /// Runs after the server is up (so first-run seeding has already happened) on every
+    /// CreateClient call: pins the admin account to <see cref="AdminPassword"/> and clears the
+    /// forced-change flag so tests can sign in. Idempotent.
+    /// </summary>
+    /// <remarks>
+    /// Deliberately leaves lockout state alone — tests that lock the account out-of-band and then
+    /// create a client would otherwise have their setup silently undone.
+    /// </remarks>
+    protected override void ConfigureClient(HttpClient client)
+    {
+        base.ConfigureClient(client);
+
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var admin = db.Users.FirstOrDefault(u => u.Username == "admin");
+        if (admin is null) return;
+
+        admin.PasswordHash = BCrypt.Net.BCrypt.HashPassword(AdminPassword);
+        admin.MustChangePassword = false;
+        db.SaveChanges();
+    }
+
     /// <summary>Run an action against the same in-memory database the app uses (for test setup/assertions).</summary>
     public async Task WithDbAsync(Func<AppDbContext, Task> action)
     {

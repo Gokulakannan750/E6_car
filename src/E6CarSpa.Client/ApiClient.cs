@@ -32,12 +32,20 @@ public class ApiClient(HttpClient http) : IApiClient
     public UserDto? CurrentUser { get; private set; }
     public bool IsLoggedIn => CurrentUser is not null;
 
+    /// <summary>
+    /// True when the signed-in account is on a machine-generated password. Every call except
+    /// <see cref="ChangeMyPasswordAsync"/> will be refused until a new password is set, so the UI
+    /// must show a change-password prompt instead of the main app.
+    /// </summary>
+    public bool MustChangePassword { get; private set; }
+
     // ---------- Auth ----------
     public async Task<UserDto> LoginAsync(string username, string password)
     {
         var resp = await PostAsync<LoginResponse>("api/auth/login", new LoginRequest(username, password));
         http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", resp.Token);
         CurrentUser = resp.User;
+        MustChangePassword = resp.MustChangePassword;
         return resp.User;
     }
 
@@ -45,6 +53,7 @@ public class ApiClient(HttpClient http) : IApiClient
     {
         http.DefaultRequestHeaders.Authorization = null;
         CurrentUser = null;
+        MustChangePassword = false;
     }
 
     // ---------- Intake / customers ----------
@@ -145,8 +154,14 @@ public class ApiClient(HttpClient http) : IApiClient
     public Task<UserDto> UpdateUserAsync(Guid id, UpdateUserRequest req) =>
         PutAsync<UserDto>($"api/auth/users/{id}", req);
 
-    public Task ChangeMyPasswordAsync(ChangeMyPasswordRequest req) =>
-        PutAsync<object>("api/auth/users/me/password", req);
+    public async Task ChangeMyPasswordAsync(ChangeMyPasswordRequest req)
+    {
+        await PutAsync<object>("api/auth/users/me/password", req);
+        // The server rotates the security stamp on a password change, which revokes the token we
+        // are holding — so the caller must sign in again. Clearing the session here keeps this
+        // client honest rather than leaving it with a token every later call would reject.
+        Logout();
+    }
 
     // ---------- Staff advances ----------
     public Task<List<StaffAdvanceDto>?> GetStaffAdvancesAsync(string? worker = null)

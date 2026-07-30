@@ -4,7 +4,12 @@ namespace E6CarSpa.Contracts;
 
 public record LoginRequest(string Username, string Password);
 
-public record LoginResponse(string Token, DateTime ExpiresAt, UserDto User);
+/// <param name="MustChangePassword">
+/// True when the credential was machine-generated (first-run admin, or one rotated off a known
+/// default). The client must send the user straight to a change-password prompt: the API refuses
+/// every call except the change-own-password endpoint until a new password is set.
+/// </param>
+public record LoginResponse(string Token, DateTime ExpiresAt, UserDto User, bool MustChangePassword = false);
 
 public record UserDto(Guid Id, string FullName, string Username, UserRole Role, bool IsActive);
 

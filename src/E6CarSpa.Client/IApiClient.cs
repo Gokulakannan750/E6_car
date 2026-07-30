@@ -11,6 +11,14 @@ public interface IApiClient
 {
     UserDto? CurrentUser { get; }
     bool IsLoggedIn { get; }
+
+    /// <summary>
+    /// True when the signed-in account is on a machine-generated password. The API refuses every
+    /// call except <see cref="ChangeMyPasswordAsync"/> until a new one is set, so the UI must show
+    /// a change-password prompt instead of the main app.
+    /// </summary>
+    bool MustChangePassword { get; }
+
     event Action? OnUnauthorized;
 
     /// <summary>Point the client at a different server (used by the mobile Settings screen).</summary>
