@@ -17,4 +17,22 @@ public class StaffAdvance : BaseEntity
     public string? Note { get; set; }
 
     public Guid? RecordedByUserId { get; set; }
+
+    // ----- Soft delete -----
+    // These are money records, so a mistaken entry is marked obsolete rather than erased: the row
+    // stays for the audit trail carrying who removed it and when. Obsolete rows are excluded from
+    // listings and from the per-worker totals unless explicitly asked for.
+
+    /// <summary>When the advance was marked obsolete. Null for a live record.</summary>
+    public DateTime? DeletedAt { get; set; }
+
+    public Guid? DeletedByUserId { get; set; }
+
+    /// <summary>
+    /// Username captured at the moment of deletion. Stored next to the id so the trail still reads
+    /// correctly if that account is later renamed or deactivated.
+    /// </summary>
+    public string? DeletedByUsername { get; set; }
+
+    public bool IsDeleted => DeletedAt is not null;
 }

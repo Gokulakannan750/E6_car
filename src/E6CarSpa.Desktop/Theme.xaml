@@ -193,6 +193,50 @@
         </Setter>
     </Style>
 
+    <!-- Tabs. WPF's default TabItem draws a 3D chrome tab that looks like Windows XP; this
+         replaces it with a flat underline-on-selected style. -->
+    <Style TargetType="TabControl">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+    </Style>
+
+    <Style TargetType="TabItem">
+        <Setter Property="FontFamily" Value="Inter, Segoe UI, sans-serif" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabItem">
+                    <Grid>
+                        <Border x:Name="bg" Background="Transparent" CornerRadius="8,8,0,0"
+                                Padding="18,10" Margin="0,0,4,0">
+                            <ContentPresenter ContentSource="Header" VerticalAlignment="Center" />
+                        </Border>
+                        <!-- Selection is shown by a thick accent underline rather than a raised tab. -->
+                        <Border x:Name="underline" Height="3" VerticalAlignment="Bottom" CornerRadius="2"
+                                Margin="0,0,4,0" Background="Transparent" />
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsSelected" Value="True">
+                            <Setter TargetName="underline" Property="Background" Value="{StaticResource PrimaryBrush}" />
+                            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}" />
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True" />
+                                <Condition Property="IsSelected" Value="False" />
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="bg" Property="Background" Value="#F0F3FF" />
+                            <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- Secondary / Ghost button -->
     <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
         <Setter Property="Background" Value="Transparent" />

@@ -2,9 +2,14 @@
 <ContentPage
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:conv="clr-namespace:E6CarSpa.Mobile.Converters"
     x:Class="E6CarSpa.Mobile.Pages.AdvancesPage"
     Title="Staff Advances"
    >
+
+    <ContentPage.Resources>
+        <conv:InverseBoolConverter x:Key="Not" />
+    </ContentPage.Resources>
 
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Settings" IconImageSource="icon_settings.png" Clicked="OnSettingsClicked" />
@@ -104,6 +109,13 @@
                 <!-- View 2: every advance -->
                 <VerticalStackLayout x:Name="AllAdvancesSection" Spacing="12" IsVisible="False">
                     <Entry x:Name="SearchEntry" Placeholder="Filter by worker name" TextChanged="OnSearchChanged" />
+                    <!-- Deleting keeps the entry for the record rather than erasing it, so this
+                         reveals what was removed, by whom and when. -->
+                    <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
+                        <Label Grid.Column="0" Text="Show deleted" FontSize="14" VerticalOptions="Center" />
+                        <Switch x:Name="ShowDeletedSwitch" Grid.Column="1" Toggled="OnShowDeletedToggled"
+                                OnColor="{StaticResource Primary}" />
+                    </Grid>
                     <Label x:Name="NoAdvancesLabel" Text="Nothing to show." FontSize="14" IsVisible="False" />
 
                     <CollectionView x:Name="AdvancesList">
@@ -116,12 +128,18 @@
                                             <Label Text="{Binding WorkerName}" FontSize="16" FontAttributes="Bold" />
                                             <Label Text="{Binding AdvanceDate, StringFormat='{0:dd-MM-yyyy}'}" FontSize="13" />
                                             <Label Text="{Binding Note}" FontSize="12" />
+                                            <!-- Present only on obsolete rows: names who deleted it, and when. -->
+                                            <Label Text="{Binding DeletedCaption}" FontSize="12" FontAttributes="Italic"
+                                                   IsVisible="{Binding IsDeleted}"
+                                                   TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource Error}}" />
                                         </VerticalStackLayout>
                                         <Label Grid.Column="1" Text="{Binding Amount, StringFormat='₹{0:N2}'}"
                                                FontSize="16" FontAttributes="Bold" VerticalOptions="Center" />
+                                        <!-- Hidden once obsolete — there is nothing left to delete. -->
                                         <Button Grid.Column="2" Text="✕" Clicked="OnDeleteClicked"
                                                 BackgroundColor="Transparent" Padding="0" WidthRequest="36"
                                                 VerticalOptions="Center"
+                                                IsVisible="{Binding IsDeleted, Converter={StaticResource Not}}"
                                                 TextColor="{AppThemeBinding Light={StaticResource Error}, Dark={StaticResource Error}}" />
                                     </Grid>
                                 </Border>

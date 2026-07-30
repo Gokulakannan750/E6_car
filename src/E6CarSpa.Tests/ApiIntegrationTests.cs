@@ -120,6 +120,38 @@ public class ApiIntegrationTests
         Assert.Equal(HttpStatusCode.Unauthorized, resp.StatusCode);
     }
 
+    // ---------- staff advances: delete keeps the record ----------
+
+    [Fact]
+    public async Task DeletingAnAdvance_KeepsItWithWhoDeletedIt_AndDropsItFromTotals()
+    {
+        using var factory = new ApiFactory();
+        var client = factory.CreateClient();
+        Authorize(client, await LoginAsync(client, "admin", ApiFactory.AdminPassword));
+
+        var created = await (await client.PostAsJsonAsync("/api/staffadvances",
+            new SaveStaffAdvanceRequest("Sangesh", 1000m, DateTime.UtcNow.Date, "test")))
+            .Content.ReadFromJsonAsync<StaffAdvanceDto>();
+
+        Assert.Equal(HttpStatusCode.NoContent,
+            (await client.DeleteAsync($"/api/staffadvances/{created!.Id}")).StatusCode);
+
+        // Gone from the normal listing...
+        var live = await client.GetFromJsonAsync<List<StaffAdvanceDto>>("/api/staffadvances");
+        Assert.DoesNotContain(live!, a => a.Id == created.Id);
+
+        // ...but still there, stamped with who removed it.
+        var all = await client.GetFromJsonAsync<List<StaffAdvanceDto>>("/api/staffadvances?includeDeleted=true");
+        var kept = Assert.Single(all!, a => a.Id == created.Id);
+        Assert.True(kept.IsDeleted);
+        Assert.Equal("admin", kept.DeletedBy);
+        Assert.NotNull(kept.DeletedAt);
+
+        // And it no longer counts towards the worker's total.
+        var summary = await client.GetFromJsonAsync<List<StaffAdvanceSummaryDto>>("/api/staffadvances/summary");
+        Assert.DoesNotContain(summary!, s => s.WorkerName == "Sangesh");
+    }
+
     // ---------- authorization / role-gating ----------
 
     [Fact]

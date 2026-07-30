@@ -218,18 +218,20 @@
                                         <DataGridTextColumn Header="Username" Binding="{Binding Username}" Width="160" />
                                         <DataGridTextColumn Header="Role" Binding="{Binding Role}" Width="110" />
                                         <DataGridTextColumn Header="Active" Binding="{Binding IsActive}" Width="70" />
-                                        <DataGridTemplateColumn Width="130">
+                                        <DataGridTemplateColumn Width="160">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <Button Content="Reset password" Background="Transparent" Padding="6,2"
+                                                    <Button Content="Reset password" Style="{StaticResource SecondaryButton}"
+                                                            Padding="10,4" FontSize="12" Margin="0,4"
                                                             HorizontalAlignment="Left" Click="ResetUserPassword_Click" />
                                                 </DataTemplate>
                                             </DataGridTemplateColumn.CellTemplate>
                                         </DataGridTemplateColumn>
-                                        <DataGridTemplateColumn Width="110">
+                                        <DataGridTemplateColumn Width="160">
                                             <DataGridTemplateColumn.CellTemplate>
                                                 <DataTemplate>
-                                                    <Button Content="Enable / Disable" Background="Transparent" Padding="6,2"
+                                                    <Button Content="Enable / Disable" Style="{StaticResource SecondaryButton}"
+                                                            Padding="10,4" FontSize="12" Margin="0,4"
                                                             HorizontalAlignment="Left"
                                                             Command="{Binding DataContext.ToggleUserActiveCommand,
                                                                        RelativeSource={RelativeSource AncestorType=UserControl}}"

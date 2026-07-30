@@ -53,7 +53,8 @@ public interface IApiClient
     Task<UserDto> CreateUserAsync(CreateUserRequest req);
     Task<UserDto> UpdateUserAsync(Guid id, UpdateUserRequest req);
     Task ChangeMyPasswordAsync(ChangeMyPasswordRequest req);
-    Task<List<StaffAdvanceDto>?> GetStaffAdvancesAsync(string? worker = null);
+    /// <param name="includeDeleted">Also return entries marked obsolete, for the audit trail.</param>
+    Task<List<StaffAdvanceDto>?> GetStaffAdvancesAsync(string? worker = null, bool includeDeleted = false);
     Task<List<StaffAdvanceSummaryDto>?> GetStaffAdvanceSummaryAsync();
     Task<StaffAdvanceDto> CreateStaffAdvanceAsync(SaveStaffAdvanceRequest req);
     Task DeleteStaffAdvanceAsync(Guid id);

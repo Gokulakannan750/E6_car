@@ -77,6 +77,8 @@ public partial class AdvancesPage : ContentPage
         await LoadAsync();
     }
 
+    private async void OnShowDeletedToggled(object? sender, ToggledEventArgs e) => await LoadAsync();
+
     private void OnPickWorkerClicked(object? sender, EventArgs e)
     {
         if (sender is Button { BindingContext: string name })
@@ -92,7 +94,7 @@ public partial class AdvancesPage : ContentPage
         var search = string.IsNullOrWhiteSpace(SearchEntry.Text) ? null : SearchEntry.Text.Trim();
         try
         {
-            var advances = await AppServices.Api.GetStaffAdvancesAsync(search) ?? new();
+            var advances = await AppServices.Api.GetStaffAdvancesAsync(search, ShowDeletedSwitch.IsToggled) ?? new();
             AdvancesList.ItemsSource = advances;
             NoAdvancesLabel.IsVisible = advances.Count == 0;
 
@@ -161,11 +163,12 @@ public partial class AdvancesPage : ContentPage
 
     private async void OnDeleteClicked(object? sender, EventArgs e)
     {
-        if (sender is not Button { BindingContext: StaffAdvanceDto advance }) return;
+        if (sender is not Button { BindingContext: StaffAdvanceDto advance } || advance.IsDeleted) return;
 
         var confirm = await DisplayAlertAsync(
             "Delete advance",
-            $"Delete the ₹{advance.Amount:N2} advance for {advance.WorkerName} on {advance.AdvanceDate:dd-MM-yyyy}?",
+            $"Mark the ₹{advance.Amount:N2} advance for {advance.WorkerName} on {advance.AdvanceDate:dd-MM-yyyy} as deleted?\n\n" +
+            "It is kept for the record — stamped with your name — and stops counting towards the totals.",
             "Delete", "Cancel");
         if (!confirm) return;
 

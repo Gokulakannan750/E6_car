@@ -164,9 +164,12 @@ public class ApiClient(HttpClient http) : IApiClient
         PutAsync<object>("api/auth/users/me/password", req);
 
     // ---------- Staff advances ----------
-    public Task<List<StaffAdvanceDto>?> GetStaffAdvancesAsync(string? worker = null)
+    public Task<List<StaffAdvanceDto>?> GetStaffAdvancesAsync(string? worker = null, bool includeDeleted = false)
     {
-        var qs = string.IsNullOrWhiteSpace(worker) ? "" : $"?worker={Uri.EscapeDataString(worker)}";
+        var parts = new List<string>();
+        if (!string.IsNullOrWhiteSpace(worker)) parts.Add($"worker={Uri.EscapeDataString(worker)}");
+        if (includeDeleted) parts.Add("includeDeleted=true");
+        var qs = parts.Count == 0 ? "" : "?" + string.Join("&", parts);
         return GetAsync<List<StaffAdvanceDto>>($"api/staffadvances{qs}");
     }
 

@@ -28,7 +28,19 @@ public record DashboardSummaryDto(
 public record LiveJobDto(string InvoiceNumber, string VehicleNumber, string VehicleModel, InvoiceStatus Status, decimal Total);
 
 /// <summary>A recorded cash advance given to a worker.</summary>
-public record StaffAdvanceDto(Guid Id, string WorkerName, decimal Amount, DateTime AdvanceDate, string? Note);
+/// <param name="DeletedAt">Set when the entry has been marked obsolete; it is kept for the audit
+/// trail rather than erased, and is excluded from the per-worker totals.</param>
+/// <param name="DeletedBy">Username of whoever marked it obsolete.</param>
+public record StaffAdvanceDto(
+    Guid Id, string WorkerName, decimal Amount, DateTime AdvanceDate, string? Note,
+    DateTime? DeletedAt = null, string? DeletedBy = null)
+{
+    public bool IsDeleted => DeletedAt is not null;
+
+    /// <summary>Ready-made caption for the clients, e.g. "Deleted by gokul on 30-07-2026".</summary>
+    public string DeletedCaption =>
+        DeletedAt is null ? "" : $"Deleted by {DeletedBy ?? "unknown"} on {DeletedAt:dd-MM-yyyy}";
+}
 
 public record SaveStaffAdvanceRequest(string WorkerName, decimal Amount, DateTime AdvanceDate, string? Note);
 

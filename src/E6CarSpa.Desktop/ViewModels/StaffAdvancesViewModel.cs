@@ -29,6 +29,14 @@ public partial class StaffAdvancesViewModel(IApiClient api) : ObservableObject, 
     [ObservableProperty] private string _note = "";
 
     [ObservableProperty] private string _search = "";
+
+    /// <summary>
+    /// Show entries that were marked obsolete. Deleting keeps the row for the audit trail rather
+    /// than erasing it, so this reveals what was removed, by whom and when.
+    /// </summary>
+    [ObservableProperty] private bool _showDeleted;
+    partial void OnShowDeletedChanged(bool value) => _ = LoadAsync();
+
     [ObservableProperty] private bool _isBusy;
     [ObservableProperty] private string _error = "";
     [ObservableProperty] private string _info = "";
@@ -44,7 +52,8 @@ public partial class StaffAdvancesViewModel(IApiClient api) : ObservableObject, 
         try
         {
             IsBusy = true; Error = "";
-            var list = await api.GetStaffAdvancesAsync(string.IsNullOrWhiteSpace(Search) ? null : Search) ?? new();
+            var list = await api.GetStaffAdvancesAsync(
+                string.IsNullOrWhiteSpace(Search) ? null : Search, ShowDeleted) ?? new();
             Advances.Clear();
             foreach (var a in list) Advances.Add(a);
 
@@ -85,10 +94,11 @@ public partial class StaffAdvancesViewModel(IApiClient api) : ObservableObject, 
     [RelayCommand]
     private async Task DeleteAdvanceAsync(StaffAdvanceDto? advance)
     {
-        if (advance is null) return;
+        if (advance is null || advance.IsDeleted) return;
 
         var confirm = MessageBox.Show(
-            $"Delete the ₹{advance.Amount:N2} advance for {advance.WorkerName} on {advance.AdvanceDate:dd-MM-yyyy}?",
+            $"Mark the ₹{advance.Amount:N2} advance for {advance.WorkerName} on {advance.AdvanceDate:dd-MM-yyyy} as deleted?\n\n" +
+            "The entry is kept for the record — stamped with your name — and stops counting towards the totals.",
             "Delete advance", MessageBoxButton.YesNo, MessageBoxImage.Warning);
         if (confirm != MessageBoxResult.Yes) return;
 
@@ -96,6 +106,7 @@ public partial class StaffAdvancesViewModel(IApiClient api) : ObservableObject, 
         {
             IsBusy = true; Error = ""; Info = "";
             await api.DeleteStaffAdvanceAsync(advance.Id);
+            Info = $"Advance for {advance.WorkerName} marked deleted. Tick 'Show deleted' to see it.";
             await LoadAsync();
         }
         catch (Exception ex) { Error = ex.Message; }
