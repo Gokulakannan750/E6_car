@@ -49,6 +49,9 @@ Name: "desktopicon"; Description: "Create a desktop shortcut for the billing app
 Source: "..\dist\api\*"; DestDir: "{app}\Api"; Excludes: "appsettings.json,appsettings.Development.json,run.log,*.pdb"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; Config template installed as appsettings.json only on first install (preserved on upgrades).
 Source: "appsettings.template.json"; DestDir: "{app}\Api"; DestName: "appsettings.json"; Flags: onlyifdoesntexist
+; Generates this install's signing key and locks the config down (audit D-1). Kept in the
+; install so a support engineer can re-run it after editing appsettings.json by hand.
+Source: "secure-config.ps1"; DestDir: "{app}\Api"; Flags: ignoreversion
 
 ; ---- Desktop client (self-contained single file) ----
 Source: "..\dist\desktop\E6CarSpa.Desktop.exe"; DestDir: "{app}\Desktop"; Flags: ignoreversion
@@ -58,7 +61,10 @@ Source: "logo.ico"; DestDir: "{app}\Desktop"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\E6 Car Spa"; Filename: "{app}\Desktop\E6CarSpa.Desktop.exe"; IconFilename: "{app}\Desktop\logo.ico"
-Name: "{group}\Edit API Configuration"; Filename: "notepad.exe"; Parameters: """{app}\Api\appsettings.json"""
+; appsettings.json is now readable only by SYSTEM and Administrators, so plain Notepad is
+; denied even when the operator is an admin (UAC hands non-elevated processes a token in
+; which Administrators is deny-only). Launch it elevated so the shortcut still works.
+Name: "{group}\Edit API Configuration"; Filename: "powershell.exe"; Parameters: "-NoProfile -WindowStyle Hidden -Command ""Start-Process notepad.exe -Verb RunAs -ArgumentList '{app}\Api\appsettings.json'"""
 Name: "{group}\Uninstall E6 Car Spa"; Filename: "{uninstallexe}"; IconFilename: "{app}\Desktop\logo.ico"
 Name: "{commondesktop}\E6 Car Spa"; Filename: "{app}\Desktop\E6CarSpa.Desktop.exe"; IconFilename: "{app}\Desktop\logo.ico"; Tasks: desktopicon
 
@@ -72,6 +78,12 @@ Filename: "{sys}\sc.exe"; Parameters: "description {#ApiServiceName} ""E6 Car Sp
 Filename: "{sys}\sc.exe"; Parameters: "failure {#ApiServiceName} reset= 86400 actions= restart/5000/restart/5000/restart/5000"; Flags: runhidden
 ; Allow the API port through the firewall (needed only if other PCs connect over the LAN).
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""E6 Car Spa API"" dir=in action=allow protocol=TCP localport=5080"; Flags: runhidden
+; Give this install its own JWT signing key and take appsettings.json out of reach of
+; ordinary users (Program Files is world-READABLE by default, so the key, database
+; password and WhatsApp token were previously readable by anyone with a Windows login —
+; enough to forge an admin token). Must run BEFORE the service starts: the API refuses to
+; start on the placeholder key.
+Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\Api\secure-config.ps1"" -ApiFolder ""{app}\Api"""; StatusMsg: "Securing configuration..."; Flags: runhidden
 Filename: "{sys}\sc.exe"; Parameters: "start {#ApiServiceName}"; Flags: runhidden
 
 [UninstallRun]

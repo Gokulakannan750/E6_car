@@ -80,6 +80,47 @@ Put `install-service.ps1`, `uninstall-service.ps1` next to the `api\` publish fo
 - **Desktop-only fix:** copy the new `E6CarSpa.Desktop.exe` over `C:\Program Files\E6 Car Spa\Desktop\`. Nothing else.
 - **API-only fix:** `Stop-Service E6CarSpaApi` → replace `Api\E6CarSpa.Api.exe` → `Start-Service E6CarSpaApi`.
 
+## Configuration security (automatic since 2026-07-31)
+
+`appsettings.json` holds the JWT signing key, the database password and the WhatsApp token.
+**Program Files is world-*readable*** — only writing is restricted — so until this release any
+Windows user on the shop PC could read all three. With the signing key, issuer and audience in
+one file, that is enough to mint a token for any user and role and walk past the whole
+permission system.
+
+The installer now runs `secure-config.ps1` before starting the service. It:
+
+1. **Generates a unique JWT signing key** for this install if the file still holds the shipped
+   placeholder. An existing real key is never touched — regenerating one signs every user out.
+2. **Removes inherited permissions** on `appsettings*.json` and grants only
+   `SYSTEM` (read — the service identity) and `Administrators` (full).
+
+Both steps are idempotent, so upgrades re-apply them safely.
+
+**Editing the config afterwards.** The Start-menu shortcut *Edit API Configuration* now opens
+Notepad elevated (UAC prompt). Editing in place keeps the permissions; if you ever replace the
+file wholesale, re-run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File "C:\Program Files\E6 Car Spa\Api\secure-config.ps1" -ApiFolder "C:\Program Files\E6 Car Spa\Api"
+```
+
+**On an existing install, treat the old key as disclosed.** Any PC that ran an earlier build had
+its signing key readable by every local user. After upgrading, rotate it once:
+
+```powershell
+# Elevated PowerShell. Blanks the key so secure-config regenerates it, then re-secures + restarts.
+$p = "C:\Program Files\E6 Car Spa\Api\appsettings.json"
+$j = Get-Content $p -Raw | ConvertFrom-Json
+$j.Jwt.Key = "REPLACE_WITH_A_LONG_RANDOM_SECRET_AT_LEAST_32_CHARACTERS"
+$j | ConvertTo-Json -Depth 10 | Set-Content $p -Encoding UTF8
+powershell -ExecutionPolicy Bypass -File "C:\Program Files\E6 Car Spa\Api\secure-config.ps1" -ApiFolder "C:\Program Files\E6 Car Spa\Api"
+Restart-Service E6CarSpaApi
+```
+
+Everyone is signed out once and logs back in — that is the rotation working. **Also change the
+PostgreSQL password** (it was readable too) and update the connection string in the same file.
+
 ## ⚠️ Admin password: first install AND the upgrade past 2026-07-30
 
 The app no longer ships a known admin password. Nobody can sign in — and since both apps are
