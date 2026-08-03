@@ -250,8 +250,15 @@ public class ApiClient(HttpClient http) : IApiClient
     {
         if (resp.IsSuccessStatusCode) return;
 
-        if (resp.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+        // Signal an invalid session only ONCE. A screen that loads several things at once will
+        // get a 401 on every one of them, and raising the event each time made the desktop stack
+        // up a login dialog per failed call. Clearing the session first means the parallel
+        // failures find nothing to invalidate and stay quiet.
+        if (resp.StatusCode == System.Net.HttpStatusCode.Unauthorized && CurrentUser is not null)
+        {
+            Logout();
             OnUnauthorized?.Invoke();
+        }
 
         var body = await resp.Content.ReadAsStringAsync();
         string message = $"Request failed ({(int)resp.StatusCode}).";

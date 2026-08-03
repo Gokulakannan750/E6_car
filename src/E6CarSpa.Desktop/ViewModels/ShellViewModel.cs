@@ -1,6 +1,8 @@
+using System.Windows;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using E6CarSpa.Client;
+using E6CarSpa.Desktop.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace E6CarSpa.Desktop.ViewModels;
@@ -70,16 +72,40 @@ public partial class ShellViewModel(IApiClient api) : ObservableObject
     [RelayCommand] private Task ShowReports() => NavigateAsync<ReportsViewModel>("Reports");
     [RelayCommand] private Task ShowSettings() => NavigateAsync<SettingsViewModel>("Settings");
 
+    /// <summary>Guards against a second navigation starting while one is still loading.</summary>
+    private bool _navigating;
+
     public async Task NavigateAsync<TViewModel>(string navKey) where TViewModel : class
     {
         // No per-screen login prompt: the app is login-first, so every session is already
         // authenticated by the time any page is reachable. Role-based visibility (IsAdmin /
         // IsManagerOrAdmin) still governs WHICH pages a signed-in user may open, and the API
         // re-checks the role on every call.
-        ActiveNav = navKey;
-        var vm = App.Services.GetRequiredService<TViewModel>();
-        if (vm is IAsyncInitialize init) await init.InitializeAsync();
-        CurrentView = vm;
+
+        // Two clicks in quick succession used to race, and whichever load finished last won —
+        // which could be the screen the user did NOT click.
+        if (_navigating) return;
+        _navigating = true;
+        try
+        {
+            var vm = App.Services.GetRequiredService<TViewModel>();
+            if (vm is IAsyncInitialize init) await init.InitializeAsync();
+
+            // Commit only once the screen is actually ready. Setting ActiveNav first meant a
+            // failed load left the sidebar highlighting a page the content area never showed.
+            ActiveNav = navKey;
+            CurrentView = vm;
+        }
+        catch (Exception ex)
+        {
+            // These commands are AsyncRelayCommands, whose faults land in a Task nobody awaits —
+            // so without this the screen simply never opened and nothing was reported.
+            AppLog.Error($"Could not open the '{navKey}' screen.", ex);
+            MessageBox.Show(
+                $"Could not open {navKey}.\n\n{ex.Message}",
+                "E6 Car Spa", MessageBoxButton.OK, MessageBoxImage.Warning);
+        }
+        finally { _navigating = false; }
     }
 
     /// <summary>Open an existing invoice/quotation in the detail page.</summary>

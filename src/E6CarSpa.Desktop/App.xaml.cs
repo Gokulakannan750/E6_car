@@ -56,17 +56,30 @@ public partial class App : Application
         // The token expired or was revoked server-side (deactivated user / rotated security
         // stamp). Re-authenticate in place; if the user declines, close the app rather than
         // leaving a signed-out shell on screen.
+        // Second line of defence behind ApiClient's once-per-session guard: a request already in
+        // flight when the session was replaced can still come back 401 afterwards, and must not
+        // throw a second login dialog over the first. Only ever touched on the UI thread, so a
+        // plain flag is enough.
+        var reauthenticating = false;
         api.OnUnauthorized += () =>
         {
             Dispatcher.Invoke(() =>
             {
+                if (reauthenticating) return;
+
                 var shell = Services.GetService<ShellWindow>();
                 if (shell is null || !shell.IsVisible) return;   // startup gate handles its own login
 
-                var relogin = Services.GetRequiredService<LoginWindow>();
-                relogin.Owner = shell;
-                if (relogin.ShowDialog() != true)
-                    Shutdown();
+                reauthenticating = true;
+                try
+                {
+                    AppLog.Info("Session rejected by the server; asking the user to sign in again.");
+                    var relogin = Services.GetRequiredService<LoginWindow>();
+                    relogin.Owner = shell;
+                    if (relogin.ShowDialog() != true)
+                        Shutdown();
+                }
+                finally { reauthenticating = false; }
             });
         };
 
