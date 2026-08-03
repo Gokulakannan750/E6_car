@@ -152,11 +152,29 @@ public static class DbInitializer
 
         try
         {
-            // The Linux unit runs with ProtectSystem=strict, so the install directory is read-only
-            // there; E6_STATE_DIR points at the one writable path. Falls back to the app directory,
-            // which is what the Windows service (LocalSystem) uses.
+            // Where this may be written depends on how the service runs:
+            //   • Linux systemd sets E6_STATE_DIR, because ProtectSystem=strict makes the install
+            //     directory read-only.
+            //   • On Windows the service no longer runs as LocalSystem, so it cannot write into
+            //     Program Files either — the machine-wide application-data folder is the correct
+            //     home, and the installer restricts it to the service account and administrators.
+            // The install directory remains a last resort so nothing regresses on an older setup.
             var dir = Environment.GetEnvironmentVariable("E6_STATE_DIR");
-            if (string.IsNullOrWhiteSpace(dir)) dir = AppContext.BaseDirectory;
+            if (string.IsNullOrWhiteSpace(dir))
+            {
+                var shared = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                    "E6CarSpa");
+                try
+                {
+                    Directory.CreateDirectory(shared);
+                    dir = shared;
+                }
+                catch
+                {
+                    dir = AppContext.BaseDirectory;
+                }
+            }
             var path = Path.Combine(dir, "FIRST-RUN-ADMIN-PASSWORD.txt");
             File.WriteAllText(path,
                 $"""

@@ -46,7 +46,9 @@ Name: "desktopicon"; Description: "Create a desktop shortcut for the billing app
 [Files]
 ; ---- API server (self-contained) ----
 ; Everything except the config, which we ship from a clean template and never overwrite.
-Source: "..\dist\api\*"; DestDir: "{app}\Api"; Excludes: "appsettings.json,appsettings.Development.json,run.log,*.pdb"; Flags: ignoreversion recursesubdirs createallsubdirs
+; appsettings.Local.json is a DEVELOPER file — it holds the dev machine's real database
+; password and the SDK publishes it automatically. It must never reach a customer install.
+Source: "..\dist\api\*"; DestDir: "{app}\Api"; Excludes: "appsettings.json,appsettings.Development.json,appsettings.Local.json,run.log,*.pdb"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; Config template installed as appsettings.json only on first install (preserved on upgrades).
 Source: "appsettings.template.json"; DestDir: "{app}\Api"; DestName: "appsettings.json"; Flags: onlyifdoesntexist
 ; Generates this install's signing key and locks the config down (audit D-1). Kept in the
@@ -72,18 +74,29 @@ Name: "{commondesktop}\E6 Car Spa"; Filename: "{app}\Desktop\E6CarSpa.Desktop.ex
 ; Remove any previous service instance (ignored if absent), then (re)create and start it.
 Filename: "{sys}\sc.exe"; Parameters: "stop {#ApiServiceName}"; Flags: runhidden
 Filename: "{sys}\sc.exe"; Parameters: "delete {#ApiServiceName}"; Flags: runhidden
-Filename: "{sys}\sc.exe"; Parameters: "create {#ApiServiceName} binPath= ""{app}\Api\E6CarSpa.Api.exe"" start= auto DisplayName= ""E6 Car Spa API"""; Flags: runhidden
+; Runs as the per-service virtual account "NT SERVICE\E6CarSpaApi", which Windows creates
+; automatically and which holds no rights beyond those granted below. Previously this defaulted
+; to LocalSystem — the highest privilege on the machine — for a process that listens on a network
+; port and parses untrusted input, so any remote-code-execution flaw meant SYSTEM (audit D-2).
+Filename: "{sys}\sc.exe"; Parameters: "create {#ApiServiceName} binPath= ""{app}\Api\E6CarSpa.Api.exe"" start= auto obj= ""NT SERVICE\{#ApiServiceName}"" DisplayName= ""E6 Car Spa API"""; Flags: runhidden
+; The virtual account is not a member of Users, so it needs read+execute on its own folder.
+Filename: "{sys}\icacls.exe"; Parameters: """{app}\Api"" /grant ""NT SERVICE\{#ApiServiceName}:(OI)(CI)(RX)"""; Flags: runhidden
 Filename: "{sys}\sc.exe"; Parameters: "description {#ApiServiceName} ""E6 Car Spa billing API server"""; Flags: runhidden
 ; Auto-restart the service if it ever crashes.
 Filename: "{sys}\sc.exe"; Parameters: "failure {#ApiServiceName} reset= 86400 actions= restart/5000/restart/5000/restart/5000"; Flags: runhidden
 ; Allow the API port through the firewall (needed only if other PCs connect over the LAN).
-Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""E6 Car Spa API"" dir=in action=allow protocol=TCP localport=5080"; Flags: runhidden
+; Delete first: 'add' does not replace, so every upgrade used to append another identical rule
+; (34 copies had accumulated on the dev machine). Scoped to the private profile and the local
+; subnet — the previous rule was profile=any/remoteip=any, which exposed the billing API on
+; whatever network the PC joined, including public Wi-Fi.
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""E6 Car Spa API"""; Flags: runhidden
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""E6 Car Spa API"" dir=in action=allow protocol=TCP localport=5080 profile=private remoteip=localsubnet"; Flags: runhidden
 ; Give this install its own JWT signing key and take appsettings.json out of reach of
 ; ordinary users (Program Files is world-READABLE by default, so the key, database
 ; password and WhatsApp token were previously readable by anyone with a Windows login —
 ; enough to forge an admin token). Must run BEFORE the service starts: the API refuses to
 ; start on the placeholder key.
-Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\Api\secure-config.ps1"" -ApiFolder ""{app}\Api"""; StatusMsg: "Securing configuration..."; Flags: runhidden
+Filename: "powershell.exe"; Parameters: "-NoProfile -ExecutionPolicy Bypass -File ""{app}\Api\secure-config.ps1"" -ApiFolder ""{app}\Api"" -ServiceAccount ""NT SERVICE\{#ApiServiceName}"""; StatusMsg: "Securing configuration..."; Flags: runhidden
 Filename: "{sys}\sc.exe"; Parameters: "start {#ApiServiceName}"; Flags: runhidden
 
 [UninstallRun]

@@ -34,7 +34,15 @@
 #>
 param(
     [Parameter(Mandatory = $true)]
-    [string]$ApiFolder
+    [string]$ApiFolder,
+
+    # Identity the API service runs as. It must be able to READ its own configuration, so it is
+    # granted explicitly — the service no longer runs as SYSTEM (audit D-2).
+    [string]$ServiceAccount = 'NT SERVICE\E6CarSpaApi',
+
+    # Machine-wide folder the API writes to (the one-time generated admin password). Restricted
+    # to the service account and administrators, because that file is a live credential.
+    [string]$StateFolder = "$env:ProgramData\E6CarSpa"
 )
 
 $ErrorActionPreference = 'Stop'
@@ -87,15 +95,56 @@ catch {
 # resulting ACL is exactly what is written here no matter what it looked like before.
 foreach ($file in Get-ChildItem -Path $ApiFolder -Filter 'appsettings*.json' -File -ErrorAction SilentlyContinue) {
     try {
-        & icacls.exe $file.FullName /inheritance:r | Out-Null
-        & icacls.exe $file.FullName /remove:g '*S-1-5-32-545' '*S-1-5-11' | Out-Null
-        & icacls.exe $file.FullName /grant:r '*S-1-5-18:(R)' '*S-1-5-32-544:(F)' | Out-Null
-        if ($LASTEXITCODE -ne 0) { throw "icacls exited $LASTEXITCODE" }
-        Write-Host "secure-config: locked $($file.Name) to SYSTEM + Administrators."
+        # Each step is checked. Reporting success when icacls was denied — which is exactly what
+        # happens if this is run without elevation — would leave the operator believing the file
+        # is protected when it is still world-readable.
+        $failed = $false
+        foreach ($args in @(
+                @('/inheritance:r'),
+                @('/remove:g', '*S-1-5-32-545', '*S-1-5-11'),
+                @('/grant:r', '*S-1-5-18:(R)', '*S-1-5-32-544:(F)'),
+                # The service identity must still read its own configuration. Granting it
+                # explicitly is what makes running as anything other than SYSTEM possible.
+                @('/grant:r', "$($ServiceAccount):(R)"))) {
+            & icacls.exe $file.FullName @args 2>&1 | Out-Null
+            if ($LASTEXITCODE -ne 0) { $failed = $true }
+        }
+
+        if ($failed) {
+            Write-Warning "secure-config: could not fully secure $($file.Name) - run this elevated."
+        }
+        else {
+            Write-Host "secure-config: locked $($file.Name) to SYSTEM, Administrators and the service account."
+        }
     }
     catch {
         Write-Warning "secure-config: could not secure $($file.Name): $($_.Exception.Message)"
     }
+}
+
+# ---------- 2b. Writable state folder for the generated admin password ----------
+# The service cannot write into Program Files any more, so it uses this instead. The file it
+# writes is a temporary admin credential, so ordinary users must not be able to read it.
+try {
+    New-Item -ItemType Directory -Path $StateFolder -Force | Out-Null
+    $failed = $false
+    foreach ($args in @(
+            @('/inheritance:r'),
+            @('/remove:g', '*S-1-5-32-545', '*S-1-5-11'),
+            @('/grant:r', '*S-1-5-18:(F)', '*S-1-5-32-544:(F)'),
+            @('/grant:r', "$($ServiceAccount):(OI)(CI)(M)"))) {
+        & icacls.exe $StateFolder @args 2>&1 | Out-Null
+        if ($LASTEXITCODE -ne 0) { $failed = $true }
+    }
+    if ($failed) {
+        Write-Warning "secure-config: could not fully secure $StateFolder - run this elevated."
+    }
+    else {
+        Write-Host "secure-config: state folder ready at $StateFolder (service + administrators only)."
+    }
+}
+catch {
+    Write-Warning "secure-config: could not prepare $StateFolder : $($_.Exception.Message)"
 }
 
 # ---------- 3. Report ----------
