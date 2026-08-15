@@ -58,6 +58,15 @@ public interface IApiClient
     Task<List<StaffAdvanceSummaryDto>?> GetStaffAdvanceSummaryAsync();
     Task<StaffAdvanceDto> CreateStaffAdvanceAsync(SaveStaffAdvanceRequest req);
     Task DeleteStaffAdvanceAsync(Guid id);
+    Task<List<ShowroomDto>?> GetShowroomsAsync(bool includeInactive = false);
+    Task<ShowroomDto?> GetShowroomAsync(Guid id);
+    Task<ShowroomDto> CreateShowroomAsync(SaveShowroomRequest req);
+    Task UpdateShowroomAsync(Guid id, SaveShowroomRequest req);
+    Task DeleteShowroomAsync(Guid id);
+    Task<List<ShowroomVisitDto>?> GetShowroomVisitsAsync(Guid showroomId, DateTime? from = null, DateTime? to = null);
+    Task<List<ShowroomVisitSummaryDto>?> GetShowroomSummaryAsync(DateTime? from = null, DateTime? to = null);
+    Task<ShowroomVisitDto> CreateShowroomVisitAsync(SaveShowroomVisitRequest req);
+    Task DeleteShowroomVisitAsync(Guid id);
     Task<CompanySettingsDto?> GetSettingsAsync();
     Task<CompanySettingsDto> UpdateSettingsAsync(SaveCompanySettingsRequest req);
     Task UploadLogoAsync(byte[] imageBytes);

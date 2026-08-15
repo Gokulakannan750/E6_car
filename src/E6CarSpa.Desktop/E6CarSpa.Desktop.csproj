@@ -16,6 +16,7 @@
     <TargetFramework>net10.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
     <Company>trovotechsolutions</Company>

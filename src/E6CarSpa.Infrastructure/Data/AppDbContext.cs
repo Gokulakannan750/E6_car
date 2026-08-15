@@ -21,6 +21,8 @@ public class AppDbContext : DbContext
     public DbSet<NotificationLog> NotificationLogs => Set<NotificationLog>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<StaffAdvance> StaffAdvances => Set<StaffAdvance>();
+    public DbSet<Showroom> Showrooms => Set<Showroom>();
+    public DbSet<ShowroomVisit> ShowroomVisits => Set<ShowroomVisit>();
 
     protected override void OnModelCreating(ModelBuilder b)
     {
@@ -138,10 +140,27 @@ public class AppDbContext : DbContext
 
         b.Entity<StaffAdvance>(e =>
         {
-            e.HasIndex(x => x.AdvanceDate);   // listed newest-first / filtered by month
-            e.HasIndex(x => x.WorkerName);    // grouped per worker for the totals
+            e.HasIndex(x => x.AdvanceDate);
+            e.HasIndex(x => x.WorkerName);
             e.Property(x => x.WorkerName).HasMaxLength(120).IsRequired();
             e.Property(x => x.Note).HasMaxLength(300);
+        });
+
+        b.Entity<Showroom>(e =>
+        {
+            e.Property(x => x.Name).HasMaxLength(120).IsRequired();
+            e.Property(x => x.Address).HasMaxLength(250).IsRequired();
+            e.Property(x => x.Phone).HasMaxLength(20);
+            e.HasIndex(x => x.Name).IsUnique();   // duplicate names are almost certainly typos
+        });
+
+        b.Entity<ShowroomVisit>(e =>
+        {
+            e.HasIndex(x => new { x.ShowroomId, x.VisitDate });
+            e.Property(x => x.TeamSent).HasMaxLength(200).IsRequired();
+            e.Property(x => x.Note).HasMaxLength(300);
+            e.HasOne(x => x.Showroom).WithMany(s => s.Visits)
+                .HasForeignKey(x => x.ShowroomId).OnDelete(DeleteBehavior.Cascade);
         });
 
         b.Entity<NotificationLog>(e =>

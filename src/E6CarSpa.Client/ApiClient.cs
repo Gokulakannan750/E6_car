@@ -185,6 +185,55 @@ public class ApiClient(HttpClient http) : IApiClient
         await EnsureSuccess(resp);
     }
 
+    // ---------- Showrooms ----------
+    public Task<List<ShowroomDto>?> GetShowroomsAsync(bool includeInactive = false)
+    {
+        var qs = includeInactive ? "?includeInactive=true" : "";
+        return GetAsync<List<ShowroomDto>>($"api/showrooms{qs}");
+    }
+
+    public Task<ShowroomDto?> GetShowroomAsync(Guid id) =>
+        GetAsync<ShowroomDto>($"api/showrooms/{id}");
+
+    public Task<ShowroomDto> CreateShowroomAsync(SaveShowroomRequest req) =>
+        PostAsync<ShowroomDto>("api/showrooms", req);
+
+    public Task UpdateShowroomAsync(Guid id, SaveShowroomRequest req) =>
+        PutAsync<object>($"api/showrooms/{id}", req);
+
+    public async Task DeleteShowroomAsync(Guid id)
+    {
+        var resp = await http.DeleteAsync($"api/showrooms/{id}");
+        await EnsureSuccess(resp);
+    }
+
+    public Task<List<ShowroomVisitDto>?> GetShowroomVisitsAsync(Guid showroomId, DateTime? from = null, DateTime? to = null)
+    {
+        var parts = new List<string>();
+        if (from is DateTime f) parts.Add($"from={Uri.EscapeDataString(f.ToString("yyyy-MM-dd"))}");
+        if (to is DateTime t) parts.Add($"to={Uri.EscapeDataString(t.ToString("yyyy-MM-dd"))}");
+        var qs = parts.Count == 0 ? "" : "?" + string.Join("&", parts);
+        return GetAsync<List<ShowroomVisitDto>>($"api/showrooms/{showroomId}/visits{qs}");
+    }
+
+    public Task<List<ShowroomVisitSummaryDto>?> GetShowroomSummaryAsync(DateTime? from = null, DateTime? to = null)
+    {
+        var parts = new List<string>();
+        if (from is DateTime f) parts.Add($"from={Uri.EscapeDataString(f.ToString("yyyy-MM-dd"))}");
+        if (to is DateTime t) parts.Add($"to={Uri.EscapeDataString(t.ToString("yyyy-MM-dd"))}");
+        var qs = parts.Count == 0 ? "" : "?" + string.Join("&", parts);
+        return GetAsync<List<ShowroomVisitSummaryDto>>($"api/showrooms/visits/summary{qs}");
+    }
+
+    public Task<ShowroomVisitDto> CreateShowroomVisitAsync(SaveShowroomVisitRequest req) =>
+        PostAsync<ShowroomVisitDto>("api/showrooms/visits", req);
+
+    public async Task DeleteShowroomVisitAsync(Guid id)
+    {
+        var resp = await http.DeleteAsync($"api/showrooms/visits/{id}");
+        await EnsureSuccess(resp);
+    }
+
     // ---------- Company settings ----------
     public Task<CompanySettingsDto?> GetSettingsAsync() => GetAsync<CompanySettingsDto>("api/settings");
 

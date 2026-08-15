@@ -9,12 +9,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace E6CarSpa.Api.Controllers;
 
-
-[RequirePermission(Permission.Settings)]
+// Dashboard is the landing screen for any authenticated user; only the settings management
+// endpoints below require the Settings permission.
 public class SettingsController(AppDbContext db, AuditService audit) : ApiControllerBase
 {
 
 
+    [RequirePermission(Permission.Settings)]
     [HttpGet]
     public async Task<ActionResult<CompanySettingsDto>> Get()
     {
@@ -35,6 +36,7 @@ public class SettingsController(AppDbContext db, AuditService audit) : ApiContro
     }
 
     /// <summary>Uploads/replaces the company logo (base64-encoded PNG or JPG).</summary>
+    [RequirePermission(Permission.Settings)]
     [HttpPut("logo")]
     public async Task<IActionResult> SetLogo(UploadLogoRequest req)
     {
@@ -53,6 +55,7 @@ public class SettingsController(AppDbContext db, AuditService audit) : ApiContro
     }
 
     /// <summary>Removes the company logo.</summary>
+    [RequirePermission(Permission.Settings)]
     [HttpDelete("logo")]
     public async Task<IActionResult> DeleteLogo()
     {
@@ -64,6 +67,7 @@ public class SettingsController(AppDbContext db, AuditService audit) : ApiContro
         return Ok();
     }
 
+    [RequirePermission(Permission.Settings)]
     [HttpPut]
     public async Task<ActionResult<CompanySettingsDto>> Update(SaveCompanySettingsRequest req)
     {

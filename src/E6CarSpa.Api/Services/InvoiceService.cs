@@ -122,15 +122,6 @@ public class InvoiceService(AppDbContext db, WhatsAppService whatsApp, PdfInvoic
         await db.SaveChangesAsync();
         await tx.CommitAsync();
 
-        // WhatsApp the invoice (PDF attached) to the customer. Never blocks or breaks billing:
-        // rendering/sending problems are swallowed and recorded in NotificationLog.
-        try
-        {
-            var bytes = await pdf.RenderAsync(invoice);
-            await whatsApp.SendInvoiceAsync(invoice, bytes);
-        }
-        catch { /* notification failure must not fail the finalise */ }
-
         return invoice;
     }
 
@@ -178,9 +169,18 @@ public class InvoiceService(AppDbContext db, WhatsAppService whatsApp, PdfInvoic
 
         await db.SaveChangesAsync();
 
-        // Tell the customer where they stand: a thank-you once settled, otherwise what's left.
+        // Tell the customer where they stand: send the PDF invoice once fully settled,
+        // plus a thank-you. Partial payments get a balance reminder only.
         if (nowFullyPaid)
+        {
+            try
+            {
+                var bytes = await pdf.RenderAsync(invoice);
+                await whatsApp.SendInvoiceAsync(invoice, bytes);
+            }
+            catch { /* notification failure must not block the payment */ }
             await whatsApp.SendPaymentThankYouAsync(invoice);
+        }
         else if (invoice.Balance > 0)
             await whatsApp.SendPartialPaymentAsync(invoice, req.Amount);
 

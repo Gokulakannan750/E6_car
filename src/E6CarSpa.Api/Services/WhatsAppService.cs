@@ -43,12 +43,11 @@ public class WhatsAppService(
     {
         var name = invoice.Customer?.Name ?? "Customer";
         var paid = paidNow.ToString("0.##");
-        var balance = invoice.Balance.ToString("0.##");
         var car = invoice.Vehicle?.CarNumber ?? "";
 
         return SendTemplateAsync(invoice, _opt.PartialPaymentTemplateName,
-            new[] { name, paid, balance, car },
-            $"Hi {name}, we received Rs.{paid} for {car}. Balance due: Rs.{balance}. - E6 Car Spa",
+            new[] { name, paid, car },
+            $"Hi {name}, we received Rs.{paid} for {car}. - E6 Car Spa",
             documentMediaId: null, ct);
     }
 
