@@ -96,6 +96,7 @@ public partial class App : Application
         }
 
         var shellWindow = Services.GetRequiredService<ShellWindow>();
+        Application.Current.MainWindow = shellWindow;   // login window is closing — promote the shell
         shellWindow.Show();
     }
 

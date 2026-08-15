@@ -9,4 +9,10 @@
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
+
+    <!-- The app is login-first: the first MainWindow shown is the LoginWindow, which closes
+         after a successful sign-in. Without this, WPF defaults to OnLastWindowClose, which
+         would tear the process down the moment the login dialog closes — before the shell
+         ever renders. -->
+    <Application.ShutdownMode>OnExplicitShutdown</Application.ShutdownMode>
 </Application>

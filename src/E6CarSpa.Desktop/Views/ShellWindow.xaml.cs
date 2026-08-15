@@ -1,4 +1,5 @@
 using System.Windows;
+using E6CarSpa.Desktop.Services;
 using E6CarSpa.Desktop.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -21,6 +22,12 @@ public partial class ShellWindow : Window
         InitializeComponent();
         _vm = vm;
         DataContext = vm;
+        Closed += (_, _) =>
+        {
+            // With OnExplicitShutdown the app relies on us to exit; when the shell closes
+            // (user clicks the X button, not a normal sign-out), that's the signal.
+            Application.Current.Shutdown();
+        };
 
         // Size to the screen's work area minus a visible margin on all four sides, then
         // center — rather than letting the window touch the screen edges.
@@ -54,9 +61,19 @@ public partial class ShellWindow : Window
         
         Loaded += async (_, _) =>
         {
-            _inactivityTimer.Start();
-            await _vm.LoadLogoAsync();
-            await _vm.NavigateAsync<DashboardViewModel>("Dashboard");
+            try
+            {
+                _inactivityTimer.Start();
+                await _vm.LoadLogoAsync();
+                await _vm.NavigateAsync<DashboardViewModel>("Dashboard");
+            }
+            catch (Exception ex)
+            {
+                AppLog.Error("Shell startup failed.", ex);
+                MessageBox.Show(
+                    $"The dashboard could not be loaded.\n\n{ex.Message}\n\nPlease check that the API is running and contact support if the problem persists.\n\nLog: {AppLog.Folder}",
+                    "E6 Car Spa", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         };
     }
 
