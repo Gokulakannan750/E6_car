@@ -18,10 +18,12 @@ $root = Split-Path $PSScriptRoot -Parent
 Push-Location $root
 try {
     Write-Host "== Stopping repo-local dev instances (they lock the DLLs) ==" -ForegroundColor Cyan
-    Get-Process E6CarSpa.Desktop, E6CarSpa.Api -ErrorAction SilentlyContinue | ForEach-Object {
-        try { if ($_.MainModule.FileName -like "$root*") { $_ | Stop-Process -Force -ErrorAction Stop } } catch { }
-    }
-    Start-Sleep -Milliseconds 600
+    # Stop the API and desktop processes, plus any .NET Host children running from this repo.
+    # The latter are the actual file-lock culprits when the API was launched from dist/api\.
+    Get-Process E6CarSpa.Desktop, E6CarSpa.Api, ".NET Host" -ErrorAction SilentlyContinue | Where-Object {
+        try { $_.MainModule.FileName -like "$root*" } catch { $false }
+    } | Stop-Process -Force -ErrorAction SilentlyContinue
+    Start-Sleep -Seconds 2
 
     Write-Host "== Publishing API ==" -ForegroundColor Cyan
     dotnet publish src/E6CarSpa.Api -c $Configuration -r win-x64 --self-contained true `
