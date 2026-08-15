@@ -70,7 +70,8 @@ try {
         Write-Host "WARNING: Trovotech signing cert not found — installer left UNSIGNED." -ForegroundColor Yellow
     }
 
-    Write-Host ("== DONE -> {0} ({1:N1} MB) ==" -f $out.FullName, ($out.Length / 1MB)) -ForegroundColor Green
+    $sizeMB = "{0:N1} MB" -f ($out.Length / 1MB)
+    Write-Host "== DONE -> $($out.FullName) ($sizeMB) ==" -ForegroundColor Green
     Write-Host "Reinstall this on the shop PC to apply the changes." -ForegroundColor Yellow
 }
 finally { Pop-Location }
