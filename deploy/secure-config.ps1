@@ -67,8 +67,15 @@ try {
 
     if ($isPlaceholder) {
         # 48 bytes -> 64 base64 characters, from the OS CSPRNG.
+        # Use GetBytes() instead of Fill() — Fill() was added in .NET 6 / PowerShell 7+.
         $bytes = [byte[]]::new(48)
-        [System.Security.Cryptography.RandomNumberGenerator]::Fill($bytes)
+        $rng = [System.Security.Cryptography.RandomNumberGenerator]::Create()
+        try {
+            $rng.GetBytes($bytes)
+        }
+        finally {
+            $rng.Dispose()
+        }
         $json.Jwt.Key = [Convert]::ToBase64String($bytes)
 
         $json | ConvertTo-Json -Depth 10 | Set-Content $configPath -Encoding UTF8
