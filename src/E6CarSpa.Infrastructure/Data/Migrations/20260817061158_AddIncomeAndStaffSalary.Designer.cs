@@ -3,6 +3,7 @@ using System;
 using E6CarSpa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace E6CarSpa.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260817061158_AddIncomeAndStaffSalary")]
+    partial class AddIncomeAndStaffSalary
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -625,14 +628,15 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                     b.Property<Guid?>("RecordedByUserId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("RecordedByUsername")
-                        .HasColumnType("text");
-
                     b.Property<Guid>("StaffId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("WorkerName")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -670,9 +674,6 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
 
                     b.Property<Guid?>("RecordedByUserId")
                         .HasColumnType("uuid");
-
-                    b.Property<string>("RecordedByUsername")
-                        .HasColumnType("text");
 
                     b.Property<DateTime>("SalaryDate")
                         .HasColumnType("timestamp with time zone");

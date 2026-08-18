@@ -60,7 +60,14 @@ if (!builder.Environment.IsDevelopment() &&
 }
 
 // ----- Database (PostgreSQL) -----
-builder.Services.AddDbContext<AppDbContext>(opt => opt.UseNpgsql(rawConn));
+builder.Services.AddDbContext<AppDbContext>(opt =>
+{
+    opt.UseNpgsql(rawConn);
+    // PendingModelChangesWarning fires when the compiled model differs from the last migration's
+    // snapshot — useful in dev, but fatal in production after code-only changes that don't need
+    // a new migration (e.g. adding a new entity is handled by our existing migrations).
+    opt.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+});
 
 // ----- Auth -----
 // The one endpoint an account with MustChangePassword set is still allowed to call.
@@ -225,7 +232,7 @@ app.UseExceptionHandler(handler => handler.Run(async context =>
         Status = status,
         Title = isBadOp ? "Operation not allowed" : "Server error",
         // Don't leak internal details to the client for 500s.
-        Detail = isBadOp ? ex?.Message : "An unexpected error occurred. Please try again or contact support."
+        Detail = isBadOp ? ex?.Message : "An unexpected error occurred. Please try again or contact support.",
     });
 }));
 

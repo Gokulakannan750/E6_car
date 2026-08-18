@@ -18,7 +18,8 @@
         <DataTemplate DataType="{x:Type vm:ReportsViewModel}"><views:ReportsView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:SettingsViewModel}"><views:SettingsView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:StaffAdvancesViewModel}"><views:StaffAdvancesView /></DataTemplate>
-        <DataTemplate DataType="{x:Type vm:ShowroomViewModel}"><views:ShowroomView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:StaffSalariesViewModel}"><views:StaffSalariesView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:IncomeViewModel}"><views:IncomeView /></DataTemplate>
 
         <!-- Navigation button — bright white text on dark sidebar -->
         <Style x:Key="NavButton" TargetType="Button">
@@ -107,7 +108,6 @@
                     <Button Content="🗂  Catalogue" Style="{StaticResource NavButton}" Command="{Binding ShowCatalogueCommand}" Visibility="{Binding CanCatalogue, Converter={StaticResource BoolToVis}}" />
                     <Button Content="💵  Staff Advances" Style="{StaticResource NavButton}" Command="{Binding ShowStaffAdvancesCommand}" Visibility="{Binding CanStaffAdvances, Converter={StaticResource BoolToVis}}" />
                     <Button Content="📈  Reports" Style="{StaticResource NavButton}" Command="{Binding ShowReportsCommand}" Visibility="{Binding CanReports, Converter={StaticResource BoolToVis}}" />
-                    <Button Content="🏪  Showroom" Style="{StaticResource NavButton}" Command="{Binding ShowShowroomCommand}" Visibility="{Binding CanShowroom, Converter={StaticResource BoolToVis}}" />
                     <Button Content="⚙  Settings" Style="{StaticResource NavButton}" Command="{Binding ShowSettingsCommand}" Visibility="{Binding CanSettings, Converter={StaticResource BoolToVis}}" />
                 </StackPanel>
             </DockPanel>

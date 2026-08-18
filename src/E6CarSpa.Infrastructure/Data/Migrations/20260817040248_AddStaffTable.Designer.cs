@@ -3,6 +3,7 @@ using System;
 using E6CarSpa.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace E6CarSpa.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260817040248_AddStaffTable")]
+    partial class AddStaffTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -164,52 +167,6 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                     b.HasIndex("Phone");
 
                     b.ToTable("Customers");
-                });
-
-            modelBuilder.Entity("E6CarSpa.Domain.Entities.Income", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric(12,2)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("DeletedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("DeletedByUsername")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("IncomeDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
-
-                    b.Property<Guid?>("RecordedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Source")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("character varying(120)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IncomeDate");
-
-                    b.ToTable("Income");
                 });
 
             modelBuilder.Entity("E6CarSpa.Domain.Entities.Invoice", b =>
@@ -625,14 +582,15 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                     b.Property<Guid?>("RecordedByUserId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("RecordedByUsername")
-                        .HasColumnType("text");
-
                     b.Property<Guid>("StaffId")
                         .HasColumnType("uuid");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("WorkerName")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -641,53 +599,6 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                     b.HasIndex("StaffId");
 
                     b.ToTable("StaffAdvances");
-                });
-
-            modelBuilder.Entity("E6CarSpa.Domain.Entities.StaffSalary", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric(12,2)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("DeletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("DeletedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("DeletedByUsername")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
-
-                    b.Property<Guid?>("RecordedByUserId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("RecordedByUsername")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("SalaryDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("StaffId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("StaffId", "SalaryDate");
-
-                    b.ToTable("StaffSalaries");
                 });
 
             modelBuilder.Entity("E6CarSpa.Domain.Entities.StockMovement", b =>
@@ -926,17 +837,6 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                     b.Navigation("Staff");
                 });
 
-            modelBuilder.Entity("E6CarSpa.Domain.Entities.StaffSalary", b =>
-                {
-                    b.HasOne("E6CarSpa.Domain.Entities.Staff", "Staff")
-                        .WithMany("Salaries")
-                        .HasForeignKey("StaffId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Staff");
-                });
-
             modelBuilder.Entity("E6CarSpa.Domain.Entities.StockMovement", b =>
                 {
                     b.HasOne("E6CarSpa.Domain.Entities.Invoice", "Invoice")
@@ -993,8 +893,6 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
             modelBuilder.Entity("E6CarSpa.Domain.Entities.Staff", b =>
                 {
                     b.Navigation("Advances");
-
-                    b.Navigation("Salaries");
                 });
 
             modelBuilder.Entity("E6CarSpa.Domain.Entities.Vehicle", b =>

@@ -25,20 +25,7 @@
                     <VerticalStackLayout Spacing="10">
                         <Label Text="Record an advance" FontSize="16" FontAttributes="Bold" />
 
-                        <Entry x:Name="WorkerEntry" Placeholder="Worker name" />
-
-                        <!-- Names already on file — tap to fill, so one worker isn't typed two ways. -->
-                        <FlexLayout x:Name="KnownWorkersHost" Wrap="Wrap" Direction="Row" IsVisible="False">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate>
-                                    <Button Text="{Binding .}" Clicked="OnPickWorkerClicked"
-                                            Margin="0,0,8,8" Padding="14,6" FontSize="13"
-                                            BackgroundColor="Transparent" BorderWidth="1"
-                                            TextColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Primary}}"
-                                            BorderColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Primary}}" />
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </FlexLayout>
+                        <Picker x:Name="WorkerPicker" Title="Select worker" HeightRequest="44" />
 
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                             <Entry x:Name="AmountEntry" Grid.Column="0" Placeholder="Amount ₹"

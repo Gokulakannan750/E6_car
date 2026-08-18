@@ -185,52 +185,78 @@ public class ApiClient(HttpClient http) : IApiClient
         await EnsureSuccess(resp);
     }
 
-    // ---------- Showrooms ----------
-    public Task<List<ShowroomDto>?> GetShowroomsAsync(bool includeInactive = false)
+    // ---------- Staff master -----
+    public Task<List<StaffDto>?> GetStaffAsync(bool includeInactive = false) =>
+        GetAsync<List<StaffDto>>($"api/staff?includeInactive={includeInactive}");
+
+    public Task<List<StaffDto>?> GetStaffForPickerAsync() =>
+        GetAsync<List<StaffDto>>("api/staff/picker");
+
+    public Task<StaffDto> CreateStaffAsync(SaveStaffRequest req) =>
+        PostAsync<StaffDto>("api/staff", req);
+
+    public Task<StaffDto> UpdateStaffAsync(Guid id, SaveStaffRequest req) =>
+        PutAsync<StaffDto>($"api/staff/{id}", req);
+
+    public async Task DeleteStaffAsync(Guid id)
     {
-        var qs = includeInactive ? "?includeInactive=true" : "";
-        return GetAsync<List<ShowroomDto>>($"api/showrooms{qs}");
-    }
-
-    public Task<ShowroomDto?> GetShowroomAsync(Guid id) =>
-        GetAsync<ShowroomDto>($"api/showrooms/{id}");
-
-    public Task<ShowroomDto> CreateShowroomAsync(SaveShowroomRequest req) =>
-        PostAsync<ShowroomDto>("api/showrooms", req);
-
-    public Task UpdateShowroomAsync(Guid id, SaveShowroomRequest req) =>
-        PutAsync<object>($"api/showrooms/{id}", req);
-
-    public async Task DeleteShowroomAsync(Guid id)
-    {
-        var resp = await http.DeleteAsync($"api/showrooms/{id}");
+        var resp = await http.DeleteAsync($"api/staff/{id}");
         await EnsureSuccess(resp);
     }
 
-    public Task<List<ShowroomVisitDto>?> GetShowroomVisitsAsync(Guid showroomId, DateTime? from = null, DateTime? to = null)
+    public async Task RestoreStaffAsync(Guid id)
     {
-        var parts = new List<string>();
-        if (from is DateTime f) parts.Add($"from={Uri.EscapeDataString(f.ToString("yyyy-MM-dd"))}");
-        if (to is DateTime t) parts.Add($"to={Uri.EscapeDataString(t.ToString("yyyy-MM-dd"))}");
-        var qs = parts.Count == 0 ? "" : "?" + string.Join("&", parts);
-        return GetAsync<List<ShowroomVisitDto>>($"api/showrooms/{showroomId}/visits{qs}");
+        var resp = await http.PostAsync($"api/staff/{id}/restore", null);
+        await EnsureSuccess(resp);
     }
 
-    public Task<List<ShowroomVisitSummaryDto>?> GetShowroomSummaryAsync(DateTime? from = null, DateTime? to = null)
+    // ---------- Income ----------
+    public Task<List<IncomeDto>?> GetIncomeAsync(string? source = null, bool includeDeleted = false)
     {
         var parts = new List<string>();
-        if (from is DateTime f) parts.Add($"from={Uri.EscapeDataString(f.ToString("yyyy-MM-dd"))}");
-        if (to is DateTime t) parts.Add($"to={Uri.EscapeDataString(t.ToString("yyyy-MM-dd"))}");
+        if (!string.IsNullOrWhiteSpace(source)) parts.Add($"source={Uri.EscapeDataString(source)}");
+        if (includeDeleted) parts.Add("includeDeleted=true");
         var qs = parts.Count == 0 ? "" : "?" + string.Join("&", parts);
-        return GetAsync<List<ShowroomVisitSummaryDto>>($"api/showrooms/visits/summary{qs}");
+        return GetAsync<List<IncomeDto>>($"api/income{qs}");
     }
 
-    public Task<ShowroomVisitDto> CreateShowroomVisitAsync(SaveShowroomVisitRequest req) =>
-        PostAsync<ShowroomVisitDto>("api/showrooms/visits", req);
-
-    public async Task DeleteShowroomVisitAsync(Guid id)
+    public Task<List<IncomeSummaryDto>?> GetIncomeSummaryAsync(DateTime? from = null, DateTime? to = null)
     {
-        var resp = await http.DeleteAsync($"api/showrooms/visits/{id}");
+        var parts = new List<string>();
+        if (from.HasValue) parts.Add($"from={from.Value:yyyy-MM-dd}");
+        if (to.HasValue) parts.Add($"to={to.Value:yyyy-MM-dd}");
+        var qs = parts.Count == 0 ? "" : "?" + string.Join("&", parts);
+        return GetAsync<List<IncomeSummaryDto>>($"api/income/summary{qs}");
+    }
+
+    public Task<IncomeDto> CreateIncomeAsync(SaveIncomeRequest req) =>
+        PostAsync<IncomeDto>("api/income", req);
+
+    public async Task DeleteIncomeAsync(Guid id)
+    {
+        var resp = await http.DeleteAsync($"api/income/{id}");
+        await EnsureSuccess(resp);
+    }
+
+    // ---------- Staff Salary ----------
+    public Task<List<StaffSalaryDto>?> GetStaffSalariesAsync(Guid? staffId = null, bool includeDeleted = false)
+    {
+        var parts = new List<string>();
+        if (staffId.HasValue) parts.Add($"staffId={staffId.Value}");
+        if (includeDeleted) parts.Add("includeDeleted=true");
+        var qs = parts.Count == 0 ? "" : "?" + string.Join("&", parts);
+        return GetAsync<List<StaffSalaryDto>>($"api/staffsalaries{qs}");
+    }
+
+    public Task<List<StaffSalarySummaryDto>?> GetStaffSalarySummaryAsync() =>
+        GetAsync<List<StaffSalarySummaryDto>>("api/staffsalaries/summary");
+
+    public Task<StaffSalaryDto> CreateStaffSalaryAsync(SaveStaffSalaryRequest req) =>
+        PostAsync<StaffSalaryDto>("api/staffsalaries", req);
+
+    public async Task DeleteStaffSalaryAsync(Guid id)
+    {
+        var resp = await http.DeleteAsync($"api/staffsalaries/{id}");
         await EnsureSuccess(resp);
     }
 

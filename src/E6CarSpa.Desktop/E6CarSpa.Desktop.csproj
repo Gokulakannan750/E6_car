@@ -20,6 +20,12 @@
     <UseWPF>true</UseWPF>
     <ApplicationIcon>Assets\logo.ico</ApplicationIcon>
     <Company>trovotechsolutions</Company>
+    <!-- Installer build: emits a single self-contained EXE at dist/desktop/E6CarSpa.Desktop.exe -->
+    <PublishSingleFile Condition="'$(Configuration)' == 'Release'">true</PublishSingleFile>
+    <SelfContained Condition="'$(Configuration)' == 'Release'">true</SelfContained>
+    <PublishReadyToRun Condition="'$(Configuration)' == 'Release'">false</PublishReadyToRun>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <DebugType Condition="'$(Configuration)' == 'Release'">embedded</DebugType>
   </PropertyGroup>
 
   <ItemGroup>

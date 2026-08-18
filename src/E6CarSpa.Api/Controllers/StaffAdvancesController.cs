@@ -10,71 +10,103 @@ using Microsoft.EntityFrameworkCore;
 
 namespace E6CarSpa.Api.Controllers;
 
-/// <summary>
-/// Record of cash advances given to workers. Requires a signed-in user (wage data), like every
-/// endpoint except login — see the fallback policy in Program.cs.
-/// </summary>
+/// <summary>Cash-advance records for floor workers. Staff master lives in <see cref="StaffController"/>.</summary>
 [RequirePermission(Permission.StaffAdvances)]
 public class StaffAdvancesController(AppDbContext db, AuditService audit) : ApiControllerBase
 {
-    /// <param name="includeDeleted">
-    /// Also return entries marked obsolete. Off by default, so ordinary use shows only live
-    /// advances; the clients switch it on to display the audit trail.
-    /// </param>
+    /// <param name="includeDeleted">Also return entries marked obsolete.</param>
     [HttpGet]
     public async Task<ActionResult<List<StaffAdvanceDto>>> List(
         [FromQuery] string? worker, [FromQuery] bool includeDeleted = false)
     {
-        var q = db.StaffAdvances.AsNoTracking().AsQueryable();
-        if (!includeDeleted) q = q.Where(a => a.DeletedAt == null);
-        if (!string.IsNullOrWhiteSpace(worker))
+        try
         {
-            var w = worker.Trim().ToLower();
-            q = q.Where(a => a.WorkerName.ToLower().Contains(w));
-        }
+            var q = db.StaffAdvances.AsNoTracking()
+                .Include(a => a.Staff)
+                .AsQueryable();
+            if (!includeDeleted) q = q.Where(a => a.DeletedAt == null);
+            if (!string.IsNullOrWhiteSpace(worker))
+            {
+                var w = worker.Trim().ToLower();
+                q = q.Where(a => a.Staff.FullName.ToLower().Contains(w));
+            }
 
-        return await q.OrderByDescending(a => a.AdvanceDate).ThenByDescending(a => a.CreatedAt)
-            .Take(500)
-            .Select(a => new StaffAdvanceDto(a.Id, a.WorkerName, a.Amount, a.AdvanceDate, a.Note,
-                a.DeletedAt, a.DeletedByUsername))
-            .ToListAsync();
+            return await q.OrderByDescending(a => a.AdvanceDate).ThenByDescending(a => a.CreatedAt)
+                .Take(500)
+                .Select(a => new StaffAdvanceDto(a.Id, a.StaffId, a.Staff.FullName, a.Amount, a.AdvanceDate, a.Note,
+                    a.DeletedAt, a.DeletedByUsername))
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            return Problem(
+                title: "Could not load advances",
+                detail: ex.InnerException != null ? ex.InnerException.Message : ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError);
+        }
     }
 
     /// <summary>Total advanced per worker, biggest first. Obsolete entries never count.</summary>
     [HttpGet("summary")]
     public async Task<ActionResult<List<StaffAdvanceSummaryDto>>> Summary()
     {
-        var rows = await db.StaffAdvances.AsNoTracking()
-            .Where(a => a.DeletedAt == null)
-            .GroupBy(a => a.WorkerName)
-            .Select(g => new StaffAdvanceSummaryDto(g.Key, g.Sum(x => x.Amount), g.Count()))
-            .ToListAsync();
+        try
+        {
+            var rows = await db.StaffAdvances.AsNoTracking()
+                .Where(a => a.DeletedAt == null)
+                .GroupBy(a => new { a.StaffId, a.Staff.FullName })
+                .Select(g => new StaffAdvanceSummaryDto(g.Key.StaffId, g.Key.FullName,
+                    g.Sum(x => x.Amount), g.Count()))
+                .ToListAsync();
 
-        return rows.OrderByDescending(r => r.TotalAdvanced).ToList();
+            return rows.OrderByDescending(r => r.TotalAdvanced).ToList();
+        }
+        catch (Exception ex)
+        {
+            return Problem(
+                title: "Could not load summary",
+                detail: ex.InnerException != null ? ex.InnerException.Message : ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError);
+        }
     }
 
     [HttpPost]
     public async Task<ActionResult<StaffAdvanceDto>> Create(SaveStaffAdvanceRequest req)
     {
-        if (string.IsNullOrWhiteSpace(req.WorkerName))
-            return BadRequest(new { message = "Enter the worker's name." });
         if (req.Amount <= 0)
             return BadRequest(new { message = "Advance amount must be greater than zero." });
 
-        var advance = new StaffAdvance
+        try
         {
-            WorkerName = req.WorkerName.Trim(),
-            Amount = req.Amount,
-            // Store the chosen day as UTC midnight — Npgsql requires UTC for timestamptz.
-            AdvanceDate = DateTime.SpecifyKind(req.AdvanceDate.Date, DateTimeKind.Utc),
-            Note = string.IsNullOrWhiteSpace(req.Note) ? null : req.Note.Trim(),
-            RecordedByUserId = CurrentUserId
-        };
+            var staff = await db.Staff.FindAsync(req.StaffId);
+            if (staff is null || !staff.IsActive)
+                return BadRequest(new { message = "Selected staff member not found." });
 
-        db.StaffAdvances.Add(advance);
-        await db.SaveChangesAsync();
+            var advance = new StaffAdvance
+            {
+                StaffId = staff.Id,
+                Amount = req.Amount,
+                AdvanceDate = DateTime.SpecifyKind(req.AdvanceDate.Date, DateTimeKind.Utc),
+                Note = string.IsNullOrWhiteSpace(req.Note) ? null : req.Note.Trim(),
+                RecordedByUserId = CurrentUserId,
+                RecordedByUsername = CurrentUsername,
+                CreatedAt = DateTime.UtcNow
+            };
 
-        return new StaffAdvanceDto(advance.Id, advance.WorkerName, advance.Amount, advance.AdvanceDate, advance.Note);
+            db.StaffAdvances.Add(advance);
+            await db.SaveChangesAsync();
+
+            return new StaffAdvanceDto(advance.Id, advance.StaffId, staff.FullName,
+                advance.Amount, advance.AdvanceDate, advance.Note,
+                advance.DeletedAt, advance.DeletedByUsername);
+        }
+        catch (Exception ex)
+        {
+            return Problem(
+                title: "Could not record advance",
+                detail: ex.InnerException != null ? ex.InnerException.Message : ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError);
+        }
     }
 
     /// <summary>
@@ -85,20 +117,29 @@ public class StaffAdvancesController(AppDbContext db, AuditService audit) : ApiC
     [HttpDelete("{id:guid}")]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var advance = await db.StaffAdvances.FindAsync(id);
-        if (advance is null) return NotFound();
-        // Deleting twice must not overwrite who did it first.
-        if (advance.DeletedAt is not null) return NoContent();
+        try
+        {
+            var advance = await db.StaffAdvances.FindAsync(id);
+            if (advance is null) return NotFound();
+            if (advance.DeletedAt is not null) return NoContent();
 
-        advance.DeletedAt = DateTime.UtcNow;
-        advance.DeletedByUserId = CurrentUserId;
-        advance.DeletedByUsername = CurrentUsername;
-        advance.UpdatedAt = DateTime.UtcNow;
+            advance.DeletedAt = DateTime.UtcNow;
+            advance.DeletedByUserId = CurrentUserId;
+            advance.DeletedByUsername = CurrentUsername;
+            advance.UpdatedAt = DateTime.UtcNow;
 
-        await db.SaveChangesAsync();
-        await audit.LogAsync("StaffAdvance.Delete",
-            $"worker={advance.WorkerName}; amount={advance.Amount:0.##}; date={advance.AdvanceDate:yyyy-MM-dd}");
+            await db.SaveChangesAsync();
+            await audit.LogAsync("StaffAdvance.Delete",
+                $"amount={advance.Amount:0.##}; date={advance.AdvanceDate:yyyy-MM-dd}");
 
-        return NoContent();
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return Problem(
+                title: "Could not delete advance",
+                detail: ex.Message,
+                statusCode: StatusCodes.Status500InternalServerError);
+        }
     }
 }

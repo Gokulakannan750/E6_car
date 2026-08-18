@@ -22,6 +22,7 @@ public record DashboardSummaryDto(
     DateTime Date,
     int JobsToday, int QuotationsPending, int InvoicesUnpaid,
     decimal CollectedToday, decimal CashToday, decimal CardToday, decimal UpiToday,
+    decimal IncomeToday,
     int LowStockCount,
     List<LiveJobDto> ActiveJobs);
 
@@ -32,7 +33,7 @@ public record LiveJobDto(string InvoiceNumber, string VehicleNumber, string Vehi
 /// trail rather than erased, and is excluded from the per-worker totals.</param>
 /// <param name="DeletedBy">Username of whoever marked it obsolete.</param>
 public record StaffAdvanceDto(
-    Guid Id, string WorkerName, decimal Amount, DateTime AdvanceDate, string? Note,
+    Guid Id, Guid StaffId, string StaffName, decimal Amount, DateTime AdvanceDate, string? Note,
     DateTime? DeletedAt = null, string? DeletedBy = null)
 {
     public bool IsDeleted => DeletedAt is not null;
@@ -42,7 +43,44 @@ public record StaffAdvanceDto(
         DeletedAt is null ? "" : $"Deleted by {DeletedBy ?? "unknown"} on {DeletedAt:dd-MM-yyyy}";
 }
 
-public record SaveStaffAdvanceRequest(string WorkerName, decimal Amount, DateTime AdvanceDate, string? Note);
+public record SaveStaffAdvanceRequest(Guid StaffId, decimal Amount, DateTime AdvanceDate, string? Note);
 
 /// <summary>Total advanced per worker, for the summary panel.</summary>
-public record StaffAdvanceSummaryDto(string WorkerName, decimal TotalAdvanced, int Count);
+public record StaffAdvanceSummaryDto(Guid StaffId, string StaffName, decimal TotalAdvanced, int Count);
+
+// ----- Staff master -----
+
+/// <summary>A floor worker whose name appears on cash-advance records.</summary>
+public record StaffDto(Guid Id, string FullName, bool IsActive);
+
+public record SaveStaffRequest(string FullName);
+
+// ----- Income -----
+
+/// <summary>A non-invoice income entry (tips, miscellaneous, part sale, etc.).</summary>
+public record IncomeDto(
+    Guid Id, string Source, decimal Amount, DateTime IncomeDate, string? Note,
+    DateTime? DeletedAt = null, string? DeletedBy = null)
+{
+    public bool IsDeleted => DeletedAt is not null;
+    public string DeletedCaption =>
+        DeletedAt is null ? "" : $"Deleted by {DeletedBy ?? "unknown"} on {DeletedAt:dd-MM-yyyy}";
+}
+
+public record SaveIncomeRequest(string Source, decimal Amount, DateTime IncomeDate, string? Note);
+public record IncomeSummaryDto(string Source, decimal TotalAmount, int Count);
+
+// ----- Staff Salary -----
+
+/// <summary>A salary payment to a floor worker.</summary>
+public record StaffSalaryDto(
+    Guid Id, Guid StaffId, string StaffName, decimal Amount, DateTime SalaryDate, string? Note,
+    DateTime? DeletedAt = null, string? DeletedBy = null)
+{
+    public bool IsDeleted => DeletedAt is not null;
+    public string DeletedCaption =>
+        DeletedAt is null ? "" : $"Deleted by {DeletedBy ?? "unknown"} on {DeletedAt:dd-MM-yyyy}";
+}
+
+public record SaveStaffSalaryRequest(Guid StaffId, decimal Amount, DateTime SalaryDate, string? Note);
+public record StaffSalarySummaryDto(Guid StaffId, string StaffName, decimal TotalPaid, int Count);

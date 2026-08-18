@@ -129,8 +129,13 @@ public class ApiIntegrationTests
         var client = factory.CreateClient();
         Authorize(client, await LoginAsync(client, "admin", ApiFactory.AdminPassword));
 
+        // First create a staff member, then create an advance against it.
+        var staff = await (await client.PostAsJsonAsync("/api/staffadvances/staff",
+            new SaveStaffRequest("Sangesh")))
+            .Content.ReadFromJsonAsync<StaffDto>();
+
         var created = await (await client.PostAsJsonAsync("/api/staffadvances",
-            new SaveStaffAdvanceRequest("Sangesh", 1000m, DateTime.UtcNow.Date, "test")))
+            new SaveStaffAdvanceRequest(staff!.Id, 1000m, DateTime.UtcNow.Date, "test")))
             .Content.ReadFromJsonAsync<StaffAdvanceDto>();
 
         Assert.Equal(HttpStatusCode.NoContent,

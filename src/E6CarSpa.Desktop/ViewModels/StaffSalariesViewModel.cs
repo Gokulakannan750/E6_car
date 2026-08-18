@@ -8,32 +8,20 @@ using E6CarSpa.Contracts;
 namespace E6CarSpa.Desktop.ViewModels;
 
 /// <summary>
-/// Cash advances given to workers. Worker names come from the Staff master table (single source
-/// of truth) rather than being typed in freehand.
+/// Salary payments to floor workers. One of the three trackers under the "Cash" section,
+/// sharing the Staff master with advances.
 /// </summary>
-public partial class StaffAdvancesViewModel(IApiClient api) : ObservableObject, IAsyncInitialize
+public partial class StaffSalariesViewModel(IApiClient api) : ObservableObject, IAsyncInitialize
 {
-    /// <summary>Every advance, newest first.</summary>
-    public ObservableCollection<StaffAdvanceDto> Advances { get; } = new();
-
-    /// <summary>Total advanced per worker, biggest first.</summary>
-    public ObservableCollection<StaffAdvanceSummaryDto> Summary { get; } = new();
-
-    /// <summary>All staff members for the picker (active only).</summary>
+    public ObservableCollection<StaffSalaryDto> Salaries { get; } = new();
+    public ObservableCollection<StaffSalarySummaryDto> Summary { get; } = new();
     public ObservableCollection<StaffDto> StaffList { get; } = new();
 
-    // ----- entry form -----
     [ObservableProperty] private StaffDto? _selectedStaff;
     [ObservableProperty] private decimal _amount;
-    [ObservableProperty] private DateTime _advanceDate = DateTime.Today;
+    [ObservableProperty] private DateTime _salaryDate = DateTime.Today;
     [ObservableProperty] private string _note = "";
 
-    [ObservableProperty] private string _search = "";
-
-    /// <summary>
-    /// Show entries that were marked obsolete. Deleting keeps the row for the audit trail rather
-    /// than erasing it, so this reveals what was removed, by whom and when.
-    /// </summary>
     [ObservableProperty] private bool _showDeleted;
     partial void OnShowDeletedChanged(bool value) => _ = LoadAsync();
 
@@ -41,10 +29,9 @@ public partial class StaffAdvancesViewModel(IApiClient api) : ObservableObject, 
     [ObservableProperty] private string _error = "";
     [ObservableProperty] private string _info = "";
 
-    /// <summary>Grand total of everything advanced (all workers).</summary>
-    public decimal GrandTotal => Summary.Sum(s => s.TotalAdvanced);
+    public decimal GrandTotal => Summary.Sum(s => s.TotalPaid);
 
-    public async Task InitializeAsync() => await LoadAsync();
+    public Task InitializeAsync() => LoadAsync();
 
     [RelayCommand]
     private async Task LoadAsync()
@@ -53,18 +40,15 @@ public partial class StaffAdvancesViewModel(IApiClient api) : ObservableObject, 
         {
             IsBusy = true; Error = "";
 
-            // Load staff master (active only for the picker).
             var staff = await api.GetStaffAsync(includeInactive: false) ?? new();
             StaffList.Clear();
             foreach (var s in staff) StaffList.Add(s);
 
-            // Load advances.
-            var list = await api.GetStaffAdvancesAsync(
-                string.IsNullOrWhiteSpace(Search) ? null : Search, ShowDeleted) ?? new();
-            Advances.Clear();
-            foreach (var a in list) Advances.Add(a);
+            var list = await api.GetStaffSalariesAsync(includeDeleted: ShowDeleted) ?? new();
+            Salaries.Clear();
+            foreach (var s in list) Salaries.Add(s);
 
-            var summary = await api.GetStaffAdvanceSummaryAsync() ?? new();
+            var summary = await api.GetStaffSalarySummaryAsync() ?? new();
             Summary.Clear();
             foreach (var s in summary) Summary.Add(s);
 
@@ -75,7 +59,7 @@ public partial class StaffAdvancesViewModel(IApiClient api) : ObservableObject, 
     }
 
     [RelayCommand]
-    private async Task RecordAdvanceAsync()
+    private async Task RecordSalaryAsync()
     {
         Error = ""; Info = "";
         if (SelectedStaff is null) { Error = "Select a worker from the list."; return; }
@@ -84,11 +68,12 @@ public partial class StaffAdvancesViewModel(IApiClient api) : ObservableObject, 
         try
         {
             IsBusy = true;
-            await api.CreateStaffAdvanceAsync(new SaveStaffAdvanceRequest(
-                SelectedStaff.Id, Amount, AdvanceDate, string.IsNullOrWhiteSpace(Note) ? null : Note.Trim()));
+            await api.CreateStaffSalaryAsync(new SaveStaffSalaryRequest(
+                SelectedStaff.Id, Amount, SalaryDate,
+                string.IsNullOrWhiteSpace(Note) ? null : Note.Trim()));
 
-            Info = $"Advance of ₹{Amount:N2} recorded for {SelectedStaff.FullName}.";
-            SelectedStaff = null; Amount = 0; Note = ""; AdvanceDate = DateTime.Today;
+            Info = $"Salary of ₹{Amount:N2} recorded for {SelectedStaff.FullName}.";
+            SelectedStaff = null; Amount = 0; Note = ""; SalaryDate = DateTime.Today;
             await LoadAsync();
         }
         catch (Exception ex) { Error = ex.Message; }
@@ -96,28 +81,28 @@ public partial class StaffAdvancesViewModel(IApiClient api) : ObservableObject, 
     }
 
     [RelayCommand]
-    private async Task DeleteAdvanceAsync(StaffAdvanceDto? advance)
+    private async Task DeleteSalaryAsync(StaffSalaryDto? salary)
     {
-        if (advance is null || advance.IsDeleted) return;
+        if (salary is null || salary.IsDeleted) return;
 
         var confirm = MessageBox.Show(
-            $"Mark the ₹{advance.Amount:N2} advance for {advance.StaffName} on {advance.AdvanceDate:dd-MM-yyyy} as deleted?\n\n" +
+            $"Mark the ₹{salary.Amount:N2} salary for {salary.StaffName} on {salary.SalaryDate:dd-MM-yyyy} as deleted?\n\n" +
             "The entry is kept for the record — stamped with your name — and stops counting towards the totals.",
-            "Delete advance", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            "Delete salary", MessageBoxButton.YesNo, MessageBoxImage.Warning);
         if (confirm != MessageBoxResult.Yes) return;
 
         try
         {
             IsBusy = true; Error = ""; Info = "";
-            await api.DeleteStaffAdvanceAsync(advance.Id);
-            Info = $"Advance for {advance.StaffName} marked deleted. Tick 'Show deleted' to see it.";
+            await api.DeleteStaffSalaryAsync(salary.Id);
+            Info = $"Salary for {salary.StaffName} marked deleted.";
             await LoadAsync();
         }
         catch (Exception ex) { Error = ex.Message; }
         finally { IsBusy = false; }
     }
 
-    // ----- Staff CRUD -----
+    // ----- Staff CRUD (read-only, add/rename only) -----
 
     [RelayCommand]
     private async Task AddStaffAsync()
@@ -147,27 +132,6 @@ public partial class StaffAdvancesViewModel(IApiClient api) : ObservableObject, 
         {
             IsBusy = true;
             await api.UpdateStaffAsync(staff.Id, new SaveStaffRequest(name.Trim()));
-            await LoadAsync();
-        }
-        catch (Exception ex) { Error = ex.Message; }
-        finally { IsBusy = false; }
-    }
-
-    [RelayCommand]
-    private async Task RemoveStaffAsync(StaffDto? staff)
-    {
-        if (staff is null) return;
-
-        var confirm = MessageBox.Show(
-            $"Remove \"{staff.FullName}\" from the staff list?\n\n" +
-            "The person's name will be hidden from pickers, but all their advance history remains intact.",
-            "Remove staff", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-        if (confirm != MessageBoxResult.Yes) return;
-
-        try
-        {
-            IsBusy = true;
-            await api.DeleteStaffAsync(staff.Id);
             await LoadAsync();
         }
         catch (Exception ex) { Error = ex.Message; }

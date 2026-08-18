@@ -100,6 +100,10 @@ public class SettingsController(AppDbContext db, AuditService audit) : ApiContro
         var cardToday = await paymentsQuery.Where(p => p.Method == PaymentMethod.Card).SumAsync(p => (decimal?)p.Amount) ?? 0m;
         var upiToday = await paymentsQuery.Where(p => p.Method == PaymentMethod.Upi).SumAsync(p => (decimal?)p.Amount) ?? 0m;
 
+        var incomeToday = await db.Income.AsNoTracking()
+            .Where(i => i.DeletedAt == null && i.IncomeDate >= start && i.IncomeDate < end)
+            .SumAsync(i => (decimal?)i.Amount) ?? 0m;
+
         var lowStock = await db.Products.CountAsync(p => p.IsActive && p.StockQuantity <= p.ReorderLevel);
 
         var activeJobs = await db.Invoices.AsNoTracking()
@@ -112,6 +116,7 @@ public class SettingsController(AppDbContext db, AuditService audit) : ApiContro
             TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, Services.IndianTime.Zone).Date,
             jobsToday, quotationsPending, invoicesUnpaid,
             totalCollected, cashToday, cardToday, upiToday,
+            incomeToday,
             lowStock,
             activeJobs);
     }

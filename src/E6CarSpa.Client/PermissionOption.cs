@@ -39,6 +39,7 @@ public class PermissionOption : INotifyPropertyChanged
         Make(Permission.Inventory,     "Inventory",         "Stock levels and low-stock alerts",                   granted),
         Make(Permission.Settings,      "Settings",          "Company profile, GST details, invoice numbering",      granted),
         Make(Permission.ManageUsers,   "Manage users",      "Create staff logins and set their permissions",        granted),
+        Make(Permission.StaffManage,   "Staff list",        "Add, rename and deactivate floor workers",             granted),
     ];
 
     private static PermissionOption Make(Permission value, string label, string description, Permission granted) =>

@@ -58,15 +58,25 @@ public interface IApiClient
     Task<List<StaffAdvanceSummaryDto>?> GetStaffAdvanceSummaryAsync();
     Task<StaffAdvanceDto> CreateStaffAdvanceAsync(SaveStaffAdvanceRequest req);
     Task DeleteStaffAdvanceAsync(Guid id);
-    Task<List<ShowroomDto>?> GetShowroomsAsync(bool includeInactive = false);
-    Task<ShowroomDto?> GetShowroomAsync(Guid id);
-    Task<ShowroomDto> CreateShowroomAsync(SaveShowroomRequest req);
-    Task UpdateShowroomAsync(Guid id, SaveShowroomRequest req);
-    Task DeleteShowroomAsync(Guid id);
-    Task<List<ShowroomVisitDto>?> GetShowroomVisitsAsync(Guid showroomId, DateTime? from = null, DateTime? to = null);
-    Task<List<ShowroomVisitSummaryDto>?> GetShowroomSummaryAsync(DateTime? from = null, DateTime? to = null);
-    Task<ShowroomVisitDto> CreateShowroomVisitAsync(SaveShowroomVisitRequest req);
-    Task DeleteShowroomVisitAsync(Guid id);
+
+    // ----- Staff master -----
+    Task<List<StaffDto>?> GetStaffAsync(bool includeInactive = false);
+    Task<StaffDto> CreateStaffAsync(SaveStaffRequest req);
+    Task<StaffDto> UpdateStaffAsync(Guid id, SaveStaffRequest req);
+    Task DeleteStaffAsync(Guid id);
+    Task RestoreStaffAsync(Guid id);
+
+    // ----- Income -----
+    Task<List<IncomeDto>?> GetIncomeAsync(string? source = null, bool includeDeleted = false);
+    Task<List<IncomeSummaryDto>?> GetIncomeSummaryAsync(DateTime? from = null, DateTime? to = null);
+    Task<IncomeDto> CreateIncomeAsync(SaveIncomeRequest req);
+    Task DeleteIncomeAsync(Guid id);
+
+    // ----- Staff Salary -----
+    Task<List<StaffSalaryDto>?> GetStaffSalariesAsync(Guid? staffId = null, bool includeDeleted = false);
+    Task<List<StaffSalarySummaryDto>?> GetStaffSalarySummaryAsync();
+    Task<StaffSalaryDto> CreateStaffSalaryAsync(SaveStaffSalaryRequest req);
+    Task DeleteStaffSalaryAsync(Guid id);
     Task<CompanySettingsDto?> GetSettingsAsync();
     Task<CompanySettingsDto> UpdateSettingsAsync(SaveCompanySettingsRequest req);
     Task UploadLogoAsync(byte[] imageBytes);

@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace E6CarSpa.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260815161426_AddShowrooms")]
-    partial class AddShowrooms
+    [Migration("20260818062328_DropWorkerIdFromStaffAdvances")]
+    partial class DropWorkerIdFromStaffAdvances
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -167,6 +167,52 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                     b.HasIndex("Phone");
 
                     b.ToTable("Customers");
+                });
+
+            modelBuilder.Entity("E6CarSpa.Domain.Entities.Income", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric(12,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DeletedByUsername")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("IncomeDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<Guid?>("RecordedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IncomeDate");
+
+                    b.ToTable("Income");
                 });
 
             modelBuilder.Entity("E6CarSpa.Domain.Entities.Invoice", b =>
@@ -523,81 +569,32 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                     b.ToTable("ServiceProducts");
                 });
 
-            modelBuilder.Entity("E6CarSpa.Domain.Entities.Showroom", b =>
+            modelBuilder.Entity("E6CarSpa.Domain.Entities.Staff", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasMaxLength(250)
-                        .HasColumnType("character varying(250)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
+                    b.Property<string>("FullName")
                         .IsRequired()
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)");
 
-                    b.Property<string>("Phone")
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
+                    b.HasIndex("FullName")
                         .IsUnique();
 
-                    b.ToTable("Showrooms");
-                });
-
-            modelBuilder.Entity("E6CarSpa.Domain.Entities.ShowroomVisit", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("numeric(12,2)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("Note")
-                        .HasMaxLength(300)
-                        .HasColumnType("character varying(300)");
-
-                    b.Property<Guid>("ShowroomId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("TeamSent")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("VehiclesAttended")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("VisitDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ShowroomId", "VisitDate");
-
-                    b.ToTable("ShowroomVisits");
+                    b.ToTable("Staff");
                 });
 
             modelBuilder.Entity("E6CarSpa.Domain.Entities.StaffAdvance", b =>
@@ -631,21 +628,69 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                     b.Property<Guid?>("RecordedByUserId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("RecordedByUsername")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("StaffId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("WorkerName")
-                        .IsRequired()
-                        .HasMaxLength(120)
-                        .HasColumnType("character varying(120)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("AdvanceDate");
 
-                    b.HasIndex("WorkerName");
+                    b.HasIndex("StaffId");
 
                     b.ToTable("StaffAdvances");
+                });
+
+            modelBuilder.Entity("E6CarSpa.Domain.Entities.StaffSalary", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric(12,2)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("DeletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeletedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("DeletedByUsername")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Note")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<Guid?>("RecordedByUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("RecordedByUsername")
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("SalaryDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("StaffId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("StaffId", "SalaryDate");
+
+                    b.ToTable("StaffSalaries");
                 });
 
             modelBuilder.Entity("E6CarSpa.Domain.Entities.StockMovement", b =>
@@ -873,15 +918,26 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                     b.Navigation("Service");
                 });
 
-            modelBuilder.Entity("E6CarSpa.Domain.Entities.ShowroomVisit", b =>
+            modelBuilder.Entity("E6CarSpa.Domain.Entities.StaffAdvance", b =>
                 {
-                    b.HasOne("E6CarSpa.Domain.Entities.Showroom", "Showroom")
-                        .WithMany("Visits")
-                        .HasForeignKey("ShowroomId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                    b.HasOne("E6CarSpa.Domain.Entities.Staff", "Staff")
+                        .WithMany("Advances")
+                        .HasForeignKey("StaffId")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Showroom");
+                    b.Navigation("Staff");
+                });
+
+            modelBuilder.Entity("E6CarSpa.Domain.Entities.StaffSalary", b =>
+                {
+                    b.HasOne("E6CarSpa.Domain.Entities.Staff", "Staff")
+                        .WithMany("Salaries")
+                        .HasForeignKey("StaffId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Staff");
                 });
 
             modelBuilder.Entity("E6CarSpa.Domain.Entities.StockMovement", b =>
@@ -937,9 +993,11 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                     b.Navigation("BillOfMaterials");
                 });
 
-            modelBuilder.Entity("E6CarSpa.Domain.Entities.Showroom", b =>
+            modelBuilder.Entity("E6CarSpa.Domain.Entities.Staff", b =>
                 {
-                    b.Navigation("Visits");
+                    b.Navigation("Advances");
+
+                    b.Navigation("Salaries");
                 });
 
             modelBuilder.Entity("E6CarSpa.Domain.Entities.Vehicle", b =>

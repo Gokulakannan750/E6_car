@@ -42,7 +42,6 @@ public partial class ShellViewModel(IApiClient api) : ObservableObject
     public bool CanStaffAdvances => Can(Domain.Enums.Permission.StaffAdvances);
     public bool CanReports => Can(Domain.Enums.Permission.Reports);
     public bool CanInventory => Can(Domain.Enums.Permission.Inventory);
-    public bool CanShowroom => Can(Domain.Enums.Permission.Showroom);
     public bool CanSettings => Can(Domain.Enums.Permission.Settings) ||
                                Can(Domain.Enums.Permission.ManageUsers);
 
@@ -59,7 +58,6 @@ public partial class ShellViewModel(IApiClient api) : ObservableObject
         OnPropertyChanged(nameof(CanStaffAdvances));
         OnPropertyChanged(nameof(CanReports));
         OnPropertyChanged(nameof(CanInventory));
-        OnPropertyChanged(nameof(CanShowroom));
         OnPropertyChanged(nameof(CanSettings));
     }
 
@@ -70,9 +68,10 @@ public partial class ShellViewModel(IApiClient api) : ObservableObject
     [RelayCommand] private Task ShowInventory() => NavigateAsync<InventoryViewModel>("Inventory");
     [RelayCommand] private Task ShowCatalogue() => NavigateAsync<CatalogueViewModel>("Catalogue");
     [RelayCommand] private Task ShowStaffAdvances() => NavigateAsync<StaffAdvancesViewModel>("StaffAdvances");
+    [RelayCommand] private Task ShowStaffSalaries() => NavigateAsync<StaffSalariesViewModel>("StaffSalaries");
+    [RelayCommand] private Task ShowIncome() => NavigateAsync<IncomeViewModel>("Income");
     [RelayCommand] private Task ShowReports() => NavigateAsync<ReportsViewModel>("Reports");
     [RelayCommand] private Task ShowSettings() => NavigateAsync<SettingsViewModel>("Settings");
-    [RelayCommand] private Task ShowShowroom() => NavigateAsync<ShowroomViewModel>("Showroom");
 
     /// <summary>Guards against a second navigation starting while one is still loading.</summary>
     private bool _navigating;

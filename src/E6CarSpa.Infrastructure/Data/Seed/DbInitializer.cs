@@ -20,6 +20,15 @@ public static class DbInitializer
         if (db.Database.IsRelational())
             await db.Database.MigrateAsync();
 
+        // Backfill: fix Staff table missing FullName column from a partial migration.
+        // Idempotent — safe to re-run on every startup.
+        await db.Database.ExecuteSqlRawAsync("""
+            ALTER TABLE "Staff" ADD COLUMN IF NOT EXISTS "FullName" varchar(120) NOT NULL DEFAULT '';
+            ALTER TABLE "Staff" ALTER COLUMN "FullName" DROP DEFAULT;
+            DROP INDEX IF EXISTS "IX_Staff_FullName";
+            CREATE INDEX "IX_Staff_FullName" ON "Staff" ("FullName");
+            """);
+
         // Backfill: the SecurityStamp column is added with an empty default on existing rows.
         // Give each a real random stamp so token-revocation works cleanly for pre-upgrade users.
         var stampless = await db.Users.Where(u => u.SecurityStamp == "").ToListAsync();

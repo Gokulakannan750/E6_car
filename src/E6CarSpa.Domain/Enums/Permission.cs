@@ -35,13 +35,13 @@ public enum Permission
     /// <summary>Company profile, GST details, invoice numbering.</summary>
     Settings = 1 << 6,
 
-    /// <summary>Showroom management — locations, visits, and per-showroom revenue.</summary>
-    Showroom = 1 << 8,
-
     /// <summary>Create staff logins and set their permissions.</summary>
     ManageUsers = 1 << 7,
 
-    All = Billing | Customers | Catalogue | StaffAdvances | Reports | Inventory | Settings | Showroom | ManageUsers
+    /// <summary>Staff master: add, edit, deactivate and reactivate floor workers.</summary>
+    StaffManage = 1 << 8,
+
+    All = Billing | Customers | Catalogue | StaffAdvances | Reports | Inventory | Settings | ManageUsers | StaffManage
 }
 
 public static class PermissionPresets
@@ -51,8 +51,7 @@ public static class PermissionPresets
     {
         UserRole.Admin => Permission.All,
         UserRole.Manager => Permission.Billing | Permission.Customers | Permission.Catalogue |
-                            Permission.StaffAdvances | Permission.Reports | Permission.Inventory |
-                            Permission.Showroom,
+                            Permission.StaffAdvances | Permission.Reports | Permission.Inventory,
         _ => Permission.Billing | Permission.Customers
     };
 }

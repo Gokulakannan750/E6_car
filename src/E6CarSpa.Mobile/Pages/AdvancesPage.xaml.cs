@@ -6,16 +6,13 @@ using E6CarSpa.Mobile.Services;
 namespace E6CarSpa.Mobile.Pages;
 
 /// <summary>
-/// Phone version of the desktop Staff Advances screen: cash given to workers, typed-in names,
-/// advances only — no repayments or payroll. Same anonymous API as the counter screens.
+/// Phone version of the desktop Staff Advances screen: cash given to workers, selected from the
+/// Staff master table (single source of truth for names).
 /// </summary>
 public partial class AdvancesPage : ContentPage
 {
     private readonly ThemeRowRefresher _themeRows = new();
     private bool _loadedOnce;
-
-    // Bumped on every keystroke in the search box; a pending debounce that is no longer the
-    // newest one drops out instead of firing a second request.
     private int _searchGeneration;
 
     public AdvancesPage()
@@ -25,10 +22,12 @@ public partial class AdvancesPage : ContentPage
         SelectSegment(perWorker: true);   // default to the totals view
     }
 
+    private async void OnSettingsClicked(object? sender, EventArgs e) =>
+        await Shell.Current.GoToAsync("settings");
+
     private void OnShowPerWorker(object? sender, EventArgs e) => SelectSegment(perWorker: true);
     private void OnShowAllAdvances(object? sender, EventArgs e) => SelectSegment(perWorker: false);
 
-    /// <summary>Flip between the "Per worker" and "All advances" views and paint the segment buttons.</summary>
     private void SelectSegment(bool perWorker)
     {
         PerWorkerSection.IsVisible = perWorker;
@@ -73,24 +72,20 @@ public partial class AdvancesPage : ContentPage
     {
         var mine = ++_searchGeneration;
         await Task.Delay(300);
-        if (mine != _searchGeneration) return;   // superseded by a newer keystroke
+        if (mine != _searchGeneration) return;
         await LoadAsync();
     }
 
     private async void OnShowDeletedToggled(object? sender, ToggledEventArgs e) => await LoadAsync();
 
-    private void OnPickWorkerClicked(object? sender, EventArgs e)
-    {
-        if (sender is Button { BindingContext: string name })
-            WorkerEntry.Text = name;
-    }
-
-    private async void OnSettingsClicked(object? sender, EventArgs e) =>
-        await Shell.Current.GoToAsync("settings");
-
     private async Task LoadAsync()
     {
         ErrorLabel.IsVisible = false;
+
+        // Load staff for the picker.
+        var staff = await AppServices.Api.GetStaffAsync(includeInactive: false) ?? new();
+        WorkerPicker.ItemsSource = staff;
+
         var search = string.IsNullOrWhiteSpace(SearchEntry.Text) ? null : SearchEntry.Text.Trim();
         try
         {
@@ -102,12 +97,6 @@ public partial class AdvancesPage : ContentPage
             SummaryList.ItemsSource = summary;
             NoWorkersLabel.IsVisible = summary.Count == 0;
             GrandTotalLabel.Text = $"₹{summary.Sum(s => s.TotalAdvanced):N2}";
-
-            // Suggestion chips come from the summary, so they cover every worker on file —
-            // not just the ones matching the current search.
-            var workers = summary.Select(s => s.WorkerName).OrderBy(n => n).ToList();
-            BindableLayout.SetItemsSource(KnownWorkersHost, workers);
-            KnownWorkersHost.IsVisible = workers.Count > 0;
         }
         catch (Exception ex)
         {
@@ -120,10 +109,10 @@ public partial class AdvancesPage : ContentPage
         ErrorLabel.IsVisible = false;
         InfoLabel.IsVisible = false;
 
-        var worker = WorkerEntry.Text?.Trim() ?? "";
-        if (worker.Length == 0)
+        var staff = WorkerPicker.SelectedItem as StaffDto;
+        if (staff is null)
         {
-            ShowError("Enter the worker's name.");
+            ShowError("Select a worker from the list.");
             return;
         }
         if (!decimal.TryParse(AmountEntry.Text?.Trim(), NumberStyles.Number, CultureInfo.CurrentCulture, out var amount)
@@ -138,13 +127,13 @@ public partial class AdvancesPage : ContentPage
         try
         {
             await AppServices.Api.CreateStaffAdvanceAsync(new SaveStaffAdvanceRequest(
-                worker, amount, AdvanceDatePicker.Date ?? DateTime.Today,
+                staff.Id, amount, AdvanceDatePicker.Date ?? DateTime.Today,
                 string.IsNullOrWhiteSpace(note) ? null : note));
 
-            InfoLabel.Text = $"Advance of ₹{amount:N2} recorded for {worker}.";
+            InfoLabel.Text = $"Advance of ₹{amount:N2} recorded for {staff.FullName}.";
             InfoLabel.IsVisible = true;
 
-            WorkerEntry.Text = "";
+            WorkerPicker.SelectedItem = null;
             AmountEntry.Text = "";
             NoteEntry.Text = "";
             AdvanceDatePicker.Date = DateTime.Today;
