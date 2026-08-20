@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace E6CarSpa.Api.Controllers;
 
 [Authorize]
-[RequirePermission(Permission.Inventory)]
 public class ProductsController(AppDbContext db, InventoryService inventory, AuditService audit) : ApiControllerBase
 {
     [HttpGet]

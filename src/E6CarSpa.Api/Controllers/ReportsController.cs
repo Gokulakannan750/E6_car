@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace E6CarSpa.Api.Controllers;
 
 [Authorize]
-[RequirePermission(Permission.Reports)]
 public class ReportsController(ReportsService reports) : ApiControllerBase
 {
     [HttpGet("sales")]

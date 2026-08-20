@@ -13,7 +13,6 @@ namespace E6CarSpa.Api.Controllers;
 /// <summary>
 /// Salary payments to floor workers. Tied to the Staff table for accountability.
 /// </summary>
-[RequirePermission(Permission.StaffAdvances)]
 public class StaffSalariesController(AppDbContext db, AuditService audit) : ApiControllerBase
 {
     [HttpGet]

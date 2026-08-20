@@ -1,0 +1,91 @@
+<UserControl x:Class="E6CarSpa.Desktop.Views.ShowroomsView"
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+ Margin="28">
+ <Grid>
+ <Grid.RowDefinitions>
+ <RowDefinition Height="Auto" />
+ <RowDefinition Height="Auto" />
+ <RowDefinition Height="*" />
+ </Grid.RowDefinitions>
+
+ <TextBlock Grid.Row="0" Text="Showrooms" Style="{DynamicResource H1}" />
+
+ <!-- Toolbar -->
+ <Border Grid.Row="1" Style="{DynamicResource Card}">
+ <StackPanel>
+ <TextBlock Text="Showroom Master" Style="{DynamicResource H2}" />
+ <Grid>
+ <Grid.ColumnDefinitions>
+ <ColumnDefinition Width="*" />
+ <ColumnDefinition Width="Auto" />
+ </Grid.ColumnDefinitions>
+ <TextBox Grid.Column="0" Margin="0,0,10,0"
+ Text="{Binding Search, UpdateSourceTrigger=PropertyChanged, Delay=300}"
+ ToolTip="Search by name" />
+ <StackPanel Grid.Column="1" Orientation="Horizontal">
+ <CheckBox Content="Show inactive" VerticalAlignment="Center" Margin="0,0,12,0"
+ IsChecked="{Binding ShowInactive}" />
+ <Button Content="+ Add Showroom" Style="{DynamicResource PrimaryButton}"
+ Command="{Binding AddShowroomCommand}" />
+ </StackPanel>
+ </Grid>
+ <TextBlock Text="{Binding Info}" Foreground="{DynamicResource SuccessBrush}" FontWeight="SemiBold"
+ Margin="0,6,0,0" Visibility="{Binding Info, Converter={StaticResource StringToVis}}" />
+ <TextBlock Text="{Binding Error}" Foreground="{DynamicResource DangerBrush}" TextWrapping="Wrap"
+ Margin="0,6,0,0" Visibility="{Binding Error, Converter={StaticResource StringToVis}}" />
+ </StackPanel>
+ </Border>
+
+ <!-- Showroom list -->
+ <Border Grid.Row="2" Style="{DynamicResource Card}">
+ <DockPanel>
+ <TextBlock DockPanel.Dock="Top" Text="All Showrooms" Style="{DynamicResource H2}" />
+ <DataGrid ItemsSource="{Binding Showrooms}" IsReadOnly="True" BorderThickness="0"
+ HeadersVisibility="Column" CanUserAddRows="False" AutoGenerateColumns="False"
+ Margin="0,8,0,0">
+ <DataGrid.Columns>
+ <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
+ <DataGridTextColumn Header="Address" Binding="{Binding Address}" />
+ <DataGridTextColumn Header="Phone" Binding="{Binding Phone}" Width="*" />
+ <DataGridTextColumn Header="Contact" Binding="{Binding ContactPerson}" Width="*" />
+ <DataGridTextColumn Header="Status" Binding="{Binding IsActive, StringFormat='{}{0:Active/Inactive}'}" Width="100" />
+ <DataGridTemplateColumn Header="Actions" Width="160">
+ <DataGridTemplateColumn.CellTemplate>
+ <DataTemplate>
+ <StackPanel Orientation="Horizontal">
+ <Button Content="Edit" Width="55" Height="30" Padding="4,2" Margin="0,0,4,0"
+ Command="{Binding DataContext.EditShowroomCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+ CommandParameter="{Binding}" />
+ <Button Content="Disable" Width="60" Height="30" Padding="4,2" Background="{DynamicResource DangerBrush}" Foreground="White">
+ <Button.Style>
+ <Style TargetType="Button" BasedOn="{StaticResource DangerButton}">
+ <Setter Property="Visibility" Value="{Binding IsActive, Converter={StaticResource BoolToVis}}" />
+ </Style>
+ </Button.Style>
+ <Button.Command>
+ <Binding Path="DataContext.ToggleActiveCommand" RelativeSource="{RelativeSource AncestorType=UserControl}" />
+ </Button.Command>
+ <Button.CommandParameter><Binding /></Button.CommandParameter>
+ </Button>
+ <Button Content="Enable" Width="60" Height="30" Padding="4,2" Background="{DynamicResource SuccessBrush}" Foreground="White">
+ <Button.Style>
+ <Style TargetType="Button" BasedOn="{StaticResource SuccessButton}">
+ <Setter Property="Visibility" Value="{Binding IsActive, Converter={StaticResource BoolToVis}, ConverterParameter=Invert}" />
+ </Style>
+ </Button.Style>
+ <Button.Command>
+ <Binding Path="DataContext.ToggleActiveCommand" RelativeSource="{RelativeSource AncestorType=UserControl}" />
+ </Button.Command>
+ <Button.CommandParameter><Binding /></Button.CommandParameter>
+ </Button>
+ </StackPanel>
+ </DataTemplate>
+ </DataGridTemplateColumn.CellTemplate>
+ </DataGridTemplateColumn>
+ </DataGrid.Columns>
+ </DataGrid>
+ </DockPanel>
+ </Border>
+ </Grid>
+</UserControl>

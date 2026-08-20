@@ -34,7 +34,7 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                         .HasColumnType("character varying(60)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Detail")
                         .HasMaxLength(500)
@@ -79,7 +79,7 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<decimal>("DefaultGstRate")
                         .HasColumnType("numeric(12,2)");
@@ -144,7 +144,7 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -176,7 +176,7 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                         .HasColumnType("numeric(12,2)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
@@ -188,7 +188,7 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("IncomeDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Note")
                         .HasMaxLength(300)
@@ -228,7 +228,7 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid?>("CreatedByUserId")
                         .HasColumnType("uuid");
@@ -308,7 +308,7 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                         .HasColumnType("numeric(12,2)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Description")
                         .IsRequired()
@@ -376,7 +376,7 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid?>("InvoiceId")
                         .HasColumnType("uuid");
@@ -420,7 +420,7 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                         .HasColumnType("numeric(12,2)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid>("InvoiceId")
                         .HasColumnType("uuid");
@@ -429,7 +429,7 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("PaidAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid?>("ReceivedByUserId")
                         .HasColumnType("uuid");
@@ -461,7 +461,7 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                         .HasColumnType("character varying(60)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<decimal>("GstRate")
                         .HasColumnType("numeric(12,2)");
@@ -507,7 +507,7 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                         .HasColumnType("character varying(60)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<decimal>("DefaultPrice")
                         .HasColumnType("numeric(12,2)");
@@ -543,7 +543,7 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<decimal>("DefaultQuantity")
                         .HasColumnType("numeric(12,3)");
@@ -566,6 +566,102 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                     b.ToTable("ServiceProducts");
                 });
 
+            modelBuilder.Entity("E6CarSpa.Domain.Entities.Showroom", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<string>("ContactPerson")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("Phone")
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("Name");
+
+                    b.ToTable("Showrooms");
+                });
+
+            modelBuilder.Entity("E6CarSpa.Domain.Entities.ShowroomDailyStaff", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<decimal>("AmountGenerated")
+                        .HasColumnType("numeric(12,2)");
+
+                    b.Property<DateTime>("AssignmentDate")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("AttendanceStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("Remarks")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)");
+
+                    b.Property<Guid?>("ShowroomId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("StaffId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int>("VehiclesAttended")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("VehiclesCompleted")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ShowroomId");
+
+                    b.HasIndex("StaffId");
+
+                    b.HasIndex("AssignmentDate", "ShowroomId");
+
+                    b.ToTable("ShowroomDailyStaff");
+                });
+
             modelBuilder.Entity("E6CarSpa.Domain.Entities.Staff", b =>
                 {
                     b.Property<Guid>("Id")
@@ -573,7 +669,7 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("FullName")
                         .IsRequired()
@@ -601,13 +697,13 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("AdvanceDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<decimal>("Amount")
                         .HasColumnType("numeric(12,2)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
@@ -653,7 +749,7 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                         .HasColumnType("numeric(12,2)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<DateTime?>("DeletedAt")
                         .HasColumnType("timestamp with time zone");
@@ -675,7 +771,7 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                         .HasColumnType("text");
 
                     b.Property<DateTime>("SalaryDate")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid>("StaffId")
                         .HasColumnType("uuid");
@@ -697,7 +793,7 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid?>("CreatedByUserId")
                         .HasColumnType("uuid");
@@ -742,7 +838,7 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("FailedLoginCount")
                         .HasColumnType("integer");
@@ -814,7 +910,7 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                         .HasColumnType("character varying(100)");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<Guid>("CustomerId")
                         .HasColumnType("uuid");
@@ -915,6 +1011,24 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                     b.Navigation("Service");
                 });
 
+            modelBuilder.Entity("E6CarSpa.Domain.Entities.ShowroomDailyStaff", b =>
+                {
+                    b.HasOne("E6CarSpa.Domain.Entities.Showroom", "Showroom")
+                        .WithMany("DailyAssignments")
+                        .HasForeignKey("ShowroomId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("E6CarSpa.Domain.Entities.Staff", "Staff")
+                        .WithMany("ShowroomAssignments")
+                        .HasForeignKey("StaffId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Showroom");
+
+                    b.Navigation("Staff");
+                });
+
             modelBuilder.Entity("E6CarSpa.Domain.Entities.StaffAdvance", b =>
                 {
                     b.HasOne("E6CarSpa.Domain.Entities.Staff", "Staff")
@@ -990,11 +1104,18 @@ namespace E6CarSpa.Infrastructure.Data.Migrations
                     b.Navigation("BillOfMaterials");
                 });
 
+            modelBuilder.Entity("E6CarSpa.Domain.Entities.Showroom", b =>
+                {
+                    b.Navigation("DailyAssignments");
+                });
+
             modelBuilder.Entity("E6CarSpa.Domain.Entities.Staff", b =>
                 {
                     b.Navigation("Advances");
 
                     b.Navigation("Salaries");
+
+                    b.Navigation("ShowroomAssignments");
                 });
 
             modelBuilder.Entity("E6CarSpa.Domain.Entities.Vehicle", b =>

@@ -1,0 +1,11 @@
+﻿=== 08/17/2026 12:35:59 ===
+Stopping service...
+Copying API...
+Done.
+API exe timestamp: 08/17/2026 12:03:02
+Starting service...
+Service: Running
+Process: PID 19380
+  Listening on port 5080
+5000: no
+5080: no

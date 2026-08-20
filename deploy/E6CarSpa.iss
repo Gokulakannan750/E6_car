@@ -5,7 +5,7 @@
 ; The installer (E6CarSpa-Setup.exe) is produced in deploy\Output.
 
 #define MyAppName "E6 Car Spa"
-#define MyAppVersion "1.0.0"
+#define MyAppVersion "1.0.1"
 #define MyAppPublisher "trovotechsolutions"
 #define ApiServiceName "E6CarSpaApi"
 

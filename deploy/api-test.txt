@@ -1,0 +1,31 @@
+=== 17-08-2026 14:26:53.61 === 
+Getting token... 
+Testing Staff endpoint... 
+[
+    {
+        "id":  "15d8ac69-73db-4a44-a84e-0a58d311d015",
+        "fullName":  "",
+        "isActive":  true
+    },
+    {
+        "id":  "eed868f8-13aa-46f7-be96-2929dfa2280b",
+        "fullName":  "",
+        "isActive":  true
+    }
+]
+ 
+Testing Summary endpoint... 
+[
+    {
+        "staffId":  "eed868f8-13aa-46f7-be96-2929dfa2280b",
+        "workerName":  "",
+        "totalAdvanced":  2000.00,
+        "count":  1
+    },
+    {
+        "staffId":  "15d8ac69-73db-4a44-a84e-0a58d311d015",
+        "workerName":  "",
+        "totalAdvanced":  1000.00,
+        "count":  1
+    }
+]

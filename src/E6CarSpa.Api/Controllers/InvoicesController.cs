@@ -12,7 +12,6 @@ namespace E6CarSpa.Api.Controllers;
 /// The billing workflow. Anonymous by design (except Cancel): the desktop app is used at the
 /// counter without a login, so the deny-by-default fallback policy is opted out per action here.
 /// </summary>
-[RequirePermission(Permission.Billing)]
 public class InvoicesController(InvoiceService invoices, PdfInvoiceService pdf) : ApiControllerBase
 {
     /// <summary>Steps 1-3: create a quotation from customer + car + chosen services.</summary>

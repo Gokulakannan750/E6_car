@@ -1,0 +1,54 @@
+=== 17-08-2026 14:35:12.60 === 
+Checking Staff columns... 
+    column_name    
+-------------------
+ Id
+ Name
+ PhoneNumber
+ Role
+ IsActive
+ CreatedAt
+ UpdatedAt
+ DeletedAt
+ DeletedByUserId
+ DeletedByUsername
+ FullName
+(11 rows)
+
+ 
+Checking Users columns... 
+    column_name     
+--------------------
+ Id
+ FullName
+ Username
+ PasswordHash
+ Role
+ IsActive
+ LastLoginAt
+ CreatedAt
+ UpdatedAt
+ FailedLoginCount
+ LockoutEndAt
+ SecurityStamp
+ MustChangePassword
+ Permissions
+(14 rows)
+
+ 
+Current Staff rows... 
+                  Id                  |   Name   | PhoneNumber |  Role  | IsActive |            CreatedAt             | UpdatedAt | DeletedAt | DeletedByUserId | DeletedByUsername | FullName 
+--------------------------------------+----------+-------------+--------+----------+----------------------------------+-----------+-----------+-----------------+-------------------+----------
+ 15d8ac69-73db-4a44-a84e-0a58d311d015 | Gokul    |             | Worker | t        | 2026-08-17 10:32:51.633965+05:30 |           |           |                 |                   | 
+ eed868f8-13aa-46f7-be96-2929dfa2280b | Shangesh |             | Worker | t        | 2026-08-17 10:32:51.633965+05:30 |           |           |                 |                   | 
+(2 rows)
+
+ 
+Current Users rows... 
+                  Id                  |   FullName    
+--------------------------------------+---------------
+ 845ce3ad-6549-44c3-87dd-12d6140ff8f8 | Administrator
+(1 row)
+
+ 
+=== DONE === 

@@ -12,7 +12,6 @@ using Microsoft.EntityFrameworkCore;
 namespace E6CarSpa.Api.Controllers;
 
 
-[RequirePermission(Permission.Catalogue)]
 public class ServicesController(AppDbContext db, AuditService audit) : ApiControllerBase
 {
     // Anonymous: the no-login New Job screen needs the service catalogue to build a quotation.

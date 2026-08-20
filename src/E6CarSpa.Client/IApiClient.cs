@@ -85,4 +85,27 @@ public interface IApiClient
     Task<SalesReportDto?> GetSalesReportAsync(DateTime from, DateTime to);
     Task<GstSummaryDto?> GetGstSummaryAsync(DateTime from, DateTime to);
     Task<CustomerHistoryDto?> GetCustomerHistoryAsync(string phone);
+
+ // ----- Showrooms -----
+ Task<List<ShowroomDto>?> GetShowroomsAsync(bool includeInactive = false);
+ Task<List<ShowroomPickDto>?> GetShowroomsForPickerAsync();
+ Task<ShowroomDto> CreateShowroomAsync(SaveShowroomRequest req);
+ Task<ShowroomDto> UpdateShowroomAsync(Guid id, SaveShowroomRequest req);
+ Task DeactivateShowroomAsync(Guid id);
+ Task RestoreShowroomAsync(Guid id);
+
+ // ----- Daily assignments -----
+ Task<List<ShowroomDailyStaffDto>?> GetDailyAssignmentsByDateAsync(DateTime date);
+ Task<ShowroomDailyStaffDto> CreateDailyAssignmentAsync(SaveShowroomDailyStaffRequest req);
+ Task<ShowroomDailyStaffDto> UpdateDailyAssignmentAsync(Guid id, SaveShowroomDailyStaffRequest req);
+ Task DeleteDailyAssignmentAsync(Guid id);
+
+ // ----- Performance -----
+ Task<ShowroomPerformanceDto?> GetShowroomPerformanceAsync(Guid showroomId, DateTime from, DateTime to);
+ Task<List<StaffPerformanceDto>?> GetShowroomPerformanceByStaffAsync(Guid showroomId, DateTime from, DateTime to);
+ Task<List<DailyShowroomSummaryDto>?> GetShowroomDailyBreakdownAsync(Guid showroomId, DateTime from, DateTime to);
+
+ // ----- Reports -----
+ Task<List<ShowroomReportRowDto>?> GetShowroomReportAsync(DateTime from, DateTime to, Guid? showroomId = null, Guid? staffId = null);
+ Task<ShowroomReportSummaryDto?> GetShowroomReportSummaryAsync(DateTime from, DateTime to, Guid? showroomId = null, Guid? staffId = null);
 }

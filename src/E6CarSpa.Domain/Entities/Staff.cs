@@ -24,4 +24,5 @@ public class Staff
     // ----- Navigation -----
     public List<StaffAdvance> Advances { get; set; } = new();
     public List<StaffSalary> Salaries { get; set; } = new();
+ public List<ShowroomDailyStaff> ShowroomAssignments { get; set; } = new();
 }

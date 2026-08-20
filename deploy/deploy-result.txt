@@ -1,0 +1,31 @@
+=== 17-08-2026 14:25:07.26 === 
+Stopping service... 
+The E6 Car Spa API service is not started.
+
+More help is available by typing NET HELPMSG 3521.
+
+Copying files... 
+33 File(s) copied
+Files copied. 
+Dropping bad index... 
+psql: error: connection to server at "localhost" (::1), port 5432 failed: FATAL:  password authentication failed for user "postgres"
+Index dropped. 
+Starting service... 
+The E6 Car Spa API service is starting.
+The E6 Car Spa API service was started successfully.
+
+Waiting 25s for startup... 
+
+SERVICE_NAME: E6CarSpaApi 
+        TYPE               : 10  WIN32_OWN_PROCESS  
+        STATE              : 4  RUNNING 
+                                (STOPPABLE, NOT_PAUSABLE, ACCEPTS_SHUTDOWN)
+        WIN32_EXIT_CODE    : 0  (0x0)
+        SERVICE_EXIT_CODE  : 0  (0x0)
+        CHECKPOINT         : 0x0
+        WAIT_HINT          : 0x0
+ 
+Testing API... 
+Login: OK token= eyJhbGciOi
+ 
+=== DONE === 

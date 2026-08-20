@@ -26,7 +26,7 @@ public record DashboardSummaryDto(
     int LowStockCount,
     List<LiveJobDto> ActiveJobs);
 
-public record LiveJobDto(string InvoiceNumber, string VehicleNumber, string VehicleModel, InvoiceStatus Status, decimal Total);
+public record LiveJobDto(string InvoiceNumber, string VehicleNumber, string? VehicleModel, InvoiceStatus Status, decimal Total);
 
 /// <summary>A recorded cash advance given to a worker.</summary>
 /// <param name="DeletedAt">Set when the entry has been marked obsolete; it is kept for the audit

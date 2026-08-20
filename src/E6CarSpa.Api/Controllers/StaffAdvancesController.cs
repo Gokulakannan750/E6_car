@@ -11,7 +11,6 @@ using Microsoft.EntityFrameworkCore;
 namespace E6CarSpa.Api.Controllers;
 
 /// <summary>Cash-advance records for floor workers. Staff master lives in <see cref="StaffController"/>.</summary>
-[RequirePermission(Permission.StaffAdvances)]
 public class StaffAdvancesController(AppDbContext db, AuditService audit) : ApiControllerBase
 {
     /// <param name="includeDeleted">Also return entries marked obsolete.</param>

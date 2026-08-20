@@ -1,0 +1,22 @@
+=== 17-08-2026 14:30:46.52 === 
+
+SERVICE_NAME: E6CarSpaApi 
+        TYPE               : 10  WIN32_OWN_PROCESS  
+        STATE              : 4  RUNNING 
+                                (STOPPABLE, NOT_PAUSABLE, ACCEPTS_SHUTDOWN)
+        WIN32_EXIT_CODE    : 0  (0x0)
+        SERVICE_EXIT_CODE  : 0  (0x0)
+        CHECKPOINT         : 0x0
+        WAIT_HINT          : 0x0
+ 
+Testing API... 
+Staff
+count:
+2
+  ID: 15d8ac69-73db-4a44-a84e-0a58d311d015 Name: [] Active: True
+  ID: eed868f8-13aa-46f7-be96-2929dfa2280b Name: [] Active: True
+Summary
+count:
+2
+  Staff: [] Total: 2000.00 Count: 
+  Staff: [] Total: 1000.00 Count: 

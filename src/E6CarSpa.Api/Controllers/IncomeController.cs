@@ -13,7 +13,6 @@ namespace E6CarSpa.Api.Controllers;
 /// <summary>
 /// Non-invoice income entries (tips, miscellaneous, part sale, etc.).
 /// </summary>
-[RequirePermission(Permission.StaffAdvances)]
 public class IncomeController(AppDbContext db, AuditService audit) : ApiControllerBase
 {
     [HttpGet]

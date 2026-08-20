@@ -1,0 +1,6 @@
+$svc = Get-CimInstance Win32_Service -Filter "Name='E6CarSpaApi'"
+Write-Host "Name: $($svc.Name)"
+Write-Host "Path: $($svc.PathName)"
+Write-Host "StartName: $($svc.StartName)"
+Write-Host "State: $($svc.State)"
+Write-Host "Error: $($_.Exception.Message)"

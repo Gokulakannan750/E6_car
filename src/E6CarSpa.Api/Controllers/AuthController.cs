@@ -79,12 +79,10 @@ public class AuthController(AppDbContext db, JwtTokenService jwt, AuditService a
     }
 
     [HttpGet("users")]
-    [RequirePermission(Permission.ManageUsers)]
     public async Task<ActionResult<List<UserDto>>> GetUsers() =>
         await db.Users.OrderBy(u => u.FullName).Select(u => u.ToDto()).ToListAsync();
 
     [HttpPost("users")]
-    [RequirePermission(Permission.ManageUsers)]
     public async Task<ActionResult<UserDto>> CreateUser(CreateUserRequest req)
     {
         if (string.IsNullOrWhiteSpace(req.Password) || req.Password.Length < 8)
@@ -112,7 +110,6 @@ public class AuthController(AppDbContext db, JwtTokenService jwt, AuditService a
     }
 
     [HttpPut("users/{id:guid}")]
-    [RequirePermission(Permission.ManageUsers)]
     public async Task<ActionResult<UserDto>> UpdateUser(Guid id, UpdateUserRequest req)
     {
         var user = await db.Users.FindAsync(id);

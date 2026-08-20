@@ -1,0 +1,104 @@
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (151ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "MigrationId", "ProductVersion"
+      FROM "__EFMigrationsHistory"
+      ORDER BY "MigrationId";
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (23ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT 1
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (13ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      CREATE TABLE IF NOT EXISTS "__EFMigrationsHistory" (
+          "MigrationId" character varying(150) NOT NULL,
+          "ProductVersion" character varying(32) NOT NULL,
+          CONSTRAINT "PK___EFMigrationsHistory" PRIMARY KEY ("MigrationId")
+      );
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (3ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      LOCK TABLE "__EFMigrationsHistory" IN ACCESS EXCLUSIVE MODE
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT "MigrationId", "ProductVersion"
+      FROM "__EFMigrationsHistory"
+      ORDER BY "MigrationId";
+info: Microsoft.EntityFrameworkCore.Migrations[20402]
+      Applying migration '20260817061158_AddIncomeAndStaffSalary'.
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      
+                      CREATE TABLE IF NOT EXISTS "Income" (
+                          "Id" uuid NOT NULL,
+                          "Source" character varying(120) NOT NULL,
+                          "Amount" numeric(12,2) NOT NULL,
+                          "IncomeDate" timestamp with time zone NOT NULL,
+                          "Note" character varying(300),
+                          "RecordedByUserId" uuid,
+                          "DeletedAt" timestamp with time zone,
+                          "DeletedByUserId" uuid,
+                          "DeletedByUsername" text,
+                          "CreatedAt" timestamp with time zone NOT NULL,
+                          "UpdatedAt" timestamp with time zone,
+                          CONSTRAINT "PK_Income" PRIMARY KEY ("Id")
+                      );
+                      CREATE INDEX IF NOT EXISTS "IX_Income_IncomeDate" ON "Income" ("IncomeDate");
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (29ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      
+                      CREATE TABLE IF NOT EXISTS "StaffSalaries" (
+                          "Id" uuid NOT NULL,
+                          "StaffId" uuid NOT NULL,
+                          "Amount" numeric(12,2) NOT NULL,
+                          "SalaryDate" timestamp with time zone NOT NULL,
+                          "Note" character varying(300),
+                          "RecordedByUserId" uuid,
+                          "DeletedAt" timestamp with time zone,
+                          "DeletedByUserId" uuid,
+                          "DeletedByUsername" text,
+                          "CreatedAt" timestamp with time zone NOT NULL,
+                          "UpdatedAt" timestamp with time zone,
+                          CONSTRAINT "PK_StaffSalaries" PRIMARY KEY ("Id"),
+                          CONSTRAINT "FK_StaffSalaries_Staff_StaffId" FOREIGN KEY ("StaffId") REFERENCES "Staff" ("Id") ON DELETE RESTRICT
+                      );
+                      CREATE INDEX IF NOT EXISTS "IX_StaffSalaries_StaffId_SalaryDate" ON "StaffSalaries" ("StaffId", "SalaryDate");
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+      VALUES ('20260817061158_AddIncomeAndStaffSalary', '10.0.9');
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (13ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT u."Id", u."CreatedAt", u."FailedLoginCount", u."FullName", u."IsActive", u."LastLoginAt", u."LockoutEndAt", u."MustChangePassword", u."PasswordHash", u."Permissions", u."Role", u."SecurityStamp", u."UpdatedAt", u."Username"
+      FROM "Users" AS u
+      WHERE u."SecurityStamp" = ''
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT u."Id", u."CreatedAt", u."FailedLoginCount", u."FullName", u."IsActive", u."LastLoginAt", u."LockoutEndAt", u."MustChangePassword", u."PasswordHash", u."Permissions", u."Role", u."SecurityStamp", u."UpdatedAt", u."Username"
+      FROM "Users" AS u
+      WHERE u."Permissions" = 0
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (8ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "CompanySettings" AS c)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "Users" AS u)
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (4ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT u."Id", u."CreatedAt", u."FailedLoginCount", u."FullName", u."IsActive", u."LastLoginAt", u."LockoutEndAt", u."MustChangePassword", u."PasswordHash", u."Permissions", u."Role", u."SecurityStamp", u."UpdatedAt", u."Username"
+      FROM "Users" AS u
+      WHERE u."IsActive"
+info: Microsoft.EntityFrameworkCore.Database.Command[20101]
+      Executed DbCommand (11ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
+      SELECT EXISTS (
+          SELECT 1
+          FROM "Services" AS s)
+info: Microsoft.Hosting.Lifetime[14]
+      Now listening on: http://0.0.0.0:5080
+info: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+info: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Production
+info: Microsoft.Hosting.Lifetime[0]
+      Content root path: C:\Program Files\E6 Car Spa\Api

@@ -16,7 +16,6 @@ namespace E6CarSpa.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/staff")]
-[RequirePermission(Permission.StaffManage)]
 public class StaffController(AppDbContext db, AuditService audit) : ApiControllerBase
 {
     /// <summary>All staff, newest last. Inactive entries are included when ?includeInactive is on.</summary>

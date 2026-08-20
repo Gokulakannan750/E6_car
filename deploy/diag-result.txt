@@ -1,0 +1,51 @@
+﻿=== 08/17/2026 11:53:28 ===
+Before start: Status=Stopped StartType=Disabled
+Start failed: Service 'E6 Car Spa API (E6CarSpaApi)' cannot be started due to the following error: Cannot start service E6CarSpaApi on computer '.'.
+
+08/17/2026 11:14:16 [Warning]
+Category: Microsoft.EntityFrameworkCore.Model.Validation
+EventId: 10625
+
+The foreign key property 'StaffSalary.StaffId1' was created in shadow state because a conflicting property with the simple name 'StaffId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+
+
+08/17/2026 11:14:15 [Warning]
+Category: Microsoft.EntityFrameworkCore.Model.Validation
+EventId: 10625
+
+The foreign key property 'StaffSalary.StaffId1' was created in shadow state because a conflicting property with the simple name 'StaffId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+
+
+08/17/2026 11:13:46 [Warning]
+Category: Microsoft.EntityFrameworkCore.Model.Validation
+EventId: 10625
+
+The foreign key property 'StaffSalary.StaffId1' was created in shadow state because a conflicting property with the simple name 'StaffId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+
+
+08/17/2026 11:13:45 [Warning]
+Category: Microsoft.EntityFrameworkCore.Model.Validation
+EventId: 10625
+
+The foreign key property 'StaffSalary.StaffId1' was created in shadow state because a conflicting property with the simple name 'StaffId' exists in the entity type, but is either not mapped, is already used for another relationship, or is incompatible with the associated primary key type. See https://aka.ms/efcore-relationships for information on mapping relationships in EF Core.
+
+
+08/17/2026 10:56:07 [Error]
+Category: Microsoft.AspNetCore.Diagnostics.ExceptionHandlerMiddleware
+EventId: 1
+SpanId: 54a87f50ac4d687d
+TraceId: ef8a92bf9615477d129613f4f9e7ef75
+ParentId: 0000000000000000
+ConnectionId: 0HNNS403BUUT4
+RequestId: 0HNNS403BUUT4:00000006
+RequestPath: /api/staffadvances/staff
+
+An unhandled exception has occurred while executing the request.
+
+Exception: 
+Npgsql.PostgresException (0x80004005): 42703: column s.FullName does not exist
+
+POSITION: 16
+   at Npgsql.Internal.NpgsqlConnector.
+
+Health: Not responding: Unable to connect to the remote server

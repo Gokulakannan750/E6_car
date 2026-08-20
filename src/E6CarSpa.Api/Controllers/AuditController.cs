@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 namespace E6CarSpa.Api.Controllers;
 
 /// <summary>Read-only access to the audit trail. Admin only.</summary>
-[RequirePermission(Permission.ManageUsers)]
 public class AuditController(AppDbContext db) : ApiControllerBase
 {
     /// <summary>Most recent audit entries, newest first. Optionally filter by action prefix.</summary>

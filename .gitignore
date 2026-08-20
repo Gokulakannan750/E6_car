@@ -41,3 +41,6 @@ secrets.json
 ## Back the folder up off-machine instead (see deploy/android/KEYSTORE-INFO.txt).
 deploy/android/
 *.apk
+publish_output/
+dist/
+deploy/Output/

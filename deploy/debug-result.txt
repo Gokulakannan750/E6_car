@@ -1,0 +1,9 @@
+﻿=== 08/17/2026 13:39:03 ===
+API copied.
+Service: Running
+
+--- API errors ---
+Staff ERROR: The remote server returned an error: (500) Internal Server Error.
+Body: {"type":"https://tools.ietf.org/html/rfc9110#section-15.6.1","title":"Could not load staff list","status":500,"detail":"Database error: PostgresException: 42703: column s.FullName does not exist\r\n\r\nPOSITION: 16","traceId":"00-9d8dd220dda878a5517d023dbdf620af-899dc47910d50c57-00"}
+Summary ERROR: The remote server returned an error: (500) Internal Server Error.
+Body: {"type":"https://tools.ietf.org/html/rfc9110#section-15.6.1","title":"Could not load summary","status":500,"detail":"42703: column s0.FullName does not exist\r\n\r\nPOSITION: 21","traceId":"00-dab79098e4c337a5531347253dd1d29b-ff59ec4afe1db519-00"}
