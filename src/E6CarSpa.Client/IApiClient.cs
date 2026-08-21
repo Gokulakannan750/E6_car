@@ -11,6 +11,7 @@ public interface IApiClient
 {
     UserDto? CurrentUser { get; }
     bool IsLoggedIn { get; }
+    string? CurrentToken { get; }
 
     /// <summary>
     /// True when the signed-in account is on a machine-generated password. The API refuses every
@@ -20,12 +21,14 @@ public interface IApiClient
     bool MustChangePassword { get; }
 
     event Action? OnUnauthorized;
+    event Action? OnLogout;
 
     /// <summary>Point the client at a different server (used by the mobile Settings screen).</summary>
     void SetBaseUrl(string baseUrl);
 
     Task<UserDto> LoginAsync(string username, string password);
     void Logout();
+    void RestoreSession(string token, UserDto user, bool mustChangePassword);
     Task<CustomerLookupResult?> LookupByPhoneAsync(string phone);
     Task<CustomerLookupResult?> LookupByCarAsync(string car);
     Task<List<CustomerDto>?> GetCustomersAsync(string? search = null);

@@ -52,12 +52,11 @@ var jwtKeyEnv = Environment.GetEnvironmentVariable("E6_JWT_KEY");
 if (!string.IsNullOrEmpty(jwtKeyEnv))
     jwtOptions.Key = jwtKeyEnv;
 
-// Fail fast in production if the JWT signing key is too weak.
-if (!builder.Environment.IsDevelopment() &&
-    (jwtOptions.Key.Length < 32 || jwtOptions.Key.Contains("CHANGE_ME") || jwtOptions.Key.Contains("REPLACE_WITH")))
+// Fail fast if the JWT signing key is too weak.
+if (jwtOptions.Key.Length < 32 || jwtOptions.Key.Contains("CHANGE_ME") || jwtOptions.Key.Contains("REPLACE_WITH"))
 {
     throw new InvalidOperationException(
-        "Jwt:Key must be a strong secret of at least 32 characters in production. " +
+        "Jwt:Key must be a strong secret of at least 32 characters. " +
         "Set it in appsettings.json or via the E6_JWT_KEY environment variable.");
 }
 
@@ -201,6 +200,17 @@ builder.Services.AddScoped<ReportsService>();
 builder.Services.AddScoped<WhatsAppService>();
 builder.Services.AddScoped<PdfInvoiceService>();
 
+builder.Services.AddCors(options =>
+{
+    // Restrictive default policy: allow specific origins (e.g., a future web portal)
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.WithOrigins("http://localhost:3000", "https://app.e6carspa.com")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
 builder.Services.AddControllers();
 
 var app = builder.Build();
@@ -256,6 +266,7 @@ app.Use(async (context, next) =>
     await next();
 });
 
+app.UseCors();
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();

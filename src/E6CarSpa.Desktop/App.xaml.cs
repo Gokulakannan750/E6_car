@@ -31,6 +31,8 @@ public partial class App : Application
             BaseAddress = new Uri(ApiBaseUrl),
             Timeout = TimeSpan.FromSeconds(30)
         }));
+        
+        services.AddSingleton<SessionManager>();
 
         // ViewModels
         services.AddSingleton<ShellViewModel>();
@@ -95,11 +97,17 @@ public partial class App : Application
         // Login-first: the app is not usable until a real user authenticates. (Previously the
         // shell opened straight into an anonymous counter session and only prompted on 401.)
         // Closing the login window without signing in exits the app rather than revealing the shell.
-        var login = Services.GetRequiredService<LoginWindow>();
-        if (login.ShowDialog() != true)
+        var sessionManager = Services.GetRequiredService<SessionManager>();
+        bool needsLogin = !sessionManager.TryRestoreSession();
+
+        if (needsLogin)
         {
-            Shutdown();
-            return;
+            var login = Services.GetRequiredService<LoginWindow>();
+            if (login.ShowDialog() != true)
+            {
+                Shutdown();
+                return;
+            }
         }
 
         var shellWindow = Services.GetRequiredService<ShellWindow>();
