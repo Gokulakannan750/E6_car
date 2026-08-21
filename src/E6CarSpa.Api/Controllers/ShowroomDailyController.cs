@@ -25,7 +25,8 @@ public class ShowroomDailyController(AppDbContext db, AuditService audit) : ApiC
  [HttpGet]
  public async Task<ActionResult<List<ShowroomDailyStaffDto>>> List(
  [FromQuery] DateTime? from, [FromQuery] DateTime? to,
- [FromQuery] Guid? showroomId, [FromQuery] Guid? staffId)
+ [FromQuery] Guid? showroomId, [FromQuery] Guid? staffId,
+ [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
  {
  try
  {
@@ -39,8 +40,13 @@ public class ShowroomDailyController(AppDbContext db, AuditService audit) : ApiC
  if (showroomId.HasValue) q = q.Where(d => d.ShowroomId == showroomId.Value);
  if (staffId.HasValue) q = q.Where(d => d.StaffId == staffId.Value);
 
- return await q.OrderByDescending(d => d.AssignmentDate).ThenByDescending(d => d.CreatedAt)
- .Take(500)
+ pageSize = Math.Clamp(pageSize, 1, 500);
+ page = Math.Max(page, 1);
+
+ var total = await q.CountAsync();
+ var items = await q.OrderByDescending(d => d.AssignmentDate).ThenByDescending(d => d.CreatedAt)
+ .Skip((page - 1) * pageSize)
+ .Take(pageSize)
  .Select(d => new ShowroomDailyStaffDto(
  d.Id, d.AssignmentDate, d.ShowroomId!.Value, d.Showroom.Name,
  d.StaffId, d.Staff.FullName,
@@ -48,6 +54,9 @@ public class ShowroomDailyController(AppDbContext db, AuditService audit) : ApiC
  d.VehiclesAttended, d.VehiclesCompleted, d.AmountGenerated,
  d.Remarks, d.CreatedAt))
  .ToListAsync();
+
+ Response.Headers.Append("X-Total-Count", total.ToString());
+ return items;
  }
  catch (Exception ex)
  {
@@ -363,7 +372,8 @@ public class ShowroomDailyController(AppDbContext db, AuditService audit) : ApiC
  [HttpGet("report")]
  public async Task<ActionResult<List<ShowroomReportRowDto>>> Report(
  [FromQuery] DateTime? from, [FromQuery] DateTime? to,
- [FromQuery] Guid? showroomId, [FromQuery] Guid? staffId)
+ [FromQuery] Guid? showroomId, [FromQuery] Guid? staffId,
+ [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
  {
  try
  {
@@ -399,7 +409,8 @@ public class ShowroomDailyController(AppDbContext db, AuditService audit) : ApiC
  [HttpGet("report/summary")]
  public async Task<ActionResult<ShowroomReportSummaryDto>> ReportSummary(
  [FromQuery] DateTime? from, [FromQuery] DateTime? to,
- [FromQuery] Guid? showroomId, [FromQuery] Guid? staffId)
+ [FromQuery] Guid? showroomId, [FromQuery] Guid? staffId,
+ [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
  {
  try
  {

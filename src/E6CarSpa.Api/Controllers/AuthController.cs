@@ -23,8 +23,25 @@ public class AuthController(AppDbContext db, JwtTokenService jwt, AuditService a
 
  // Regenerate on every call so a compromised process memory snapshot can't use the hash
  // as a pre-computed reference across sessions.
- [MethodImpl(MethodImplOptions.NoInlining)]
- private static string FreshDummyHash() => BCrypt.Net.BCrypt.HashPassword("timing-equalizer");
+ // Password policy: at least 8 chars, with uppercase, lowercase, digit, and special character.
+ private const int MinPasswordLength = 8;
+
+ private static bool MeetsComplexity(string pwd)
+ {
+ if (pwd.Length < MinPasswordLength) return false;
+ bool hasUpper = false, hasLower = false, hasDigit = false, hasSpecial = false;
+ foreach (var c in pwd)
+ {
+ if (char.IsUpper(c)) hasUpper = true;
+ else if (char.IsLower(c)) hasLower = true;
+ else if (char.IsDigit(c)) hasDigit = true;
+ else if (!char.IsLetterOrDigit(c)) hasSpecial = true;
+ }
+ return hasUpper && hasLower && hasDigit && hasSpecial;
+ }
+
+ private static string ComplexityHint =>
+ "Password must be at least 8 characters with uppercase, lowercase, digit, and special character.";
 
  [HttpPost("login")]
  [AllowAnonymous]
@@ -87,8 +104,8 @@ public class AuthController(AppDbContext db, JwtTokenService jwt, AuditService a
  [HttpPost("users")]
  public async Task<ActionResult<UserDto>> CreateUser(CreateUserRequest req)
  {
- if (string.IsNullOrWhiteSpace(req.Password) || req.Password.Length < 8)
- return BadRequest(new { message = "Password must be at least 8 characters." });
+ if (!MeetsComplexity(req.Password))
+ return BadRequest(new { message = ComplexityHint });
  if (req.Password.Length > 200)
  return BadRequest(new { message = "Password must not exceed 200 characters." });
 
@@ -128,8 +145,8 @@ public class AuthController(AppDbContext db, JwtTokenService jwt, AuditService a
  var passwordChanged = !string.IsNullOrWhiteSpace(req.NewPassword);
  if (passwordChanged)
  {
- if (req.NewPassword!.Length < 8)
- return BadRequest(new { message = "Password must be at least 8 characters." });
+ if (!MeetsComplexity(req.NewPassword!))
+ return BadRequest(new { message = ComplexityHint });
  if (req.NewPassword.Length > 200)
  return BadRequest(new { message = "Password must not exceed 200 characters." });
  user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(req.NewPassword);
@@ -164,8 +181,8 @@ public class AuthController(AppDbContext db, JwtTokenService jwt, AuditService a
  if (!BCrypt.Net.BCrypt.Verify(req.OldPassword, user.PasswordHash))
  return BadRequest(new { message = "Incorrect old password." });
 
- if (string.IsNullOrWhiteSpace(req.NewPassword) || req.NewPassword.Length < 8)
- return BadRequest(new { message = "New password must be at least 8 characters." });
+ if (!MeetsComplexity(req.NewPassword))
+ return BadRequest(new { message = ComplexityHint });
 
  if (req.NewPassword.Length > 200)
  return BadRequest(new { message = "New password must not exceed 200 characters." });
@@ -180,5 +197,12 @@ public class AuthController(AppDbContext db, JwtTokenService jwt, AuditService a
  await audit.LogAsync("Password.Change", null, user.Id, user.Username);
 
  return Ok(new { message = "Password updated successfully." });
+ }
+
+ [MethodImpl(MethodImplOptions.NoInlining)]
+ private static string FreshDummyHash()
+ {
+ // A real hash would cost attacker CPU on every guess; a dummy makes lockout timing uniform.
+ return BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString(), workFactor: 4);
  }
 }

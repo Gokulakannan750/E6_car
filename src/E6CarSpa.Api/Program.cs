@@ -207,7 +207,7 @@ builder.Services.AddCors(options =>
  {
  policy.WithOrigins("http://localhost:3000", "https://app.e6carspa.com")
  .WithMethods("GET", "POST", "PUT", "DELETE")
- .AllowHeaders("Authorization", "Content-Type")
+ .WithHeaders("Authorization", "Content-Type")
  .AllowCredentials();
  });
 });
@@ -227,6 +227,13 @@ using (var scope = app.Services.CreateScope())
 // ----- Pipeline -----
 // Must run first so the real client IP / scheme is resolved before rate limiting, logging, etc.
 app.UseForwardedHeaders();
+
+// Warn if the API is bound to plain HTTP in a non-development context.
+var apiUrl = builder.Configuration["Urls"] ?? "http://localhost:5080";
+if (!app.Environment.IsDevelopment() && apiUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+{
+ app.Logger.LogWarning("API is bound to HTTP ({Url}). For production, use HTTPS behind a reverse proxy.", apiUrl);
+}
 
 app.UseExceptionHandler(handler => handler.Run(async context =>
 {
