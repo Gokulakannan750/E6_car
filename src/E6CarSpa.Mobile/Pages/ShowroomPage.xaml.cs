@@ -13,10 +13,7 @@ public partial class ShowroomPage : ContentPage
 
  readonly string[] _tabColors = new[]
  {
- "#FF3B30", // showrooms
- "#007AFF", // daily
- "#34C759", // performance
- "#FF9500" // reports
+ "#FF3B30", "#007AFF", "#34C759", "#FF9500"
  };
 
  public ShowroomPage()
@@ -46,12 +43,11 @@ public partial class ShowroomPage : ContentPage
  if (!_loaded)
  {
  _loaded = true;
- LoadShowrooms();
+ _ = LoadShowrooms();
  }
- else if (index == 0) RefreshShowrooms();
- else if (index == 1) RefreshDaily();
- else if (index == 2) RefreshPerformance();
- else if (index == 3) RefreshReports();
+ else if (index == 1) _ = LoadShowroomPicker();
+ else if (index == 2) _ = RefreshPerformance();
+ else if (index == 3) _ = RefreshReports();
  }
 
  void OnSettingsClicked(object? sender, EventArgs e) =>
@@ -61,8 +57,6 @@ public partial class ShowroomPage : ContentPage
  void OnTabDaily(object? s, EventArgs e) => SelectTab(1);
  void OnTabPerformance(object? s, EventArgs e) => SelectTab(2);
  void OnTabReports(object? s, EventArgs e) => SelectTab(3);
-
- // ─── Helpers ──────────────────────────────────────────────────────────────
 
  void SetBusy(bool busy)
  {
@@ -76,14 +70,6 @@ public partial class ShowroomPage : ContentPage
  _error = msg;
  ErrorLabel.Text = msg;
  ErrorLabel.IsVisible = !string.IsNullOrEmpty(msg);
- }
-
- // ─── SHOWROOMS TAB ────────────────────────────────────────────────────────
-
- async void RefreshShowrooms()
- {
- if (ShowroomsPanel.IsVisible)
- await LoadShowrooms();
  }
 
  async Task LoadShowrooms()
@@ -112,8 +98,8 @@ public partial class ShowroomPage : ContentPage
  var address = await DisplayPromptAsync("New Showroom", "Address:", initialValue: "", maxLength: 200);
  try
  {
- var result = await AppServices.Api.CreateShowroomAsync(new SaveShowroomRequest(name.Trim(), address?.Trim() ?? ""));
- DisplayAlert("Done", $"{result.Name} added.", "OK");
+ await AppServices.Api.CreateShowroomAsync(new SaveShowroomRequest(name.Trim(), address?.Trim() ?? ""));
+ await DisplayAlert("Done", $"{name.Trim()} added.", "OK");
  await LoadShowrooms();
  }
  catch (Exception ex)
@@ -130,9 +116,9 @@ public partial class ShowroomPage : ContentPage
  var address = await DisplayPromptAsync("Edit Showroom", "Address:", initialValue: sr.Address, maxLength: 200);
  try
  {
- var result = await AppServices.Api.UpdateShowroomAsync(sr.Id, new SaveShowroomRequest(name.Trim(), address?.Trim() ?? ""));
- sr.Name = result.Name; sr.Address = result.Address; sr.IsActive = result.IsActive;
- ShowroomsList.ItemsSource = null; ShowroomsList.ItemsSource = (IList<ShowroomDto>)ShowroomsList.ItemsSource;
+ await AppServices.Api.UpdateShowroomAsync(sr.Id, new SaveShowroomRequest(name.Trim(), address?.Trim() ?? ""));
+ sr.Name = name.Trim(); sr.Address = address?.Trim() ?? "";
+ await LoadShowrooms();
  }
  catch (Exception ex)
  {
@@ -150,20 +136,12 @@ public partial class ShowroomPage : ContentPage
  else
  await AppServices.Api.RestoreShowroomAsync(sr.Id);
  sr.IsActive = !sr.IsActive;
- ShowroomsList.ItemsSource = null; ShowroomsList.ItemsSource = (IList<ShowroomDto>)ShowroomsList.ItemsSource;
+ await LoadShowrooms();
  }
  catch (Exception ex)
  {
  ShowError(ex is ApiException a ? a.Message : "Failed to toggle showroom.");
  }
- }
-
- // ─── DAILY STAFF TAB ──────────────────────────────────────────────────────
-
- async void RefreshDaily()
- {
- if (!DailyPanel.IsVisible) return;
- await LoadShowroomPicker();
  }
 
  async Task LoadShowroomPicker()
@@ -176,10 +154,7 @@ public partial class ShowroomPage : ContentPage
  catch (Exception ex) { ShowError(ex is ApiException a ? a.Message : "Cannot load showrooms."); }
  }
 
- async void OnShowroomPickerChanged(object? s, EventArgs e)
- {
- await LoadDailyAssignments();
- }
+ void OnShowroomPickerChanged(object? s, EventArgs e) => _ = LoadDailyAssignments();
 
  async Task LoadDailyAssignments()
  {
@@ -220,7 +195,6 @@ public partial class ShowroomPage : ContentPage
  return;
  }
 
- // Simple prompt-based form
  var staffNames = staff.Select(st => st.FullName).ToArray();
  var staffName = await DisplayActionSheet("Select staff", "Cancel", null, staffNames);
  if (string.IsNullOrEmpty(staffName) || staffName == "Cancel") return;
@@ -233,7 +207,7 @@ public partial class ShowroomPage : ContentPage
  if (vehiclesAttendedStr is null) return;
  var vehiclesCompletedStr = await DisplayPromptAsync("Vehicles", "Vehicles completed:", keyboard: Keyboard.Numeric, initialValue: "0");
  if (vehiclesCompletedStr is null) return;
- var amountStr = await DisplayPromptAsync("Amount", "Amount generated (₹):", keyboard: Keyboard.Numeric, initialValue: "0");
+ var amountStr = await DisplayPromptAsync("Amount", "Amount generated:", keyboard: Keyboard.Numeric, initialValue: "0");
  if (amountStr is null) return;
  var remarks = await DisplayPromptAsync("Remarks", "(optional)", maxLength: 200);
 
@@ -244,15 +218,14 @@ public partial class ShowroomPage : ContentPage
  SetBusy(true);
  try
  {
- var req = new SaveShowroomDailyStaffRequest(
+ await AppServices.Api.CreateDailyAssignmentAsync(new SaveShowroomDailyStaffRequest(
  DailyDatePicker.Date, sr.Id, selectedStaff.Id, attendance, attended, completed, amount,
- string.IsNullOrWhiteSpace(remarks) ? null : remarks.Trim());
- await AppServices.Api.CreateDailyAssignmentAsync(req);
+ string.IsNullOrWhiteSpace(remarks) ? null : remarks.Trim()));
  await LoadDailyAssignments();
  }
  catch (Exception ex)
  {
- ShowError(ex is ApiException a ? a.Message : "Failed to save assignment.");
+ ShowError(ex is ApiException a ? ex.Message : "Failed to save assignment.");
  }
  finally { SetBusy(false); }
  }
@@ -269,13 +242,11 @@ public partial class ShowroomPage : ContentPage
  }
  catch (Exception ex)
  {
- ShowError(ex is ApiException a ? a.Message : "Failed to delete.");
+ ShowError(ex is ApiException a ? ex.Message : "Failed to delete.");
  }
  }
 
- // ─── PERFORMANCE TAB ──────────────────────────────────────────────────────
-
- async void RefreshPerformance()
+ async Task RefreshPerformance()
  {
  if (!PerformancePanel.IsVisible) return;
  try
@@ -284,7 +255,7 @@ public partial class ShowroomPage : ContentPage
  PerfShowroomPicker.ItemsSource = list;
  if (list.Count > 0) PerfShowroomPicker.SelectedIndex = 0;
  }
- catch (Exception ex) { ShowError(ex is ApiException a ? a.Message : "Cannot load showrooms."); }
+ catch (Exception ex) { ShowError(ex is ApiException a ? ex.Message : "Cannot load showrooms."); }
  }
 
  async void OnLoadPerformance(object? s, EventArgs e)
@@ -306,14 +277,12 @@ public partial class ShowroomPage : ContentPage
  }
  catch (Exception ex)
  {
- ShowError(ex is ApiException a ? a.Message : "Cannot load performance.");
+ ShowError(ex is ApiException a ? ex.Message : "Cannot load performance.");
  }
  finally { SetBusy(false); }
  }
 
- // ─── REPORTS TAB ─────────────────────────────────────────────────────────
-
- async void RefreshReports()
+ async Task RefreshReports()
  {
  if (!ReportsPanel.IsVisible) return;
  try
@@ -321,7 +290,7 @@ public partial class ShowroomPage : ContentPage
  var list = await AppServices.Api.GetShowroomsForPickerAsync() ?? new();
  ReportShowroomPicker.ItemsSource = list;
  }
- catch (Exception ex) { ShowError(ex is ApiException a ? a.Message : "Cannot load showrooms."); }
+ catch (Exception ex) { ShowError(ex is ApiException a ? ex.Message : "Cannot load showrooms."); }
  }
 
  async void OnLoadReport(object? s, EventArgs e)
@@ -336,7 +305,7 @@ public partial class ShowroomPage : ContentPage
  }
  catch (Exception ex)
  {
- ShowError(ex is ApiException a ? a.Message : "Cannot load report.");
+ ShowError(ex is ApiException a ? ex.Message : "Cannot load report.");
  }
  finally { SetBusy(false); }
  }
