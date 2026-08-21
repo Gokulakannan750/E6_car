@@ -5,9 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace E6CarSpa.Desktop.ViewModels;
 
-/// <summary>
-/// Container for the Showroom module with four tabbed sub-pages.
-/// </summary>
+/// <summary>Container for the Showroom module with four tabbed sub-pages.</summary>
 public partial class ShowroomViewModel : ObservableObject, IAsyncInitialize
 {
  [ObservableProperty] private int _selectedTab = 0;
@@ -21,12 +19,18 @@ public partial class ShowroomViewModel : ObservableObject, IAsyncInitialize
  private ShowroomReportViewModel _reportVm = default!;
  private bool _subVmsLoaded;
 
+ // Cache view instances to preserve UI state across tab switches
+ private ShowroomsView? _showroomsView;
+ private ShowroomDailyView? _dailyView;
+ private ShowroomPerformanceView? _performanceView;
+ private ShowroomReportView? _reportView;
+
  private static IServiceProvider Services => App.Services;
 
  partial void OnSelectedTabChanged(int value)
  {
  LoadSubVms();
- 
+
  _ = value switch
  {
  0 => _showroomsVm.InitializeAsync(),
@@ -38,33 +42,61 @@ public partial class ShowroomViewModel : ObservableObject, IAsyncInitialize
 
  CurrentView = value switch
  {
- 0 => new ShowroomsView { DataContext = _showroomsVm },
- 1 => new ShowroomDailyView { DataContext = _dailyVm },
- 2 => new ShowroomPerformanceView { DataContext = _performanceVm },
- 3 => new ShowroomReportView { DataContext = _reportVm },
- _ => new ShowroomDailyView { DataContext = _dailyVm }
+ 0 => GetOrCreateShowroomsView(),
+ 1 => GetOrCreateDailyView(),
+ 2 => GetOrCreatePerformanceView(),
+ 3 => GetOrCreateReportView(),
+ _ => GetOrCreateDailyView()
  };
  }
 
  public async Task InitializeAsync()
  {
  LoadSubVms();
+ await InitializeSubVmAsync(_showroomsVm, "showrooms");
+ await InitializeSubVmAsync(_dailyVm, "daily staff");
+ await InitializeSubVmAsync(_performanceVm, "performance");
+ await InitializeSubVmAsync(_reportVm, "reports");
+
+ CurrentView = GetOrCreateShowroomsView();
+ }
+
+ private ShowroomsView GetOrCreateShowroomsView()
+ {
+ return _showroomsView ??= new ShowroomsView { DataContext = _showroomsVm };
+ }
+
+ private ShowroomDailyView GetOrCreateDailyView()
+ {
+ return _dailyView ??= new ShowroomDailyView { DataContext = _dailyVm };
+ }
+
+ private ShowroomPerformanceView GetOrCreatePerformanceView()
+ {
+ return _performanceView ??= new ShowroomPerformanceView { DataContext = _performanceVm };
+ }
+
+ private ShowroomReportView GetOrCreateReportView()
+ {
+ return _reportView ??= new ShowroomReportView { DataContext = _reportVm };
+ }
+
+ private static async Task InitializeSubVmAsync(object vm, string name)
+ {
+ if (vm is not IAsyncInitialize init) return;
  try
  {
- await _showroomsVm.InitializeAsync();
+ await init.InitializeAsync();
  }
  catch (Exception ex)
  {
- _showroomsVm.Error = $"Failed to load showrooms: {ex.Message}";
+ if (vm is ObservableObject oo)
+ {
+ var errorProp = oo.GetType().GetProperty("Error");
+ if (errorProp is not null && errorProp.PropertyType == typeof(string))
+ errorProp.SetValue(oo, $"Failed to load {name}: {ex.Message}");
  }
- try { await _dailyVm.InitializeAsync(); }
- catch { /* non-blocking */ }
- try { await _performanceVm.InitializeAsync(); }
- catch { /* non-blocking */ }
- try { await _reportVm.InitializeAsync(); }
- catch { /* non-blocking */ }
-
- CurrentView = new ShowroomsView { DataContext = _showroomsVm };
+ }
  }
 
  private void LoadSubVms()

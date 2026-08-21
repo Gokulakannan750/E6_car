@@ -32,7 +32,6 @@ public partial class EditAssignmentViewModel(IApiClient api, ShowroomDailyStaffD
  if (VehiclesCompleted > VehiclesAttended) { Error = "Completed cannot exceed attended."; return; }
  if (AmountGenerated < 0) { Error = "Amount cannot be negative."; return; }
 
-
  try
  {
  var req = new SaveShowroomDailyStaffRequest(
@@ -43,12 +42,15 @@ public partial class EditAssignmentViewModel(IApiClient api, ShowroomDailyStaffD
  await api.UpdateDailyAssignmentAsync(AssignmentId, req);
  Close(true);
  }
- catch { /* dialog stays open */ }
+ catch (Exception ex)
+ {
+ Error = ex.Message;
+ }
  }
 
  [RelayCommand]
  private void Cancel() => Close(false);
 
-    public System.Action<bool?>? CloseAction { get; set; }
-    private void Close(bool? result) { CloseAction?.Invoke(result); }
+ public System.Action<bool?>? CloseAction { get; set; }
+ private void Close(bool? result) { CloseAction?.Invoke(result); }
 }

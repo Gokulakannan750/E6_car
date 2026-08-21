@@ -1,8 +1,8 @@
 using E6CarSpa.Api.Services;
 using E6CarSpa.Api.Auth;
+using E6CarSpa.Domain.Enums;
 using E6CarSpa.Contracts;
 using E6CarSpa.Domain.Entities;
-using E6CarSpa.Domain.Enums;
 using E6CarSpa.Infrastructure.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -10,93 +10,132 @@ using Microsoft.EntityFrameworkCore;
 
 namespace E6CarSpa.Api.Controllers;
 
-/// <summary>
-/// Salary payments to floor workers. Tied to the Staff table for accountability.
-/// </summary>
+/// <summary>Salary payments to floor workers. Tied to the Staff table for accountability.</summary>
 public class StaffSalariesController(AppDbContext db, AuditService audit) : ApiControllerBase
 {
-    [HttpGet]
-    public async Task<ActionResult<List<StaffSalaryDto>>> List(
-        [FromQuery] Guid? staffId, [FromQuery] bool includeDeleted = false)
-    {
-        var q = db.StaffSalaries.AsNoTracking()
-            .Include(s => s.Staff)
-            .AsQueryable();
-        if (!includeDeleted) q = q.Where(s => s.DeletedAt == null);
-        if (staffId.HasValue && staffId.Value != Guid.Empty) q = q.Where(s => s.StaffId == staffId.Value);
+ /// <param name="page">1-based page index.</param>
+ /// <param name="pageSize">Rows per page (capped at 500).</param>
+ [HttpGet]
+ public async Task<ActionResult<List<StaffSalaryDto>>> List(
+ [FromQuery] Guid? staffId, [FromQuery] bool includeDeleted = false,
+ [FromQuery] int page = 1, [FromQuery] int pageSize = 50)
+ {
+ try
+ {
+ var q = db.StaffSalaries.AsNoTracking()
+ .Include(s => s.Staff)
+ .AsQueryable();
+ if (!includeDeleted) q = q.Where(s => s.DeletedAt == null);
+ if (staffId.HasValue && staffId.Value != Guid.Empty) q = q.Where(s => s.StaffId == staffId.Value);
 
-        return await q.OrderByDescending(s => s.SalaryDate).ThenByDescending(s => s.CreatedAt)
-            .Take(500)
-            .Select(s => new StaffSalaryDto(s.Id, s.StaffId, s.Staff.FullName, s.Amount, s.SalaryDate, s.Note,
-                s.DeletedAt, s.DeletedByUsername))
-            .ToListAsync();
-    }
+ pageSize = Math.Clamp(pageSize, 1, 500);
+ page = Math.Max(page, 1);
 
-    /// <summary>Total salary paid per worker, biggest first.</summary>
-    [HttpGet("summary")]
-    public async Task<ActionResult<List<StaffSalarySummaryDto>>> Summary()
-    {
-        var rows = await db.StaffSalaries.AsNoTracking()
-            .Include(s => s.Staff)
-            .Where(s => s.DeletedAt == null && s.Staff.IsActive)
-            .GroupBy(s => new { s.StaffId, s.Staff.FullName })
-            .Select(g => new StaffSalarySummaryDto(g.Key.StaffId, g.Key.FullName,
-                g.Sum(x => x.Amount), g.Count()))
-            .ToListAsync();
+ var total = await q.CountAsync();
+ var items = await q.OrderByDescending(s => s.SalaryDate).ThenByDescending(s => s.CreatedAt)
+ .Skip((page - 1) * pageSize)
+ .Take(pageSize)
+ .Select(s => new StaffSalaryDto(s.Id, s.StaffId, s.Staff.FullName, s.Amount, s.SalaryDate, s.Note,
+ s.DeletedAt, s.DeletedByUsername))
+ .ToListAsync();
 
-        return rows.OrderByDescending(r => r.TotalPaid).ToList();
-    }
+ Response.Headers.Append("X-Total-Count", total.ToString());
+ return items;
+ }
+ catch (Exception ex)
+ {
+ return Problem(
+ title: "Could not load salaries",
+ detail: ex.InnerException?.Message ?? ex.Message,
+ statusCode: StatusCodes.Status500InternalServerError);
+ }
+ }
 
-    [HttpPost]
-    public async Task<ActionResult<StaffSalaryDto>> Create(SaveStaffSalaryRequest req)
-    {
-        if (req.StaffId == Guid.Empty)
-            return BadRequest(new { message = "Select a staff member." });
-        if (req.Amount <= 0)
-            return BadRequest(new { message = "Amount must be greater than zero." });
+ /// <summary>Total income, grouped by source.</summary>
+ [HttpGet("summary")]
+ public async Task<ActionResult<List<StaffSalarySummaryDto>>> Summary()
+ {
+ try
+ {
+ var rows = await db.StaffSalaries.AsNoTracking()
+ .Include(s => s.Staff)
+ .Where(s => s.DeletedAt == null && s.Staff.IsActive)
+ .GroupBy(s => new { s.StaffId, s.Staff.FullName })
+ .Select(g => new StaffSalarySummaryDto(g.Key.StaffId, g.Key.FullName,
+ g.Sum(x => x.Amount), g.Count()))
+ .ToListAsync();
 
-        var staff = await db.Staff.FindAsync(req.StaffId);
-        if (staff is null || !staff.IsActive)
-            return BadRequest(new { message = "Selected staff member not found." });
+ return rows.OrderByDescending(r => r.TotalPaid).ToList();
+ }
+ catch (Exception ex)
+ {
+ return Problem(
+ title: "Could not load summary",
+ detail: ex.InnerException?.Message ?? ex.Message,
+ statusCode: StatusCodes.Status500InternalServerError);
+ }
+ }
 
-        var salary = new StaffSalary
-        {
-            StaffId = staff.Id,
-            Amount = req.Amount,
-            SalaryDate = DateTime.SpecifyKind(req.SalaryDate.Date, DateTimeKind.Utc),
-            Note = string.IsNullOrWhiteSpace(req.Note) ? null : req.Note.Trim(),
-            RecordedByUserId = CurrentUserId,
-            RecordedByUsername = CurrentUsername,
-            CreatedAt = DateTime.UtcNow
-        };
+ [HttpPost]
+ public async Task<ActionResult<StaffSalaryDto>> Create(SaveStaffSalaryRequest req)
+ {
+ if (req.StaffId == Guid.Empty)
+ return BadRequest(new { message = "Select a staff member." });
+ if (req.Amount <= 0)
+ return BadRequest(new { message = "Amount must be greater than zero." });
 
-        db.StaffSalaries.Add(salary);
-        await db.SaveChangesAsync();
+ var staff = await db.Staff.FindAsync(req.StaffId);
+ if (staff is null || !staff.IsActive)
+ return BadRequest(new { message = "Selected staff member not found." });
 
-        var dto = new StaffSalaryDto(salary.Id, salary.StaffId, staff.FullName, salary.Amount,
-            salary.SalaryDate, salary.Note, salary.DeletedAt, salary.DeletedByUsername);
-        await audit.LogAsync("StaffSalary.Create",
-            $"staff={staff.FullName}; amount={salary.Amount:0.##}; date={salary.SalaryDate:yyyy-MM-dd}");
-        return dto;
-    }
+ var salary = new StaffSalary
+ {
+ StaffId = staff.Id,
+ Amount = req.Amount,
+ SalaryDate = DateTime.SpecifyKind(req.SalaryDate.Date, DateTimeKind.Utc),
+ Note = string.IsNullOrWhiteSpace(req.Note) ? null : req.Note.Trim(),
+ RecordedByUserId = CurrentUserId,
+ RecordedByUsername = CurrentUsername,
+ CreatedAt = DateTime.UtcNow
+ };
 
-    /// <summary>Soft-delete: marks the entry obsolete. Historical totals exclude it.</summary>
-    [HttpDelete("{id:guid}")]
-    public async Task<IActionResult> Delete(Guid id)
-    {
-        var salary = await db.StaffSalaries.FindAsync(id);
-        if (salary is null) return NotFound();
-        if (salary.DeletedAt is not null) return NoContent();
+ db.StaffSalaries.Add(salary);
+ await db.SaveChangesAsync();
 
-        salary.DeletedAt = DateTime.UtcNow;
-        salary.DeletedByUserId = CurrentUserId;
-        salary.DeletedByUsername = CurrentUsername;
-        salary.UpdatedAt = DateTime.UtcNow;
+ var dto = new StaffSalaryDto(salary.Id, salary.StaffId, staff.FullName, salary.Amount,
+ salary.SalaryDate, salary.Note, salary.DeletedAt, salary.DeletedByUsername);
+ await audit.LogAsync("StaffSalary.Create",
+ $"staff={staff.FullName}; amount={salary.Amount:0.##}; date={salary.SalaryDate:yyyy-MM-dd}");
+ return dto;
+ }
 
-        await db.SaveChangesAsync();
-        await audit.LogAsync("StaffSalary.Delete",
-            $"staffId={salary.StaffId}; amount={salary.Amount:0.##}");
+ /// <summary>Soft-delete: marks the entry obsolete. Historical totals exclude it.</summary>
+ [HttpDelete("{id:guid}")]
+ public async Task<IActionResult> Delete(Guid id)
+ {
+ try
+ {
+ var salary = await db.StaffSalaries.FindAsync(id);
+ if (salary is null) return NotFound();
+ if (salary.DeletedAt is not null) return NoContent();
 
-        return NoContent();
-    }
+ salary.DeletedAt = DateTime.UtcNow;
+ salary.DeletedByUserId = CurrentUserId;
+ salary.DeletedByUsername = CurrentUsername;
+ salary.UpdatedAt = DateTime.UtcNow;
+
+ await db.SaveChangesAsync();
+ await audit.LogAsync("StaffSalary.Delete",
+ $"staffId={salary.StaffId}; amount={salary.Amount:0.##}");
+
+ return NoContent();
+ }
+ catch (Exception ex)
+ {
+ return Problem(
+ title: "Could not delete salary",
+ detail: ex.InnerException?.Message ?? ex.Message,
+ statusCode: StatusCodes.Status500InternalServerError);
+ }
+ }
 }

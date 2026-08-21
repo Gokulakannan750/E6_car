@@ -202,14 +202,14 @@ builder.Services.AddScoped<PdfInvoiceService>();
 
 builder.Services.AddCors(options =>
 {
-    // Restrictive default policy: allow specific origins (e.g., a future web portal)
-    options.AddDefaultPolicy(policy =>
-    {
-        policy.WithOrigins("http://localhost:3000", "https://app.e6carspa.com")
-              .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
-    });
+ // Native clients are not subject to same-origin policy; this only protects a future web portal.
+ options.AddDefaultPolicy(policy =>
+ {
+ policy.WithOrigins("http://localhost:3000", "https://app.e6carspa.com")
+ .WithMethods("GET", "POST", "PUT", "DELETE")
+ .AllowHeaders("Authorization", "Content-Type")
+ .AllowCredentials();
+ });
 });
 builder.Services.AddControllers();
 
@@ -257,6 +257,8 @@ app.Use(async (context, next) =>
     context.Response.Headers["X-Frame-Options"] = "DENY";
     context.Response.Headers["Referrer-Policy"] = "no-referrer";
     context.Response.Headers["X-Permitted-Cross-Domain-Policies"] = "none";
+ context.Response.Headers["X-XSS-Protection"] = "1; mode=block";
+ context.Response.Headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'; base-uri 'none'";
     // HSTS: once the API is served over HTTPS (behind Caddy), tell browsers to only ever use
     // TLS for a year. Emitted in Production only; HTTP clients/browsers ignore it over plain
     // HTTP and native app clients don't act on it, so it's safe to always send in Production.
