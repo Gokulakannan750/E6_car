@@ -1,27 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <Shell
-    x:Class="E6CarSpa.Mobile.AppShell"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:pages="clr-namespace:E6CarSpa.Mobile.Pages"
-    Title="E6 Car Spa"
-    FlyoutBehavior="Disabled">
+ x:Class="E6CarSpa.Mobile.AppShell"
+ xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+ xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+ xmlns:pages="clr-namespace:E6CarSpa.Mobile.Pages"
+ Title="E6 Car Spa"
+ FlyoutBehavior="Disabled">
 
-    <!-- Tabs the signed-in user has no permission for are removed in AppShell.xaml.cs. -->
-    <TabBar>
-        <ShellContent Title="Dashboard" Icon="icon_dashboard.png"
-                      ContentTemplate="{DataTemplate pages:DashboardPage}" Route="dashboard" />
-        <ShellContent x:Name="NewJobTab" Title="New Job" Icon="icon_newjob.png"
-                      ContentTemplate="{DataTemplate pages:NewJobPage}" Route="newjob" />
-        <ShellContent x:Name="JobsTab" Title="Jobs" Icon="icon_jobs.png"
-                      ContentTemplate="{DataTemplate pages:JobsPage}" Route="jobs" />
-        <ShellContent x:Name="ReportsTab" Title="Reports" Icon="icon_reports.png"
-                      ContentTemplate="{DataTemplate pages:ReportsPage}" Route="reports" />
-        <ShellContent x:Name="AdvancesTab" Title="Advances" Icon="icon_advances.png"
-                      ContentTemplate="{DataTemplate pages:AdvancesPage}" Route="advances" />
-        <!-- Settings is NOT a tab: Android's bottom bar shows only 5 slots, so a 6th tab would
-             overflow into a "More" menu. It lives as a gear in each page's top-right toolbar
-             instead (registered as the "settings" route in AppShell.xaml.cs). -->
-    </TabBar>
+ <TabBar>
+ <ShellContent Title="Dashboard" Icon="icon_dashboard.png"
+ ContentTemplate="{DataTemplate pages:DashboardPage}" Route="dashboard" />
+ <ShellContent x:Name="NewJobTab" Title="New Job" Icon="icon_newjob.png"
+ ContentTemplate="{DataTemplate pages:NewJobPage}" Route="newjob" />
+ <ShellContent x:Name="JobsTab" Title="Jobs" Icon="icon_jobs.png"
+ ContentTemplate="{DataTemplate pages:JobsPage}" Route="jobs" />
+ <ShellContent x:Name="ReportsTab" Title="Reports" Icon="icon_reports.png"
+ ContentTemplate="{DataTemplate pages:ReportsPage}" Route="reports" />
+ <ShellContent x:Name="AdvancesTab" Title="Advances" Icon="icon_advances.png"
+ ContentTemplate="{DataTemplate pages:AdvancesPage}" Route="advances" />
+ <ShellContent x:Name="ShowroomTab" Title="Showroom" Icon="icon_showroom.png"
+ ContentTemplate="{DataTemplate pages:ShowroomPage}" Route="showroom" />
+ <!-- Settings is NOT a tab: Android's bottom bar shows only 5 slots, so a 6th tab would
+ overflow into a "More" menu. It lives as a gear in each page's top-right toolbar
+ instead (registered as the "settings" route in AppShell.xaml.cs). -->
+ </TabBar>
 
 </Shell>

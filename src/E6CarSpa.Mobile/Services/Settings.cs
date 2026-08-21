@@ -6,20 +6,19 @@ namespace E6CarSpa.Mobile.Services;
 /// </summary>
 public static class Settings
 {
-    // Default points at the dev PC's Wi-Fi LAN address for real-phone testing (phone and PC on
-    // the same Wi-Fi). Android emulator uses http://10.0.2.2:5080 instead (host loopback).
-    // In production the owner sets this to the public HTTPS VPS address on the Settings screen.
-    private const string DefaultApiUrl = "http://192.168.1.6:5080";
+ // No hardcoded default: prompt the user on first launch so the app doesn't silently
+ // phone home to a stale LAN address.
+ public static string ApiUrl
+ {
+ get => Preferences.Get(nameof(ApiUrl), "");
+ set => Preferences.Set(nameof(ApiUrl), string.IsNullOrWhiteSpace(value) ? "" : value.Trim());
+ }
 
-    public static string ApiUrl
-    {
-        get => Preferences.Get(nameof(ApiUrl), DefaultApiUrl);
-        set => Preferences.Set(nameof(ApiUrl), string.IsNullOrWhiteSpace(value) ? DefaultApiUrl : value.Trim());
-    }
+ public static bool HasApiUrl => !string.IsNullOrWhiteSpace(ApiUrl);
 
-    public static string LastUsername
-    {
-        get => Preferences.Get(nameof(LastUsername), "");
-        set => Preferences.Set(nameof(LastUsername), value ?? "");
-    }
+ public static string LastUsername
+ {
+ get => Preferences.Get(nameof(LastUsername), "");
+ set => Preferences.Set(nameof(LastUsername), value ?? "");
+ }
 }
