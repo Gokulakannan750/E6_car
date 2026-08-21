@@ -11,12 +11,4 @@ public partial class ShowroomDailyView : UserControl
     {
         InitializeComponent();
     }
-
-    private void BulkStaffList_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (DataContext is ViewModels.ShowroomDailyViewModel vm && sender is ListBox lb)
-        {
-            vm.BulkSelectedStaff = System.Linq.Enumerable.ToList(System.Linq.Enumerable.Cast<Contracts.StaffDto>(lb.SelectedItems));
-        }
-    }
 }

@@ -42,12 +42,16 @@ public partial class ShowroomReportViewModel(IApiClient api) : ObservableObject,
  {
  IsBusy = true;
  var showrooms = await api.GetShowroomsForPickerAsync() ?? new();
+ var oldShowroomId = SelectedShowroomId;
  ShowroomList.Clear();
  foreach (var s in showrooms) ShowroomList.Add(s);
+ if (oldShowroomId != null && !showrooms.Any(s => s.Id == oldShowroomId)) SelectedShowroomId = null;
 
  var staff = await api.GetStaffAsync(includeInactive: false) ?? new();
+ var oldStaffId = SelectedStaffId;
  StaffList.Clear();
  foreach (var s in staff) StaffList.Add(s);
+ if (oldStaffId != null && !staff.Any(s => s.Id == oldStaffId)) SelectedStaffId = null;
 
  await RunAsync();
  }

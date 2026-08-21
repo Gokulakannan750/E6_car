@@ -20,7 +20,6 @@
  <ColumnDefinition Width="2*" />
  <ColumnDefinition Width="Auto" />
  <ColumnDefinition Width="Auto" />
- <ColumnDefinition Width="Auto" />
  </Grid.ColumnDefinitions>
 
  <StackPanel Grid.Column="0">
@@ -41,13 +40,6 @@
  <TextBlock Text="" />
  <Button Content="+ Add Staff" Style="{DynamicResource PrimaryButton}"
  Command="{Binding OpenAddStaffCommand}" Height="38"
- MinWidth="100" Padding="12,4" />
- </StackPanel>
-
- <StackPanel Grid.Column="3" VerticalAlignment="Center">
- <TextBlock Text="" />
- <Button Content="+ Bulk Add" Style="{DynamicResource SecondaryButton}"
- Command="{Binding OpenBulkAddCommand}" Height="38"
  MinWidth="100" Padding="12,4" />
  </StackPanel>
  </Grid>
@@ -76,7 +68,7 @@
  <DataGrid.Columns>
  <DataGridTextColumn Header="Staff" Binding="{Binding StaffName}" Width="2*" MinWidth="120" />
  <DataGridTextColumn Header="Attendance" Binding="{Binding AttendanceStatus}" Width="100" />
- <DataGridTemplateColumn Header="Veh / Done" Width="80">
+ <DataGridTemplateColumn Header="Vehicles Done" Width="100">
  <DataGridTemplateColumn.CellTemplate>
  <DataTemplate>
  <TextBlock TextAlignment="Center">
@@ -128,7 +120,7 @@
 
  <!-- Add Staff Overlay -->
  <Grid Grid.RowSpan="4" Visibility="{Binding IsAddingStaff, Converter={StaticResource BoolToVis}}">
- <Border Style="{DynamicResource Card}" VerticalAlignment="Center" HorizontalAlignment="Center" Width="450" Padding="24" MaxHeight="600">
+ <Border Style="{DynamicResource Card}" VerticalAlignment="Center" HorizontalAlignment="Center" Width="450" Padding="24" Margin="40">
  <Border.Effect>
  <DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.3" />
  </Border.Effect>
@@ -192,77 +184,6 @@
  <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
  <Button Content="Cancel" Style="{DynamicResource SecondaryButton}" Command="{Binding CancelAddStaffCommand}" Width="80" Height="38" Margin="0,0,12,0" />
  <Button Content="Save" Style="{DynamicResource PrimaryButton}" Command="{Binding SaveStaffCommand}" Width="80" Height="38" />
- </StackPanel>
- </Grid>
- </Border>
- </Grid>
-
- <!-- Bulk Add Overlay -->
- <Grid Grid.RowSpan="4" Visibility="{Binding IsBulkAdding, Converter={StaticResource BoolToVis}}">
- <Border Style="{DynamicResource Card}" VerticalAlignment="Center" HorizontalAlignment="Center" Width="500" Padding="24" MaxHeight="600">
- <Border.Effect>
- <DropShadowEffect BlurRadius="20" ShadowDepth="4" Opacity="0.3" />
- </Border.Effect>
- <Grid>
- <Grid.RowDefinitions>
- <RowDefinition Height="Auto" />
- <RowDefinition Height="*" />
- <RowDefinition Height="Auto" />
- </Grid.RowDefinitions>
- <TextBlock Grid.Row="0" Text="Bulk Add Staff" Style="{DynamicResource H2}" Margin="0,0,0,16" />
- 
- <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="0,0,12,0">
- <StackPanel>
- <Grid>
- <Grid.RowDefinitions>
- <RowDefinition Height="Auto" />
- <RowDefinition Height="Auto" />
- <RowDefinition Height="Auto" />
- <RowDefinition Height="Auto" />
- </Grid.RowDefinitions>
- <Grid.ColumnDefinitions>
- <ColumnDefinition Width="*" />
- <ColumnDefinition Width="16" />
- <ColumnDefinition Width="*" />
- </Grid.ColumnDefinitions>
-
- <StackPanel Grid.Row="0" Grid.ColumnSpan="3" Margin="0,0,0,12">
- <TextBlock Text="Select Staff (Multiple) *" Style="{DynamicResource Label}" />
- <ListBox ItemsSource="{Binding StaffList}" SelectionMode="Multiple" DisplayMemberPath="FullName" Height="150" SelectionChanged="BulkStaffList_SelectionChanged" />
- </StackPanel>
-
- <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,0,12">
- <TextBlock Text="Attendance *" Style="{DynamicResource Label}" />
- <ComboBox ItemsSource="{Binding AttendanceOptions}" SelectedItem="{Binding SelectedAttendance}" Height="38" VerticalContentAlignment="Center" />
- </StackPanel>
-
- <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,0,12">
- <TextBlock Text="Vehicles Attended" Style="{DynamicResource Label}" />
- <TextBox Text="{Binding VehiclesAttended}" />
- </StackPanel>
- 
- <StackPanel Grid.Row="2" Grid.Column="2" Margin="0,0,0,12">
- <TextBlock Text="Vehicles Completed" Style="{DynamicResource Label}" />
- <TextBox Text="{Binding VehiclesCompleted}" />
- </StackPanel>
- 
- <StackPanel Grid.Row="3" Grid.Column="0" Margin="0,0,0,12">
- <TextBlock Text="Amount Generated" Style="{DynamicResource Label}" />
- <TextBox Text="{Binding AmountGenerated}" />
- </StackPanel>
-
- <StackPanel Grid.Row="3" Grid.Column="2" Margin="0,0,0,12">
- <TextBlock Text="Remarks" Style="{DynamicResource Label}" />
- <TextBox Text="{Binding Remarks}" />
- </StackPanel>
- </Grid>
- <TextBlock Text="{Binding Error}" Foreground="{DynamicResource DangerBrush}" Margin="0,0,0,12" TextWrapping="Wrap" Visibility="{Binding Error, Converter={StaticResource StringToVis}}" />
- </StackPanel>
- </ScrollViewer>
- 
- <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
- <Button Content="Cancel" Style="{DynamicResource SecondaryButton}" Command="{Binding CancelBulkAddCommand}" Width="80" Height="38" Margin="0,0,12,0" />
- <Button Content="Save Bulk" Style="{DynamicResource PrimaryButton}" Command="{Binding SaveBulkCommand}" Width="100" Height="38" />
  </StackPanel>
  </Grid>
  </Border>

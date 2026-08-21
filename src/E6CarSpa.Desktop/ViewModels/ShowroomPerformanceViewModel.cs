@@ -47,10 +47,18 @@ public partial class ShowroomPerformanceViewModel(IApiClient api) : ObservableOb
  {
  IsBusy = true;
  var list = await api.GetShowroomsForPickerAsync() ?? new();
+ var oldSelectedShowroomId = SelectedShowroomId;
  ShowroomList.Clear();
  foreach (var s in list) ShowroomList.Add(s);
 
- if (list.Count > 0) SelectedShowroomId = list[0].Id;
+ if (oldSelectedShowroomId != null && oldSelectedShowroomId != Guid.Empty && list.Any(s => s.Id == oldSelectedShowroomId))
+ {
+ SelectedShowroomId = oldSelectedShowroomId;
+ }
+ else if (list.Count > 0)
+ {
+ SelectedShowroomId = list[0].Id;
+ }
  }
  catch (Exception ex) { Error = ex.Message; }
  finally { IsBusy = false; }

@@ -49,6 +49,6 @@ public partial class EditAssignmentViewModel(IApiClient api, ShowroomDailyStaffD
  [RelayCommand]
  private void Cancel() => Close(false);
 
- public bool? DialogResult { get; private set; }
- private void Close(bool? result) { DialogResult = result; }
+    public System.Action<bool?>? CloseAction { get; set; }
+    private void Close(bool? result) { CloseAction?.Invoke(result); }
 }

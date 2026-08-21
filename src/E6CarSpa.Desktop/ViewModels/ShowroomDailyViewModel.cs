@@ -57,12 +57,16 @@ public partial class ShowroomDailyViewModel(IApiClient api) : ObservableObject, 
  {
  IsBusy = true;
  var showrooms = await api.GetShowroomsForPickerAsync() ?? new();
+ var oldSelectedShowroom = SelectedShowroom;
  ShowroomList.Clear();
  foreach (var s in showrooms) ShowroomList.Add(s);
+ if (oldSelectedShowroom != null) SelectedShowroom = ShowroomList.FirstOrDefault(s => s.Id == oldSelectedShowroom.Id);
 
  var staff = await api.GetStaffAsync(includeInactive: false) ?? new();
+ var oldSelectedStaff = SelectedStaff;
  StaffList.Clear();
  foreach (var s in staff) StaffList.Add(s);
+ if (oldSelectedStaff != null) SelectedStaff = StaffList.FirstOrDefault(s => s.Id == oldSelectedStaff.Id);
  }
  catch (Exception ex) { Error = ex.Message; }
  finally { IsBusy = false; }
@@ -175,78 +179,7 @@ public partial class ShowroomDailyViewModel(IApiClient api) : ObservableObject, 
  [RelayCommand]
  private void CancelAddStaff() => IsAddingStaff = false;
 
- // ── Bulk add staff to showroom ───────────────────────────────
 
- [ObservableProperty] private bool _isBulkAdding;
- [ObservableProperty] private List<StaffDto> _bulkSelectedStaff = [];
-
- [RelayCommand]
- private void OpenBulkAdd()
- {
- if (SelectedShowroom is null) return;
- BulkSelectedStaff = new List<StaffDto>();
- SelectedAttendance = "Present";
-
- VehiclesAttended = 0;
- VehiclesCompleted = 0;
- AmountGenerated = 0;
- Remarks = "";
- IsBulkAdding = true;
- }
-
- [RelayCommand]
- private async Task SaveBulkAsync()
- {
- Error = ""; Info = "";
-
- if (SelectedShowroom is null) { Error = "Select a showroom first."; return; }
- if (BulkSelectedStaff is null || BulkSelectedStaff.Count == 0)
- { Error = "Select at least one staff member."; return; }
- if (VehiclesAttended < 0 || VehiclesCompleted < 0 || AmountGenerated < 0)
- { Error = "Values cannot be negative."; return; }
- if (VehiclesCompleted > VehiclesAttended) { Error = "Completed cannot exceed attended."; return; }
-
-
- try
- {
- IsBusy = true;
- int added = 0, skipped = 0;
- foreach (var s in BulkSelectedStaff)
- {
- try
- {
- var req = new SaveShowroomDailyStaffRequest(
- SelectedDate.Date,
- SelectedShowroom.Id,
- s.Id,
- SelectedAttendance,
-
- VehiclesAttended,
- VehiclesCompleted,
- AmountGenerated,
- string.IsNullOrWhiteSpace(Remarks) ? null : Remarks);
- await api.CreateDailyAssignmentAsync(req);
- added++;
- }
- catch
- {
- skipped++;
- }
- }
-
- Info = $"{added} staff added to {SelectedShowroom.Name}" + (skipped > 0 ? $", {skipped} skipped (already assigned)." : ".");
- IsBulkAdding = false;
- await LoadForShowroomAsync();
- }
- catch (Exception ex)
- {
- Error = ex.Message;
- }
- finally { IsBusy = false; }
- }
-
- [RelayCommand]
- private void CancelBulkAdd() => IsBulkAdding = false;
 
  // ── Edit existing assignment ─────────────────────────────────
 

@@ -26,6 +26,16 @@ public partial class ShowroomViewModel : ObservableObject, IAsyncInitialize
  partial void OnSelectedTabChanged(int value)
  {
  LoadSubVms();
+ 
+ _ = value switch
+ {
+ 0 => _showroomsVm.InitializeAsync(),
+ 1 => _dailyVm.InitializeAsync(),
+ 2 => _performanceVm.InitializeAsync(),
+ 3 => _reportVm.InitializeAsync(),
+ _ => Task.CompletedTask
+ };
+
  CurrentView = value switch
  {
  0 => new ShowroomsView { DataContext = _showroomsVm },

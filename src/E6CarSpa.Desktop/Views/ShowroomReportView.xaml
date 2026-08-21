@@ -25,13 +25,13 @@
  </Grid.ColumnDefinitions>
  <StackPanel Grid.Column="0" Margin="0,0,10,0">
  <TextBlock Text="Showroom" Style="{DynamicResource Label}" />
- <ComboBox ItemsSource="{Binding ShowroomList}" SelectedItem="{Binding SelectedShowroomId, Mode=TwoWay}"
- DisplayMemberPath="Name" Height="38" VerticalContentAlignment="Center" />
+ <ComboBox ItemsSource="{Binding ShowroomList}" SelectedValue="{Binding SelectedShowroomId, Mode=TwoWay}"
+ SelectedValuePath="Id" DisplayMemberPath="Name" Height="38" VerticalContentAlignment="Center" />
  </StackPanel>
  <StackPanel Grid.Column="1" Margin="0,0,10,0">
  <TextBlock Text="Staff (optional)" Style="{DynamicResource Label}" />
- <ComboBox ItemsSource="{Binding StaffList}" SelectedItem="{Binding SelectedStaffId, Mode=TwoWay}"
- DisplayMemberPath="FullName" Height="38" VerticalContentAlignment="Center" />
+ <ComboBox ItemsSource="{Binding StaffList}" SelectedValue="{Binding SelectedStaffId, Mode=TwoWay}"
+ SelectedValuePath="Id" DisplayMemberPath="FullName" Height="38" VerticalContentAlignment="Center" />
  </StackPanel>
  <StackPanel Grid.Column="2" Margin="0,0,10,0">
  <TextBlock Text="From" Style="{DynamicResource Label}" />
