@@ -16,6 +16,16 @@ public static class Settings
 
  public static bool HasApiUrl => !string.IsNullOrWhiteSpace(ApiUrl);
 
+ /// <summary>Returns a usable default API URL when none has been saved yet.
+ /// On the Android emulator, 10.0.2.2 is the alias for the host machine's localhost.
+ /// On a physical device or production, the user must enter their server IP manually.</summary>
+ public static string GetDefaultApiUrl()
+ {
+ if (DeviceInfo.Platform == DevicePlatform.Android && DeviceInfo.DeviceType == DeviceType.Virtual)
+ return "http://10.0.2.2:5080";
+ return "";
+ }
+
  public static string LastUsername
  {
  get => Preferences.Get(nameof(LastUsername), "");

@@ -12,7 +12,7 @@ public partial class LoginPage : ContentPage
  {
  InitializeComponent();
  UsernameEntry.Text = Settings.LastUsername;
- ServerEntry.Text = Settings.HasApiUrl ? Settings.ApiUrl : "";
+ ServerEntry.Text = Settings.HasApiUrl ? Settings.ApiUrl : Settings.GetDefaultApiUrl();
  }
 
  private async void OnLoginClicked(object? sender, EventArgs e)

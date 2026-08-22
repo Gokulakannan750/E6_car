@@ -117,7 +117,6 @@ public partial class ShowroomPage : ContentPage
  try
  {
  await AppServices.Api.UpdateShowroomAsync(sr.Id, new SaveShowroomRequest(name.Trim(), address?.Trim() ?? ""));
- sr.Name = name.Trim(); sr.Address = address?.Trim() ?? "";
  await LoadShowrooms();
  }
  catch (Exception ex)
@@ -135,7 +134,6 @@ public partial class ShowroomPage : ContentPage
  await AppServices.Api.DeactivateShowroomAsync(sr.Id);
  else
  await AppServices.Api.RestoreShowroomAsync(sr.Id);
- sr.IsActive = !sr.IsActive;
  await LoadShowrooms();
  }
  catch (Exception ex)
@@ -168,7 +166,7 @@ public partial class ShowroomPage : ContentPage
  SetBusy(true); ShowError("");
  try
  {
- var date = DailyDatePicker.Date;
+ var date = DailyDatePicker.Date ?? DateTime.Today;
  var list = await AppServices.Api.GetDailyAssignmentsByDateAsync(date) ?? new();
  var filtered = list.Where(x => x.ShowroomId == sr.Id).ToList();
  DailyStaffList.ItemsSource = filtered;
@@ -219,7 +217,7 @@ public partial class ShowroomPage : ContentPage
  try
  {
  await AppServices.Api.CreateDailyAssignmentAsync(new SaveShowroomDailyStaffRequest(
- DailyDatePicker.Date, sr.Id, selectedStaff.Id, attendance, attended, completed, amount,
+ DailyDatePicker.Date ?? DateTime.Today, sr.Id, selectedStaff.Id, attendance, attended, completed, amount,
  string.IsNullOrWhiteSpace(remarks) ? null : remarks.Trim()));
  await LoadDailyAssignments();
  }
@@ -264,14 +262,16 @@ public partial class ShowroomPage : ContentPage
  SetBusy(true); ShowError("");
  try
  {
- var perf = await AppServices.Api.GetShowroomPerformanceAsync(sr.Id, PerfFromPicker.Date, PerfToPicker.Date);
+ var perf = await AppServices.Api.GetShowroomPerformanceAsync(sr.Id,
+ PerfFromPicker.Date ?? DateTime.Today, PerfToPicker.Date ?? DateTime.Today);
  if (perf is null) { ShowError("No data."); SetBusy(false); return; }
 
  PerfVehicles.Text = perf.TotalVehiclesAttended.ToString();
  PerfCompleted.Text = perf.TotalVehiclesCompleted.ToString();
  PerfAmount.Text = $"₹{perf.TotalAmount:N2}";
 
- var staffPerf = await AppServices.Api.GetShowroomPerformanceByStaffAsync(sr.Id, PerfFromPicker.Date, PerfToPicker.Date) ?? new();
+ var staffPerf = await AppServices.Api.GetShowroomPerformanceByStaffAsync(sr.Id,
+ PerfFromPicker.Date ?? DateTime.Today, PerfToPicker.Date ?? DateTime.Today) ?? new();
  StaffPerfList.ItemsSource = staffPerf;
  NoPerfLabel.IsVisible = staffPerf.Count == 0;
  }
@@ -299,7 +299,8 @@ public partial class ShowroomPage : ContentPage
  try
  {
  Guid? showroomId = (ReportShowroomPicker.SelectedItem as ShowroomPickDto)?.Id;
- var list = await AppServices.Api.GetShowroomReportAsync(ReportFromPicker.Date, ReportToPicker.Date, showroomId) ?? new();
+ var list = await AppServices.Api.GetShowroomReportAsync(
+ ReportFromPicker.Date ?? DateTime.Today, ReportToPicker.Date ?? DateTime.Today, showroomId) ?? new();
  ReportList.ItemsSource = list;
  NoReportLabel.IsVisible = list.Count == 0;
  }

@@ -156,7 +156,7 @@ public partial class AdvancesPage : ContentPage
 
         var confirm = await DisplayAlertAsync(
             "Delete advance",
-            $"Mark the ₹{advance.Amount:N2} advance for {advance.WorkerName} on {advance.AdvanceDate:dd-MM-yyyy} as deleted?\n\n" +
+            $"Mark the ₹{advance.Amount:N2} advance for {advance.StaffName} on {advance.AdvanceDate:dd-MM-yyyy} as deleted?\n\n" +
             "It is kept for the record — stamped with your name — and stops counting towards the totals.",
             "Delete", "Cancel");
         if (!confirm) return;

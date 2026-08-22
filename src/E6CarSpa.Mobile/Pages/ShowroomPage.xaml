@@ -34,7 +34,10 @@
  <VerticalStackLayout x:Name="ShowroomsPanel" Spacing="10">
  <Entry x:Name="SearchEntry" Placeholder="Search showrooms..." TextChanged="OnSearchChanged" />
  <Grid ColumnDefinitions="*,Auto" VerticalOptions="Center">
- <Switch x:Name="ShowInactiveSwitch" Grid.Column="0" OnColor="{StaticResource Primary}" Toggled="OnShowInactiveToggled" />
+ <Grid Grid.Column="0" ColumnDefinitions="Auto,*" VerticalOptions="Center">
+ <Switch x:Name="ShowInactiveSwitch" OnColor="{StaticResource Primary}" Toggled="OnShowInactiveToggled" />
+ <Label Grid.Column="1" Text="Show inactive" FontSize="14" VerticalOptions="Center" Margin="8,0,0,0" />
+ </Grid>
  <Button x:Name="AddShowroomBtn" Grid.Column="1" Text="+ Add" FontAttributes="Bold" HeightRequest="40" Clicked="OnAddShowroom" />
  </Grid>
  <CollectionView x:Name="ShowroomsList" Margin="0,4,0,0">
@@ -61,17 +64,11 @@
  <Label x:Name="NoShowroomsLabel" Text="No showrooms yet." FontSize="14" IsVisible="False" HorizontalOptions="Center" />
  </VerticalStackLayout>
 
- <VerticalStackLayout x:Name="DailyPanel" Spacing="10" IsVisible="False">
- <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
- <VerticalStackLayout>
+ <VerticalStackLayout x:Name="DailyPanel" Spacing="8" IsVisible="False">
  <Label Text="Showroom" FontSize="12" />
- <Picker x:Name="ShowroomPicker" Title="Select showroom" HeightRequest="44" SelectedIndexChanged="OnShowroomPickerChanged" />
- </VerticalStackLayout>
- <VerticalStackLayout>
+ <Picker x:Name="ShowroomPicker" Title="Select showroom" HeightRequest="48" ItemDisplayBinding="{Binding Name}" SelectedIndexChanged="OnShowroomPickerChanged" />
  <Label Text="Date" FontSize="12" />
- <DatePicker x:Name="DailyDatePicker" Format="dd MMM yyyy" />
- </VerticalStackLayout>
- </Grid>
+ <DatePicker x:Name="DailyDatePicker" Format="dd MMM yyyy" HeightRequest="48" />
  <Button x:Name="AddStaffBtn" Text="+ Add Staff" FontAttributes="Bold" HeightRequest="44" Clicked="OnAddStaff" />
  <CollectionView x:Name="DailyStaffList" Margin="0,4,0,0">
  <CollectionView.ItemTemplate>
@@ -98,21 +95,13 @@
  <Label x:Name="NoDailyLabel" Text="Pick a showroom above." FontSize="14" IsVisible="False" HorizontalOptions="Center" />
  </VerticalStackLayout>
 
- <VerticalStackLayout x:Name="PerformancePanel" Spacing="10" IsVisible="False">
- <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
- <VerticalStackLayout>
+ <VerticalStackLayout x:Name="PerformancePanel" Spacing="8" IsVisible="False">
  <Label Text="Showroom" FontSize="12" />
- <Picker x:Name="PerfShowroomPicker" Title="Select showroom" HeightRequest="44" />
- </VerticalStackLayout>
- <VerticalStackLayout>
+ <Picker x:Name="PerfShowroomPicker" Title="Select showroom" HeightRequest="48" ItemDisplayBinding="{Binding Name}" />
  <Label Text="From" FontSize="12" />
- <DatePicker x:Name="PerfFromPicker" Format="dd MMM yyyy" />
- </VerticalStackLayout>
- </Grid>
- <VerticalStackLayout>
+ <DatePicker x:Name="PerfFromPicker" Format="dd MMM yyyy" HeightRequest="48" />
  <Label Text="To" FontSize="12" />
- <DatePicker x:Name="PerfToPicker" Format="dd MMM yyyy" />
- </VerticalStackLayout>
+ <DatePicker x:Name="PerfToPicker" Format="dd MMM yyyy" HeightRequest="48" />
  <Button Text="Load performance" Clicked="OnLoadPerformance" HeightRequest="44" />
 
  <Border Style="{StaticResource CardBorder}" StrokeThickness="0" Padding="16" StrokeShape="RoundRectangle 12">
@@ -162,7 +151,7 @@
  </Grid>
  <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" VerticalOptions="Center">
  <Label Grid.Column="0" Text="Showroom" FontSize="12" />
- <Picker x:Name="ReportShowroomPicker" Grid.Column="1" Title="All" HeightRequest="44" />
+ <Picker x:Name="ReportShowroomPicker" Grid.Column="1" Title="All" HeightRequest="44" ItemDisplayBinding="{Binding Name}" />
  </Grid>
  <Button Text="Load report" Clicked="OnLoadReport" HeightRequest="44" />
 
