@@ -1,9 +1,10 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using E6CarSpa.Client;
+using E6CarSpa.Desktop.Services;
 
 namespace E6CarSpa.Desktop.ViewModels;
 
-public partial class LoginViewModel(IApiClient api) : ObservableObject
+public partial class LoginViewModel(IApiClient api, SessionManager sessionManager) : ObservableObject
 {
     [ObservableProperty] private string _username = "admin";
     [ObservableProperty] private string _errorMessage = "";
@@ -23,6 +24,7 @@ public partial class LoginViewModel(IApiClient api) : ObservableObject
         {
             IsBusy = true;
             await api.LoginAsync(Username.Trim(), password);
+            sessionManager.SaveSession();
             return true;
         }
         catch (ApiException ex)

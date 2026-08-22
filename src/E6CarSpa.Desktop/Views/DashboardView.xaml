@@ -1,104 +1,107 @@
 <UserControl x:Class="E6CarSpa.Desktop.Views.DashboardView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="32">
-        <StackPanel>
-            <TextBlock Text="Dashboard" Style="{StaticResource H1}" />
-            <TextBlock Text="{Binding Error}" Foreground="{StaticResource DangerBrush}" FontSize="14"
-                       Visibility="{Binding Error, Converter={StaticResource StringToVis}}" Margin="0,0,0,10" />
+ xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+ xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+ <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="32">
+ <StackPanel>
+ <TextBlock Text="Dashboard" Style="{StaticResource H1}" />
+ <TextBlock Text="{Binding Error}" Foreground="{StaticResource DangerBrush}" FontSize="14"
+ Visibility="{Binding Error, Converter={StaticResource StringToVis}}" Margin="0,0,0,10" />
+ <TextBlock Text="Loading…" FontSize="14" Foreground="{StaticResource MutedBrush}"
+ Visibility="{Binding IsBusy, Converter={StaticResource BoolToVis}}"
+ Margin="0,0,0,10" />
 
-            <!-- KPI cards -->
-            <UniformGrid Columns="4">
-                <Border Style="{StaticResource Card}" Background="#E8F5E9" Margin="0,0,10,14">
-                    <StackPanel>
-                        <TextBlock Text="Collected Today" Style="{StaticResource Muted}" FontSize="13" />
-                        <TextBlock Text="{Binding Summary.CollectedToday, StringFormat='₹{0:N2}'}"
-                                   FontSize="28" FontWeight="Bold" Foreground="{StaticResource SuccessBrush}" Margin="0,6,0,0" />
-                    </StackPanel>
-                </Border>
-                <Border Style="{StaticResource Card}" Margin="0,0,10,14">
-                    <StackPanel>
-                        <TextBlock Text="Jobs Today" Style="{StaticResource Muted}" FontSize="13" />
-                        <TextBlock Text="{Binding Summary.JobsToday}" FontSize="28" FontWeight="Bold" Margin="0,6,0,0" />
-                    </StackPanel>
-                </Border>
-                <Border Style="{StaticResource Card}" Margin="0,0,10,14">
-                    <StackPanel>
-                        <TextBlock Text="Pending Quotations" Style="{StaticResource Muted}" FontSize="13" />
-                        <TextBlock Text="{Binding Summary.QuotationsPending}" FontSize="28" FontWeight="Bold" Margin="0,6,0,0" />
-                    </StackPanel>
-                </Border>
-                <Border Style="{StaticResource Card}" Background="#FFF3E0" Margin="0,0,0,14">
-                    <StackPanel>
-                        <TextBlock Text="Unpaid Invoices" Style="{StaticResource Muted}" FontSize="13" />
-                        <TextBlock Text="{Binding Summary.InvoicesUnpaid}" FontSize="28" FontWeight="Bold"
-                                   Foreground="#E65100" Margin="0,6,0,0" />
-                    </StackPanel>
-                </Border>
-            </UniformGrid>
+ <!-- KPI cards -->
+ <UniformGrid Columns="4">
+ <Border Style="{StaticResource Card}" Background="#E8F5E9" Margin="0,0,10,14">
+ <StackPanel>
+ <TextBlock Text="Collected Today" Style="{StaticResource Muted}" FontSize="13" />
+ <TextBlock Text="{Binding Summary.CollectedToday, StringFormat='₹{0:N2}'}"
+ FontSize="28" FontWeight="Bold" Foreground="{StaticResource SuccessBrush}" Margin="0,6,0,0" />
+ </StackPanel>
+ </Border>
+ <Border Style="{StaticResource Card}" Margin="0,0,10,14">
+ <StackPanel>
+ <TextBlock Text="Jobs Today" Style="{StaticResource Muted}" FontSize="13" />
+ <TextBlock Text="{Binding Summary.JobsToday}" FontSize="28" FontWeight="Bold" Margin="0,6,0,0" />
+ </StackPanel>
+ </Border>
+ <Border Style="{StaticResource Card}" Margin="0,0,10,14">
+ <StackPanel>
+ <TextBlock Text="Pending Quotations" Style="{StaticResource Muted}" FontSize="13" />
+ <TextBlock Text="{Binding Summary.QuotationsPending}" FontSize="28" FontWeight="Bold" Margin="0,6,0,0" />
+ </StackPanel>
+ </Border>
+ <Border Style="{StaticResource Card}" Background="#FFF3E0" Margin="0,0,0,14">
+ <StackPanel>
+ <TextBlock Text="Unpaid Invoices" Style="{StaticResource Muted}" FontSize="13" />
+ <TextBlock Text="{Binding Summary.InvoicesUnpaid}" FontSize="28" FontWeight="Bold"
+ Foreground="#E65100" Margin="0,6,0,0" />
+ </StackPanel>
+ </Border>
+ </UniformGrid>
 
-            <TextBlock Text="Today's Collection Breakdown" Style="{StaticResource H2}" Margin="0,10,0,10" />
-            <UniformGrid Columns="3">
-                <Border Style="{StaticResource Card}" Margin="0,0,10,14">
-                    <StackPanel>
-                        <TextBlock Text="💵 Cash" Style="{StaticResource Muted}" FontSize="13" />
-                        <TextBlock Text="{Binding Summary.CashToday, StringFormat='₹{0:N2}'}"
-                                   FontSize="22" FontWeight="SemiBold" Margin="0,6,0,0" />
-                    </StackPanel>
-                </Border>
-                <Border Style="{StaticResource Card}" Margin="0,0,10,14">
-                    <StackPanel>
-                        <TextBlock Text="💳 Card" Style="{StaticResource Muted}" FontSize="13" />
-                        <TextBlock Text="{Binding Summary.CardToday, StringFormat='₹{0:N2}'}"
-                                   FontSize="22" FontWeight="SemiBold" Margin="0,6,0,0" />
-                    </StackPanel>
-                </Border>
-                <Border Style="{StaticResource Card}" Margin="0,0,0,14">
-                    <StackPanel>
-                        <TextBlock Text="📱 UPI" Style="{StaticResource Muted}" FontSize="13" />
-                        <TextBlock Text="{Binding Summary.UpiToday, StringFormat='₹{0:N2}'}"
-                                   FontSize="22" FontWeight="SemiBold" Margin="0,6,0,0" />
-                    </StackPanel>
-                </Border>
-            </UniformGrid>
+ <TextBlock Text="Today's Collection Breakdown" Style="{StaticResource H2}" Margin="0,10,0,10" />
+ <UniformGrid Columns="3">
+ <Border Style="{StaticResource Card}" Margin="0,0,10,14">
+ <StackPanel>
+ <TextBlock Text="💵 Cash" Style="{StaticResource Muted}" FontSize="13" />
+ <TextBlock Text="{Binding Summary.CashToday, StringFormat='₹{0:N2}'}"
+ FontSize="22" FontWeight="SemiBold" Margin="0,6,0,0" />
+ </StackPanel>
+ </Border>
+ <Border Style="{StaticResource Card}" Margin="0,0,10,14">
+ <StackPanel>
+ <TextBlock Text="💳 Card" Style="{StaticResource Muted}" FontSize="13" />
+ <TextBlock Text="{Binding Summary.CardToday, StringFormat='₹{0:N2}'}"
+ FontSize="22" FontWeight="SemiBold" Margin="0,6,0,0" />
+ </StackPanel>
+ </Border>
+ <Border Style="{StaticResource Card}" Margin="0,0,0,14">
+ <StackPanel>
+ <TextBlock Text="📱 UPI" Style="{StaticResource Muted}" FontSize="13" />
+ <TextBlock Text="{Binding Summary.UpiToday, StringFormat='₹{0:N2}'}"
+ FontSize="22" FontWeight="SemiBold" Margin="0,6,0,0" />
+ </StackPanel>
+ </Border>
+ </UniformGrid>
 
-            <Border Style="{StaticResource Card}" Margin="0,0,0,16">
-                <StackPanel>
-                    <TextBlock Text="🔴 Live Shop Floor (Today's Active Jobs)" Style="{StaticResource H2}" Margin="0,0,0,12" />
-                    <DataGrid ItemsSource="{Binding Summary.ActiveJobs}" MaxHeight="250" VerticalScrollBarVisibility="Auto">
-                        <DataGrid.Columns>
-                            <DataGridTextColumn Header="Invoice #" Binding="{Binding InvoiceNumber}" Width="100" />
-                            <DataGridTextColumn Header="Vehicle No." Binding="{Binding VehicleNumber}" Width="120" />
-                            <DataGridTextColumn Header="Model" Binding="{Binding VehicleModel}" Width="*" />
-                            <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120">
-                                <DataGridTextColumn.ElementStyle>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="FontWeight" Value="SemiBold" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding Status}" Value="InProgress">
-                                                <Setter Property="Foreground" Value="#0284C7" />
-                                            </DataTrigger>
-                                            <DataTrigger Binding="{Binding Status}" Value="Quotation">
-                                                <Setter Property="Foreground" Value="#D97706" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </DataGridTextColumn.ElementStyle>
-                            </DataGridTextColumn>
-                            <DataGridTextColumn Header="Total ₹" Binding="{Binding Total, StringFormat='{}{0:N2}'}" Width="100" />
-                        </DataGrid.Columns>
-                    </DataGrid>
-                </StackPanel>
-            </Border>
+ <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+ <StackPanel>
+ <TextBlock Text="🔴 Live Shop Floor (Today's Active Jobs)" Style="{StaticResource H2}" Margin="0,0,0,12" />
+ <DataGrid ItemsSource="{Binding Summary.ActiveJobs}" MaxHeight="250" VerticalScrollBarVisibility="Auto">
+ <DataGrid.Columns>
+ <DataGridTextColumn Header="Invoice #" Binding="{Binding InvoiceNumber}" Width="100" />
+ <DataGridTextColumn Header="Vehicle No." Binding="{Binding VehicleNumber}" Width="120" />
+ <DataGridTextColumn Header="Model" Binding="{Binding VehicleModel}" Width="*" />
+ <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="120">
+ <DataGridTextColumn.ElementStyle>
+ <Style TargetType="TextBlock">
+ <Setter Property="FontWeight" Value="SemiBold" />
+ <Style.Triggers>
+ <DataTrigger Binding="{Binding Status}" Value="InProgress">
+ <Setter Property="Foreground" Value="#0284C7" />
+ </DataTrigger>
+ <DataTrigger Binding="{Binding Status}" Value="Quotation">
+ <Setter Property="Foreground" Value="#D97706" />
+ </DataTrigger>
+ </Style.Triggers>
+ </Style>
+ </DataGridTextColumn.ElementStyle>
+ </DataGridTextColumn>
+ <DataGridTextColumn Header="Total ₹" Binding="{Binding Total, StringFormat='{}{0:N2}'}" Width="100" />
+ </DataGrid.Columns>
+ </DataGrid>
+ </StackPanel>
+ </Border>
 
-            <Border Style="{StaticResource Card}" Background="#FFEBEE"
-                    Visibility="{Binding Summary.LowStockCount, Converter={StaticResource CountToVis}}">
-                <TextBlock FontSize="15">
-                    <Run Text="⚠ Low stock items: " FontWeight="SemiBold" />
-                    <Run Text="{Binding Summary.LowStockCount, Mode=OneWay}" FontWeight="Bold" />
-                    <Run Text=" — check the Inventory tab." />
-                </TextBlock>
-            </Border>
-        </StackPanel>
-    </ScrollViewer>
+ <Border Style="{StaticResource Card}" Background="#FFEBEE"
+ Visibility="{Binding Summary.LowStockCount, Converter={StaticResource CountToVis}}">
+ <TextBlock FontSize="15">
+ <Run Text="⚠ Low stock items: " FontWeight="SemiBold" />
+ <Run Text="{Binding Summary.LowStockCount, Mode=OneWay}" FontWeight="Bold" />
+ <Run Text=" — check the Inventory tab." />
+ </TextBlock>
+ </Border>
+ </StackPanel>
+ </ScrollViewer>
 </UserControl>

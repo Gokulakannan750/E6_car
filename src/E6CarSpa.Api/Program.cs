@@ -52,12 +52,11 @@ var jwtKeyEnv = Environment.GetEnvironmentVariable("E6_JWT_KEY");
 if (!string.IsNullOrEmpty(jwtKeyEnv))
     jwtOptions.Key = jwtKeyEnv;
 
-// Fail fast in production if the JWT signing key is too weak.
-if (!builder.Environment.IsDevelopment() &&
-    (jwtOptions.Key.Length < 32 || jwtOptions.Key.Contains("CHANGE_ME") || jwtOptions.Key.Contains("REPLACE_WITH")))
+// Fail fast if the JWT signing key is too weak.
+if (jwtOptions.Key.Length < 32 || jwtOptions.Key.Contains("CHANGE_ME") || jwtOptions.Key.Contains("REPLACE_WITH"))
 {
     throw new InvalidOperationException(
-        "Jwt:Key must be a strong secret of at least 32 characters in production. " +
+        "Jwt:Key must be a strong secret of at least 32 characters. " +
         "Set it in appsettings.json or via the E6_JWT_KEY environment variable.");
 }
 
@@ -201,6 +200,17 @@ builder.Services.AddScoped<ReportsService>();
 builder.Services.AddScoped<WhatsAppService>();
 builder.Services.AddScoped<PdfInvoiceService>();
 
+builder.Services.AddCors(options =>
+{
+ // Native clients are not subject to same-origin policy; this only protects a future web portal.
+ options.AddDefaultPolicy(policy =>
+ {
+ policy.WithOrigins("http://localhost:3000", "https://app.e6carspa.com")
+ .WithMethods("GET", "POST", "PUT", "DELETE")
+ .WithHeaders("Authorization", "Content-Type")
+ .AllowCredentials();
+ });
+});
 builder.Services.AddControllers();
 
 var app = builder.Build();
@@ -217,6 +227,13 @@ using (var scope = app.Services.CreateScope())
 // ----- Pipeline -----
 // Must run first so the real client IP / scheme is resolved before rate limiting, logging, etc.
 app.UseForwardedHeaders();
+
+// Warn if the API is bound to plain HTTP in a non-development context.
+var apiUrl = builder.Configuration["Urls"] ?? "http://localhost:5080";
+if (!app.Environment.IsDevelopment() && apiUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase))
+{
+ app.Logger.LogWarning("API is bound to HTTP ({Url}). For production, use HTTPS behind a reverse proxy.", apiUrl);
+}
 
 app.UseExceptionHandler(handler => handler.Run(async context =>
 {
@@ -247,6 +264,8 @@ app.Use(async (context, next) =>
     context.Response.Headers["X-Frame-Options"] = "DENY";
     context.Response.Headers["Referrer-Policy"] = "no-referrer";
     context.Response.Headers["X-Permitted-Cross-Domain-Policies"] = "none";
+ context.Response.Headers["X-XSS-Protection"] = "1; mode=block";
+ context.Response.Headers["Content-Security-Policy"] = "default-src 'none'; frame-ancestors 'none'; base-uri 'none'";
     // HSTS: once the API is served over HTTPS (behind Caddy), tell browsers to only ever use
     // TLS for a year. Emitted in Production only; HTTP clients/browsers ignore it over plain
     // HTTP and native app clients don't act on it, so it's safe to always send in Production.
@@ -256,6 +275,7 @@ app.Use(async (context, next) =>
     await next();
 });
 
+app.UseCors();
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();

@@ -25,7 +25,8 @@
                     <VerticalStackLayout Spacing="10">
                         <Label Text="Record an advance" FontSize="16" FontAttributes="Bold" />
 
-                        <Picker x:Name="WorkerPicker" Title="Select worker" HeightRequest="44" />
+                        <Picker x:Name="WorkerPicker" Title="Select worker" HeightRequest="44"
+ ItemDisplayBinding="{Binding FullName}" />
 
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                             <Entry x:Name="AmountEntry" Grid.Column="0" Placeholder="Amount ₹"
@@ -80,7 +81,7 @@
                                         Margin="0,0,0,8" StrokeShape="RoundRectangle 10">
                                     <Grid ColumnDefinitions="*,Auto">
                                         <VerticalStackLayout Grid.Column="0" Spacing="2">
-                                            <Label Text="{Binding WorkerName}" FontSize="16" FontAttributes="Bold" />
+                                            <Label Text="{Binding StaffName}" FontSize="16" FontAttributes="Bold" />
                                             <Label Text="{Binding Count, StringFormat='{0} advance(s)'}" FontSize="13" />
                                         </VerticalStackLayout>
                                         <Label Grid.Column="1" Text="{Binding TotalAdvanced, StringFormat='₹{0:N2}'}"
@@ -112,7 +113,7 @@
                                         Margin="0,0,0,8" StrokeShape="RoundRectangle 10">
                                     <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                                         <VerticalStackLayout Grid.Column="0" Spacing="2">
-                                            <Label Text="{Binding WorkerName}" FontSize="16" FontAttributes="Bold" />
+                                            <Label Text="{Binding StaffName}" FontSize="16" FontAttributes="Bold" />
                                             <Label Text="{Binding AdvanceDate, StringFormat='{0:dd-MM-yyyy}'}" FontSize="13" />
                                             <Label Text="{Binding Note}" FontSize="12" />
                                             <!-- Present only on obsolete rows: names who deleted it, and when. -->

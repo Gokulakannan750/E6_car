@@ -27,6 +27,7 @@ public class ApiClient(HttpClient http) : IApiClient
 
  public UserDto? CurrentUser { get; private set; }
  public bool IsLoggedIn => CurrentUser is not null;
+ public string? CurrentToken => http.DefaultRequestHeaders.Authorization?.Parameter;
  public bool MustChangePassword { get; private set; }
 
  // ---------- Auth ----------
@@ -44,6 +45,14 @@ public class ApiClient(HttpClient http) : IApiClient
  http.DefaultRequestHeaders.Authorization = null;
  CurrentUser = null;
  MustChangePassword = false;
+ OnLogout?.Invoke();
+ }
+
+ public void RestoreSession(string token, UserDto user, bool mustChangePassword)
+ {
+ http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+ CurrentUser = user;
+ MustChangePassword = mustChangePassword;
  }
 
  // ---------- Intake / customers ----------
@@ -375,6 +384,7 @@ public class ApiClient(HttpClient http) : IApiClient
  }
 
  public event Action? OnUnauthorized;
+ public event Action? OnLogout;
 
  private async Task EnsureSuccess(HttpResponseMessage resp)
  {

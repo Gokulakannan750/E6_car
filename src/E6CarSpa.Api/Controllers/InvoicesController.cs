@@ -9,10 +9,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace E6CarSpa.Api.Controllers;
 
 /// <summary>
-/// The billing workflow. Anonymous by design (except Cancel): the desktop app is used at the
-/// counter without a login, so the deny-by-default fallback policy is opted out per action here.
+/// The billing workflow. All endpoints require authentication (can-cancel was the only
+/// anonymous one — now the desktop clients sign in before opening the counter screen).
 /// </summary>
-public class InvoicesController(InvoiceService invoices, PdfInvoiceService pdf) : ApiControllerBase
+[Authorize]
+public class InvoicesController(InvoiceService invoices, PdfInvoiceService pdf, AuditService audit) : ApiControllerBase
 {
     /// <summary>Steps 1-3: create a quotation from customer + car + chosen services.</summary>
     [HttpPost("quotation")]
