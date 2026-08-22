@@ -47,13 +47,13 @@ public partial class App : Application
         services.AddTransient<CatalogueViewModel>();
         services.AddTransient<CustomersViewModel>();
         services.AddTransient<StaffAdvancesViewModel>();
-        services.AddTransient<StaffSalariesViewModel>();
-        services.AddTransient<IncomeViewModel>();
- services.AddTransient<ShowroomViewModel>();
- services.AddTransient<ShowroomsViewModel>();
- services.AddTransient<ShowroomDailyViewModel>();
- services.AddTransient<ShowroomPerformanceViewModel>();
- services.AddTransient<ShowroomReportViewModel>();
+        services.AddTransient<StaffMasterViewModel>();
+        services.AddTransient<StaffModuleViewModel>();
+        services.AddTransient<ShowroomViewModel>();
+        services.AddTransient<ShowroomsViewModel>();
+        services.AddTransient<ShowroomDailyViewModel>();
+        services.AddTransient<ShowroomPerformanceViewModel>();
+        services.AddTransient<ShowroomReportViewModel>();
 
         // Windows
         services.AddTransient<LoginWindow>();

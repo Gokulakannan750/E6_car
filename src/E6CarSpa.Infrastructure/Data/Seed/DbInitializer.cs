@@ -49,6 +49,15 @@ public static class DbInitializer
                 unpermissioned.Count);
         }
 
+        // Ensure Admin role always has all permissions (in case new permissions were added to the enum)
+        var admins = await db.Users.Where(u => u.Role == UserRole.Admin && u.Permissions != Permission.All).ToListAsync();
+        if (admins.Count > 0)
+        {
+            foreach (var u in admins) u.Permissions = Permission.All;
+            await db.SaveChangesAsync();
+            logger?.LogInformation("Updated permissions for {Count} Admin user(s) to Permission.All.", admins.Count);
+        }
+
         if (!await db.CompanySettings.AnyAsync())
         {
             db.CompanySettings.Add(new CompanySettings

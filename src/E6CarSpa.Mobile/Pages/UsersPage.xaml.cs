@@ -13,15 +13,12 @@ namespace E6CarSpa.Mobile.Pages;
 public partial class UsersPage : ContentPage
 {
     private static readonly UserRole[] Roles = Enum.GetValues<UserRole>();
-    private List<PermissionOption> _permissions = PermissionOption.BuildList(PermissionPresets.For(UserRole.Worker));
-
     public UsersPage()
     {
         InitializeComponent();
 
         foreach (var r in Roles) RolePicker.Items.Add(r.ToString());
         RolePicker.SelectedIndex = Array.IndexOf(Roles, UserRole.Worker);
-        BindableLayout.SetItemsSource(PermissionsHost, _permissions);
     }
 
     protected override async void OnAppearing()
@@ -37,13 +34,6 @@ public partial class UsersPage : ContentPage
         Refresh.IsRefreshing = false;
     }
 
-    /// <summary>Re-tick the list to the chosen role's preset; the admin can still adjust it.</summary>
-    private void OnRoleChanged(object? sender, EventArgs e)
-    {
-        if (RolePicker.SelectedIndex < 0) return;
-        var preset = PermissionPresets.For(Roles[RolePicker.SelectedIndex]);
-        foreach (var option in _permissions) option.IsGranted = preset.HasFlag(option.Value);
-    }
 
     private async Task LoadAsync()
     {
@@ -71,19 +61,12 @@ public partial class UsersPage : ContentPage
         if (username.Length == 0) { ShowError("Enter a username to sign in with."); return; }
         if (password.Length < 8) { ShowError("Password must be at least 8 characters."); return; }
 
-        var permissions = PermissionOption.Combine(_permissions);
-        if (permissions == Permission.None)
-        {
-            ShowError("Tick at least one permission, or the account will not be able to open anything.");
-            return;
-        }
-
         SetBusy(true);
         try
         {
             var role = Roles[Math.Max(0, RolePicker.SelectedIndex)];
             var created = await AppServices.Api.CreateUserAsync(
-                new CreateUserRequest(fullName, username, password, role, permissions));
+                new CreateUserRequest(fullName, username, password, role, Permission.All));
 
             InfoLabel.Text = $"Created '{created.Username}'. Tell them their password — it is not shown again.";
             InfoLabel.IsVisible = true;
@@ -107,41 +90,16 @@ public partial class UsersPage : ContentPage
         UsersList.SelectedItem = null;   // clear highlight so re-tapping works
 
         var choice = await DisplayActionSheetAsync($"{user.FullName} ({user.Username})", "Cancel", null,
-            "Edit permissions", user.IsActive ? "Deactivate login" : "Reactivate login", "Reset password");
+             user.IsActive ? "Deactivate login" : "Reactivate login", "Reset password");
 
         switch (choice)
         {
-            case "Edit permissions": await EditPermissionsAsync(user); break;
             case "Deactivate login":
             case "Reactivate login": await ToggleActiveAsync(user); break;
             case "Reset password": await ResetPasswordAsync(user); break;
         }
     }
 
-    private async Task EditPermissionsAsync(UserDto user)
-    {
-        // A phone has no room for a tick-list dialog, so walk the permissions one at a time.
-        var current = user.Permissions;
-        foreach (var option in PermissionOption.BuildList(current))
-        {
-            var grant = await DisplayAlertAsync(option.Label, option.Description,
-                option.IsGranted ? "Keep allowed" : "Allow",
-                option.IsGranted ? "Remove" : "Keep blocked");
-
-            // The left button means "allowed" in both wordings; the right means "not allowed".
-            if (grant) current |= option.Value;
-            else current &= ~option.Value;
-        }
-
-        if (current == Permission.None)
-        {
-            ShowError("Tick at least one permission, or the account will not be able to open anything.");
-            return;
-        }
-
-        await UpdateAsync(user, user.IsActive, null, current,
-            $"Permissions updated for '{user.Username}'. They will need to sign in again.");
-    }
 
     private async Task ToggleActiveAsync(UserDto user)
     {

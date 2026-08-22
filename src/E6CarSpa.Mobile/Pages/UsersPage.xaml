@@ -24,28 +24,9 @@
                         <Entry x:Name="PasswordEntry" Placeholder="Password (min 8)" IsPassword="True" />
 
                         <Label Text="Role" FontSize="13" />
-                        <Picker x:Name="RolePicker" Title="Select a role" SelectedIndexChanged="OnRoleChanged" />
+                        <Picker x:Name="RolePicker" Title="Select a role" />
 
-                        <Label Text="Permissions" FontSize="14" FontAttributes="Bold" Margin="0,6,0,0" />
-                        <Label Text="Choosing a role ticks its usual set — adjust it for this person."
-                               FontSize="12"
-                               TextColor="{AppThemeBinding Light={StaticResource LightTextSecondary}, Dark={StaticResource DarkTextSecondary}}" />
 
-                        <VerticalStackLayout x:Name="PermissionsHost" Spacing="2">
-                            <BindableLayout.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" Padding="0,4">
-                                        <CheckBox Grid.Column="0" IsChecked="{Binding IsGranted, Mode=TwoWay}"
-                                                  Color="{StaticResource Primary}" VerticalOptions="Center" />
-                                        <VerticalStackLayout Grid.Column="1" Spacing="0" VerticalOptions="Center">
-                                            <Label Text="{Binding Label}" FontSize="14" />
-                                            <Label Text="{Binding Description}" FontSize="11"
-                                                   TextColor="{AppThemeBinding Light={StaticResource LightTextSecondary}, Dark={StaticResource DarkTextSecondary}}" />
-                                        </VerticalStackLayout>
-                                    </Grid>
-                                </DataTemplate>
-                            </BindableLayout.ItemTemplate>
-                        </VerticalStackLayout>
 
                         <Label x:Name="InfoLabel" FontSize="13" IsVisible="False"
                                TextColor="{AppThemeBinding Light={StaticResource Success}, Dark={StaticResource Success}}" />
@@ -69,8 +50,7 @@
                                     <VerticalStackLayout Grid.Column="0" Spacing="2">
                                         <Label Text="{Binding FullName}" FontSize="16" FontAttributes="Bold" />
                                         <Label Text="{Binding Username}" FontSize="13" />
-                                        <Label Text="{Binding Permissions}" FontSize="11"
-                                               TextColor="{AppThemeBinding Light={StaticResource LightTextSecondary}, Dark={StaticResource DarkTextSecondary}}" />
+
                                     </VerticalStackLayout>
                                     <VerticalStackLayout Grid.Column="1" Spacing="2" HorizontalOptions="End">
                                         <Label Text="{Binding Role}" FontSize="14" FontAttributes="Bold"

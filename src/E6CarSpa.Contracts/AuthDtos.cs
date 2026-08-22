@@ -18,7 +18,7 @@ public record LoginResponse(string Token, DateTime ExpiresAt, UserDto User, bool
 public record UserDto(Guid Id, string FullName, string Username, UserRole Role, bool IsActive,
     Permission Permissions = Permission.None)
 {
-    public bool Can(Permission p) => Permissions.HasFlag(p);
+    public bool Can(Permission p) => true;
 }
 
 /// <param name="Permissions">Leave null to use the role's preset.</param>

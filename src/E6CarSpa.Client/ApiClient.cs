@@ -203,56 +203,6 @@ public class ApiClient(HttpClient http) : IApiClient
  await EnsureSuccess(resp);
  }
 
- // ---------- Income ----------
- public Task<List<IncomeDto>?> GetIncomeAsync(string? source = null, bool includeDeleted = false)
- {
- var parts = new List<string>();
- if (!string.IsNullOrWhiteSpace(source)) parts.Add($"source={Uri.EscapeDataString(source)}");
- if (includeDeleted) parts.Add("includeDeleted=true");
- var qs = parts.Count == 0 ? "" : "?" + string.Join("&", parts);
- return GetAsync<List<IncomeDto>>($"api/income{qs}");
- }
-
- public Task<List<IncomeSummaryDto>?> GetIncomeSummaryAsync(DateTime? from = null, DateTime? to = null)
- {
- var parts = new List<string>();
- if (from.HasValue) parts.Add($"from={from.Value:yyyy-MM-dd}");
- if (to.HasValue) parts.Add($"to={to.Value:yyyy-MM-dd}");
- var qs = parts.Count == 0 ? "" : "?" + string.Join("&", parts);
- return GetAsync<List<IncomeSummaryDto>>($"api/income/summary{qs}");
- }
-
- public Task<IncomeDto> CreateIncomeAsync(SaveIncomeRequest req) =>
- PostAsync<IncomeDto>("api/income", req);
-
- public async Task DeleteIncomeAsync(Guid id)
- {
- var resp = await http.DeleteAsync($"api/income/{id}");
- await EnsureSuccess(resp);
- }
-
- // ---------- Staff Salary ----------
- public Task<List<StaffSalaryDto>?> GetStaffSalariesAsync(Guid? staffId = null, bool includeDeleted = false)
- {
- var parts = new List<string>();
- if (staffId.HasValue) parts.Add($"staffId={staffId.Value}");
- if (includeDeleted) parts.Add("includeDeleted=true");
- var qs = parts.Count == 0 ? "" : "?" + string.Join("&", parts);
- return GetAsync<List<StaffSalaryDto>>($"api/staffsalaries{qs}");
- }
-
- public Task<List<StaffSalarySummaryDto>?> GetStaffSalarySummaryAsync() =>
- GetAsync<List<StaffSalarySummaryDto>>("api/staffsalaries/summary");
-
- public Task<StaffSalaryDto> CreateStaffSalaryAsync(SaveStaffSalaryRequest req) =>
- PostAsync<StaffSalaryDto>("api/staffsalaries", req);
-
- public async Task DeleteStaffSalaryAsync(Guid id)
- {
- var resp = await http.DeleteAsync($"api/staffsalaries/{id}");
- await EnsureSuccess(resp);
- }
-
  // ---------- Company settings ----------
  public Task<CompanySettingsDto?> GetSettingsAsync() => GetAsync<CompanySettingsDto>("api/settings");
 

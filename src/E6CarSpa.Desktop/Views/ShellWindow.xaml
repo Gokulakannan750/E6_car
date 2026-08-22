@@ -17,9 +17,9 @@
         <DataTemplate DataType="{x:Type vm:CatalogueViewModel}"><views:CatalogueView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:ReportsViewModel}"><views:ReportsView /></DataTemplate>
         <DataTemplate DataType="{x:Type vm:SettingsViewModel}"><views:SettingsView /></DataTemplate>
-        <DataTemplate DataType="{x:Type vm:StaffAdvancesViewModel}"><views:StaffAdvancesView /></DataTemplate>
-        <DataTemplate DataType="{x:Type vm:StaffSalariesViewModel}"><views:StaffSalariesView /></DataTemplate>
-        <DataTemplate DataType="{x:Type vm:IncomeViewModel}"><views:IncomeView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:StaffModuleViewModel}">
+            <views:StaffModuleView />
+        </DataTemplate>
  <DataTemplate DataType="{x:Type vm:ShowroomViewModel}"><views:ShowroomView /></DataTemplate>
 
         <!-- Navigation button — bright white text on dark sidebar -->
@@ -103,14 +103,12 @@
                     <Button Content="👥  Customers" Style="{StaticResource NavButton}" Command="{Binding ShowCustomersCommand}" Visibility="{Binding CanCustomers, Converter={StaticResource BoolToVis}}" />
                     <Button Content="➕  New Job" Style="{StaticResource NavButton}" Command="{Binding ShowNewJobCommand}" Visibility="{Binding CanBilling, Converter={StaticResource BoolToVis}}" />
                     <Button Content="🧾  Quotations &amp; Invoices" Style="{StaticResource NavButton}" Command="{Binding ShowJobsCommand}" Visibility="{Binding CanBilling, Converter={StaticResource BoolToVis}}" />
- <Button Content="🗂 Inventory" Style="{StaticResource NavButton}" Command="{Binding ShowInventoryCommand}" Visibility="{Binding CanInventory, Converter={StaticResource BoolToVis}}" />
- <Button Content="🗂 Catalogue" Style="{StaticResource NavButton}" Command="{Binding ShowCatalogueCommand}" Visibility="{Binding CanCatalogue, Converter={StaticResource BoolToVis}}" />
- <Button Content="💵 Staff Advances" Style="{StaticResource NavButton}" Command="{Binding ShowStaffAdvancesCommand}" Visibility="{Binding CanStaffAdvances, Converter={StaticResource BoolToVis}}" />
- <Button Content="💰 Staff Salaries" Style="{StaticResource NavButton}" Command="{Binding ShowStaffSalariesCommand}" Visibility="{Binding CanStaffAdvances, Converter={StaticResource BoolToVis}}" />
- <Button Content="📊 Income" Style="{StaticResource NavButton}" Command="{Binding ShowIncomeCommand}" Visibility="{Binding CanStaffAdvances, Converter={StaticResource BoolToVis}}" />
- <Button Content="🏪 Showroom" Style="{StaticResource NavButton}" Command="{Binding ShowShowroomsCommand}" Visibility="{Binding CanShowroom, Converter={StaticResource BoolToVis}}" />
- <Button Content="📈 Reports" Style="{StaticResource NavButton}" Command="{Binding ShowReportsCommand}" Visibility="{Binding CanReports, Converter={StaticResource BoolToVis}}" />
- <Button Content="⚙ Settings" Style="{StaticResource NavButton}" Command="{Binding ShowSettingsCommand}" Visibility="{Binding CanSettings, Converter={StaticResource BoolToVis}}" />
+                    <Button Content="🗂 Inventory" Style="{StaticResource NavButton}" Command="{Binding ShowInventoryCommand}" Visibility="{Binding CanInventory, Converter={StaticResource BoolToVis}}" />
+                    <Button Content="📦 Catalogue" Style="{StaticResource NavButton}" Command="{Binding ShowCatalogueCommand}" Visibility="{Binding CanCatalogue, Converter={StaticResource BoolToVis}}" />
+                    <Button Content="👥 Staff" Style="{StaticResource NavButton}" Command="{Binding ShowStaffCommand}" Visibility="{Binding CanStaff, Converter={StaticResource BoolToVis}}" />
+                    <Button Content="🏪 Showroom" Style="{StaticResource NavButton}" Command="{Binding ShowShowroomsCommand}" Visibility="{Binding CanShowroom, Converter={StaticResource BoolToVis}}" />
+                    <Button Content="📈 Reports" Style="{StaticResource NavButton}" Command="{Binding ShowReportsCommand}" Visibility="{Binding CanReports, Converter={StaticResource BoolToVis}}" />
+                    <Button Content="⚙ Settings" Style="{StaticResource NavButton}" Command="{Binding ShowSettingsCommand}" Visibility="{Binding CanSettings, Converter={StaticResource BoolToVis}}" />
                 </StackPanel>
             </DockPanel>
             </Grid>

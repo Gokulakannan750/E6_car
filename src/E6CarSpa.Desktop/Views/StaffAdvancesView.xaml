@@ -28,16 +28,6 @@
                         <ComboBox ItemsSource="{Binding StaffList}" SelectedItem="{Binding SelectedStaff, Mode=TwoWay}"
                                   DisplayMemberPath="FullName" IsEditable="False" Height="38"
                                   VerticalContentAlignment="Center" />
-                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                            <Button Content="➕" Width="28" Height="28" Padding="0" Margin="0,0,4,0"
-                                    Command="{Binding AddStaffCommand}" ToolTip="Add staff member" />
-                            <Button Content="✏️" Width="28" Height="28" Padding="0" Margin="0,0,4,0"
-                                    Command="{Binding RenameStaffCommand}" CommandParameter="{Binding SelectedStaff}"
-                                    ToolTip="Rename selected" />
-                            <Button Content="➖" Width="28" Height="28" Padding="0"
-                                    Command="{Binding RemoveStaffCommand}" CommandParameter="{Binding SelectedStaff}"
-                                    ToolTip="Remove selected" />
-                        </StackPanel>
                     </StackPanel>
 
                     <StackPanel Grid.Column="1" Margin="0,0,10,0" Width="130">

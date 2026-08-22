@@ -69,17 +69,7 @@ public interface IApiClient
     Task DeleteStaffAsync(Guid id);
     Task RestoreStaffAsync(Guid id);
 
-    // ----- Income -----
-    Task<List<IncomeDto>?> GetIncomeAsync(string? source = null, bool includeDeleted = false);
-    Task<List<IncomeSummaryDto>?> GetIncomeSummaryAsync(DateTime? from = null, DateTime? to = null);
-    Task<IncomeDto> CreateIncomeAsync(SaveIncomeRequest req);
-    Task DeleteIncomeAsync(Guid id);
 
-    // ----- Staff Salary -----
-    Task<List<StaffSalaryDto>?> GetStaffSalariesAsync(Guid? staffId = null, bool includeDeleted = false);
-    Task<List<StaffSalarySummaryDto>?> GetStaffSalarySummaryAsync();
-    Task<StaffSalaryDto> CreateStaffSalaryAsync(SaveStaffSalaryRequest req);
-    Task DeleteStaffSalaryAsync(Guid id);
     Task<CompanySettingsDto?> GetSettingsAsync();
     Task<CompanySettingsDto> UpdateSettingsAsync(SaveCompanySettingsRequest req);
     Task UploadLogoAsync(byte[] imageBytes);

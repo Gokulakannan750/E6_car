@@ -35,7 +35,7 @@ public partial class ShellViewModel(IApiClient api) : ObservableObject
  public bool CanBilling => Can(Domain.Enums.Permission.Billing);
  public bool CanCustomers => Can(Domain.Enums.Permission.Customers);
  public bool CanCatalogue => Can(Domain.Enums.Permission.Catalogue);
- public bool CanStaffAdvances => Can(Domain.Enums.Permission.StaffAdvances);
+ public bool CanStaff => Can(Domain.Enums.Permission.StaffAdvances) || Can(Domain.Enums.Permission.StaffManage);
  public bool CanShowroom => Can(Domain.Enums.Permission.Showroom);
  public bool CanReports => Can(Domain.Enums.Permission.Reports);
  public bool CanInventory => Can(Domain.Enums.Permission.Inventory);
@@ -52,7 +52,7 @@ public partial class ShellViewModel(IApiClient api) : ObservableObject
  OnPropertyChanged(nameof(CanBilling));
  OnPropertyChanged(nameof(CanCustomers));
  OnPropertyChanged(nameof(CanCatalogue));
- OnPropertyChanged(nameof(CanStaffAdvances));
+ OnPropertyChanged(nameof(CanStaff));
  OnPropertyChanged(nameof(CanShowroom));
  OnPropertyChanged(nameof(CanReports));
  OnPropertyChanged(nameof(CanInventory));
@@ -65,10 +65,8 @@ public partial class ShellViewModel(IApiClient api) : ObservableObject
  [RelayCommand] private Task ShowJobs() => NavigateAsync<JobsViewModel>("Jobs");
  [RelayCommand] private Task ShowInventory() => NavigateAsync<InventoryViewModel>("Inventory");
  [RelayCommand] private Task ShowCatalogue() => NavigateAsync<CatalogueViewModel>("Catalogue");
- [RelayCommand] private Task ShowStaffAdvances() => NavigateAsync<StaffAdvancesViewModel>("StaffAdvances");
+ [RelayCommand] private Task ShowStaff() => NavigateAsync<StaffModuleViewModel>("Staff");
  [RelayCommand] private Task ShowShowrooms() => NavigateAsync<ShowroomViewModel>("Showroom");
- [RelayCommand] private Task ShowStaffSalaries() => NavigateAsync<StaffSalariesViewModel>("StaffSalaries");
- [RelayCommand] private Task ShowIncome() => NavigateAsync<IncomeViewModel>("Income");
  [RelayCommand] private Task ShowReports() => NavigateAsync<ReportsViewModel>("Reports");
  [RelayCommand] private Task ShowSettings() => NavigateAsync<SettingsViewModel>("Settings");
 
